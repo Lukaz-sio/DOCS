@@ -1,76 +1,83 @@
 <!DOCTYPE html>
-<p class="subtitle">Accueil de la documentation · Markdown reader</p>
-</div>
-</div>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Docs — BTS SIO SISR</title>
+  <meta name="description" content="Documentation BTS SIO SISR — Accueil, recherche, et lecture de fichiers Markdown (.md)">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="data:," />
+  <!-- Icônes (optionnel) -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">📚</span>
+      <div class="titles">
+        <h1>BTS SIO SISR — Docs</h1>
+        <p class="subtitle">Accueil de la documentation · Markdown reader</p>
+      </div>
+    </div>
 
+    <form id="searchForm" class="search" role="search" autocomplete="off">
+      <input id="searchInput" type="search" placeholder="Rechercher (/, Ctrl+K)…" aria-label="Rechercher dans la doc" />
+      <button class="ghost" type="submit" aria-label="Lancer la recherche">🔎</button>
+      <div id="searchResults" class="search-results" role="listbox" aria-label="Résultats de recherche"></div>
+    </form>
+  </header>
 
-<form id="searchForm" class="search" role="search" autocomplete="off">
-<input id="searchInput" type="search" placeholder="Rechercher (/, Ctrl+K)…" aria-label="Rechercher dans la doc" />
-<button class="ghost" type="submit" aria-label="Lancer la recherche">🔎</button>
-<div id="searchResults" class="search-results" role="listbox" aria-label="Résultats de recherche"></div>
-</form>
-</header>
+  <div class="layout">
+    <aside class="sidebar" aria-label="Rubriques">
+      <nav id="nav">
+        <h2>Rubriques</h2>
+        <!-- Remplies par script.js depuis config -->
+        <ul id="sections"></ul>
 
+        <h3>Raccourcis</h3>
+        <ul class="shortcuts">
+          <li><a href="#/recent">🕓 Récents</a></li>
+          <li><a href="#/all">📄 Tous les docs</a></li>
+          <li><a href="#/about">ℹ️ À propos</a></li>
+        </ul>
+      </nav>
 
-<div class="layout">
-<aside class="sidebar" aria-label="Rubriques">
-<nav id="nav">
-<h2>Rubriques</h2>
-<!-- Remplies par script.js depuis config -->
-<ul id="sections"></ul>
+      <footer class="sidebar-footer">
+        <label class="theme-toggle">
+          <input id="themeSwitch" type="checkbox" aria-label="Basculer clair/sombre">
+          <span>Thème sombre</span>
+        </label>
+      </footer>
+    </aside>
 
+    <main id="main" class="content" tabindex="-1">
+      <article id="docView" class="doc-view">
+        <section class="hero">
+          <h2>Bienvenue 👋</h2>
+          <p>Voici la page d’accueil de ta documentation <strong>BTS SIO SISR</strong>. Utilise la barre de recherche, explore les rubriques, et clique sur un document pour l’afficher (les pages sont écrites en <code>.md</code>).</p>
+        </section>
 
-<h3>Raccourcis</h3>
-<ul class="shortcuts">
-<li><a href="#/recent">🕓 Récents</a></li>
-<li><a href="#/all">📄 Tous les docs</a></li>
-<li><a href="#/about">ℹ️ À propos</a></li>
-</ul>
-</nav>
+        <section>
+          <h3>📌 Sélection</h3>
+          <div id="featured" class="cards"></div>
+        </section>
 
+        <section>
+          <h3>🆕 Derniers ajouts</h3>
+          <ul id="recent" class="list"></ul>
+        </section>
+      </article>
+    </main>
+  </div>
 
-<footer class="sidebar-footer">
-<label class="theme-toggle">
-<input id="themeSwitch" type="checkbox" aria-label="Basculer clair/sombre">
-<span>Thème sombre</span>
-</label>
-</footer>
-</aside>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
+  <!-- Librairie Markdown (client-side) -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
+  <!-- Highlight (optionnel) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.9.0/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.9.0/highlight.min.js"></script>
 
-<main id="main" class="content" tabindex="-1">
-<article id="docView" class="doc-view">
-<section class="hero">
-<h2>Bienvenue 👋</h2>
-<p>Voici la page d’accueil de ta documentation <strong>BTS SIO SISR</strong>. Utilise la barre de recherche, explore les rubriques, et clique sur un document pour l’afficher (les pages sont écrites en <code>.md</code>).</p>
-</section>
-
-
-<section>
-<h3>📌 Sélection</h3>
-<div id="featured" class="cards"></div>
-</section>
-
-
-<section>
-<h3>🆕 Derniers ajouts</h3>
-<ul id="recent" class="list"></ul>
-</section>
-</article>
-</main>
-</div>
-
-
-<div id="toast" class="toast" role="status" aria-live="polite"></div>
-
-
-<!-- Librairie Markdown (client-side) -->
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
-<!-- Highlight (optionnel) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.9.0/styles/github.min.css">
-<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.9.0/highlight.min.js"></script>
-
-
-<script src="script.js" defer></script>
+  <script src="script.js" defer></script>
 </body>
 </html>
