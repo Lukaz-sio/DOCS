@@ -2,34 +2,72 @@
    Config — édite ici
 ========================== */
 const DOCS_CONFIG = {
-  basePath: 'docs', // Dossier racine des .md
-  // Déclare les rubriques et leurs fichiers (chemins relatifs à basePath)
+  basePath: 'docs',
   sections: [
     {
       title: 'Réseau', icon: '🛰️', items: [
         { title: 'Adressage IPv4', path: 'reseau/ipv4.md' },
         { title: 'VLAN & Trunk', path: 'reseau/vlan.md' },
         { title: 'Spanning Tree', path: 'reseau/stp.md' },
+        { title: 'DHCP (Linux/Windows)', path: 'reseau/dhcp.md' },
+        { title: 'DNS (Bind9 / Windows)', path: 'reseau/dns.md' },
+        { title: 'Routeurs & Switch Cisco — CLI', path: 'reseau/cisco-cli.md' },
+        { title: 'Services Réseau (HTTP, FTP, SSH…)', path: 'reseau/services.md' },
       ]
     },
     {
       title: 'Système', icon: '💻', items: [
         { title: 'Debian — Installation', path: 'systeme/debian-install.md' },
-        { title: 'Services systemd', path: 'systeme/systemd.md' },
+        { title: 'Montage de services Debian', path: 'systeme/debian-services.md' },
+        { title: 'Serveur Web (Apache/Nginx)', path: 'systeme/web-server.md' },
         { title: 'Sauvegardes (rsync)', path: 'systeme/rsync.md' },
+        { title: 'Services systemd', path: 'systeme/systemd.md' },
+        { title: 'Scripts Bash utiles', path: 'systeme/bash-commands.md' },
+      ]
+    },
+    {
+      title: 'Windows & Windows Server', icon: '🪟', items: [
+        { title: 'Installation Windows Server', path: 'windows/winserver-install.md' },
+        { title: 'Active Directory (AD DS)', path: 'windows/active-directory.md' },
+        { title: 'Gestion des utilisateurs & GPO', path: 'windows/gpo.md' },
+        { title: 'Partages réseau & NTFS', path: 'windows/shares.md' },
+        { title: 'Commandes PowerShell utiles', path: 'windows/powershell.md' },
+      ]
+    },
+    {
+      title: 'Virtualisation', icon: '🖥️', items: [
+        { title: 'Proxmox — Installation et gestion VM', path: 'virtualisation/proxmox.md' },
+        { title: 'VMware Workstation — Création de VM', path: 'virtualisation/vmware-workstation.md' },
+        { title: 'VMware vSphere — Administration ESXi', path: 'virtualisation/vsphere.md' },
+      ]
+    },
+    {
+      title: 'Outils & Supervision', icon: '🧩', items: [
+        { title: 'GLPI — Installation & usage', path: 'outils/glpi.md' },
+        { title: 'Monitoring avec Zabbix', path: 'outils/zabbix.md' },
+        { title: 'Sauvegarde automatisée', path: 'outils/backup.md' },
       ]
     },
     {
       title: 'Sécurité', icon: '🛡️', items: [
         { title: 'Pare-feu (iptables/nft)', path: 'securite/firewall.md' },
-        { title: 'SSH durci', path: 'securite/ssh-hardening.md' }
+        { title: 'SSH durci', path: 'securite/ssh-hardening.md' },
+        { title: 'Sécurité Windows Server', path: 'securite/winserver-sec.md' },
       ]
     },
+    {
+      title: 'Commandes essentielles', icon: '⌨️', items: [
+        { title: 'Commandes Linux indispensables', path: 'commandes/linux.md' },
+        { title: 'Commandes Windows (cmd)', path: 'commandes/windows.md' },
+        { title: 'Commandes Cisco IOS', path: 'commandes/cisco.md' },
+      ]
+    }
   ],
   featured: [
     { title: 'Démarrer sur Debian', path: 'systeme/debian-install.md', description: 'Installation, partitionnement, premiers paquets.' },
-    { title: 'VLAN — guide rapide', path: 'reseau/vlan.md', description: 'Comprendre 802.1Q, trunk/access, plan d’adressage.' },
-    { title: 'Rsync sauvegardes', path: 'systeme/rsync.md', description: 'Stratégies et exemples de scripts.' },
+    { title: 'Active Directory', path: 'windows/active-directory.md', description: 'Installation et configuration d’un domaine.' },
+    { title: 'Réseau Cisco', path: 'reseau/cisco-cli.md', description: 'Commandes de base sur routeurs et switch.' },
+    { title: 'Proxmox', path: 'virtualisation/proxmox.md', description: 'Installation et gestion d’hyperviseur open source.' },
   ]
 };
 
