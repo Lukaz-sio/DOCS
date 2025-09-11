@@ -1,109 +1,117 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Docs • BTS SIO SISR</title>
   <link rel="stylesheet" href="style.css" />
-  <!-- Icônes -->
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📘</text></svg>">
-  <!-- Markdown parser -->
+  <!-- Markdown + Highlight -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/common.min.js"></script>
 </head>
 <body>
-  <!-- Mobile topbar -->
+  <!-- Barre du haut -->
   <header class="topbar">
-    <button id="burger" aria-label="Ouvrir le menu" title="Menu">☰</button>
-    <h1>BTS SIO SISR — Docs</h1>
-    <button id="themeToggle" aria-label="Basculer thème" title="Thème">🌓</button>
+    <button id="burger" aria-label="menu">☰</button>
+    <div class="brand">
+      <span class="logo">📘</span>
+      <h1>BTS SIO — SISR</h1>
+    </div>
+    <div class="spacer"></div>
+    <button id="themeToggle" aria-label="thème">🌓</button>
   </header>
 
   <div class="layout">
-    <!-- Sidebar -->
-    <aside id="sidebar" class="card slide-in-left">
-      <div class="brand">
-        <div class="logo">SISR</div>
-        <div class="subtitle">Documentation</div>
-      </div>
-
+    <!-- Sidebar navigation -->
+    <aside id="sidebar">
       <div class="search">
         <input id="searchInput" type="search" placeholder="Rechercher…" />
       </div>
 
       <nav id="nav">
-        <!-- Exemples de rubriques. Mets tes .md dans /docs -->
-        <h3>Introduction</h3>
-        <a href="#doc=docs/intro.md">Présentation</a>
-        <a href="#doc=docs/plan.md">Plan & Objectifs</a>
+        <!-- Regroupe par rubriques (tu peux modifier à volonté) -->
+        <details open>
+          <summary>Introduction</summary>
+          <a href="#doc=docs/intro.md">Présentation</a>
+          <a href="#doc=docs/plan.md">Plan & objectifs</a>
+        </details>
 
-        <h3>Réseaux</h3>
-        <a href="#doc=docs/reseaux/ip.md">Adressage IP</a>
-        <a href="#doc=docs/reseaux/vlan.md">VLAN</a>
-        <a href="#doc=docs/reseaux/routage.md">Routage</a>
+        <details open>
+          <summary>Réseaux</summary>
+          <a href="#doc=docs/reseaux/ip.md">Adressage IP</a>
+          <a href="#doc=docs/reseaux/vlan.md">VLAN</a>
+          <a href="#doc=docs/reseaux/routage.md">Routage</a>
+        </details>
 
-        <h3>Systèmes</h3>
-        <a href="#doc=docs/systeme/linux.md">Linux</a>
-        <a href="#doc=docs/systeme/windows.md">Windows</a>
-        <a href="#doc=docs/systeme/virtualisation.md">Virtualisation</a>
+        <details open>
+          <summary>Systèmes</summary>
+          <a href="#doc=docs/systeme/linux.md">Linux</a>
+          <a href="#doc=docs/systeme/windows.md">Windows</a>
+          <a href="#doc=docs/systeme/virtualisation.md">Virtualisation</a>
+        </details>
 
-        <h3>Sécurité</h3>
-        <a href="#doc=docs/securite/parefeu.md">Pare-feu</a>
-        <a href="#doc=docs/securite/sauvegardes.md">Sauvegardes</a>
-        <a href="#doc=docs/securite/monitoring.md">Supervision</a>
+        <details open>
+          <summary>Sécurité</summary>
+          <a href="#doc=docs/securite/parefeu.md">Pare-feu</a>
+          <a href="#doc=docs/securite/sauvegardes.md">Sauvegardes</a>
+          <a href="#doc=docs/securite/monitoring.md">Supervision</a>
+        </details>
 
-        <h3>Projets</h3>
-        <a href="#doc=docs/projets/projet1.md">Projet 1</a>
-        <a href="#doc=docs/projets/projet2.md">Projet 2</a>
+        <details>
+          <summary>Projets</summary>
+          <a href="#doc=docs/projets/projet1.md">Projet 1</a>
+          <a href="#doc=docs/projets/projet2.md">Projet 2</a>
+        </details>
 
-        <h3>Ressources</h3>
-        <a href="#doc=docs/ressources/liens.md">Liens utiles</a>
-        <a href="#doc=docs/ressources/glossaire.md">Glossaire</a>
+        <details>
+          <summary>Ressources</summary>
+          <a href="#doc=docs/ressources/liens.md">Liens utiles</a>
+          <a href="#doc=docs/ressources/glossaire.md">Glossaire</a>
+        </details>
       </nav>
 
       <footer class="side-footer">
-        <a class="small" href="https://lukaz-sio.github.io/DOCS/">Accueil</a>
-        <span class="dot"></span>
-        <span class="small">© 2025 Lukaz-sio</span>
+        <span>© 2025 Lukaz-sio</span>
       </footer>
     </aside>
 
-    <!-- Contenu -->
-    <main id="content">
-      <!-- Page d’accueil (remplacée quand un doc est chargé) -->
-      <section class="hero fade-in">
-        <h2>Bienvenue dans la documentation BTS SIO — SISR</h2>
-        <p>
-          Choisis une rubrique dans le menu de gauche.  
-          Les pages sont écrites en <strong>Markdown</strong> et rendues automatiquement.
-        </p>
-        <div class="grid">
-          <div class="info card pop">
-            <h3>Réseaux</h3>
-            <p>Adressage, VLAN, routage, services…</p>
-            <a class="btn" href="#doc=docs/reseaux/ip.md">Commencer</a>
-          </div>
-          <div class="info card pop">
-            <h3>Systèmes</h3>
-            <p>Linux, Windows, virtualisation & automatisation.</p>
-            <a class="btn" href="#doc=docs/systeme/linux.md">Commencer</a>
-          </div>
-          <div class="info card pop">
-            <h3>Sécurité</h3>
-            <p>Pare-feu, sauvegardes, supervision, bonnes pratiques.</p>
-            <a class="btn" href="#doc=docs/securite/parefeu.md">Commencer</a>
-          </div>
+    <!-- Zone contenu -->
+    <main>
+      <!-- Bandeau d’accueil -->
+      <section id="welcome" class="welcome card">
+        <h2>Bienvenue dans la doc BTS SIO — SISR</h2>
+        <p>Choisis une rubrique à gauche. Les pages sont écrites en <b>Markdown</b> et rendues automatiquement.</p>
+        <div class="tiles">
+          <a class="tile" href="#doc=docs/reseaux/ip.md">
+            <h3>Réseaux</h3><p>IP, VLAN, Routage, Services…</p>
+          </a>
+          <a class="tile" href="#doc=docs/systeme/linux.md">
+            <h3>Systèmes</h3><p>Linux, Windows, Virtualisation</p>
+          </a>
+          <a class="tile" href="#doc=docs/securite/parefeu.md">
+            <h3>Sécurité</h3><p>Pare-feu, sauvegardes, supervision</p>
+          </a>
         </div>
       </section>
 
-      <article id="docContainer" class="doc card fade-in" hidden>
-        <div id="docHeader" class="doc-header">
-          <h2 id="docTitle">Titre</h2>
-          <div class="doc-actions">
-            <button id="copyLink" title="Copier le lien">🔗</button>
-            <button id="backToTop" title="Haut de page">⬆️</button>
+      <!-- Article -->
+      <article id="docView" class="doc card" hidden>
+        <header class="doc-head">
+          <div>
+            <h2 id="docTitle">Titre du document</h2>
+            <div class="meta"><span id="docPath"></span> · <span id="docReading"></span></div>
           </div>
+          <div class="actions">
+            <button id="copyLink" title="Copier le lien">🔗</button>
+            <button id="backTop" title="Haut de page">⬆️</button>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <aside id="toc" class="toc"></aside>
+          <div id="docContent" class="markdown-body"></div>
         </div>
-        <div id="docContent" class="markdown-body"></div>
       </article>
     </main>
   </div>
