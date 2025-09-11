@@ -1,7 +1,7 @@
-#Mise en oeuvre de l'HTTPS sur un serveur web
-#Utilisation d'une autorité de certification interne
+# Mise en oeuvre de l'HTTPS sur un serveur web
+# Utilisation d'une autorité de certification interne
 
-##1. Préparation de la machine CA
+## 1. Préparation de la machine CA
 -Configuration IP : /etc/network/interfaces
 ````bash
 allow-hotplug ens33
