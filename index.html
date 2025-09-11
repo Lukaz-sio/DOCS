@@ -1,63 +1,113 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Documentation BTS SIO SISR</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Docs • BTS SIO SISR</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Icônes -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📘</text></svg>">
+  <!-- Markdown parser -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
-
-  <header>
-    <h1>Documentation BTS SIO SISR</h1>
-    <p>Bienvenue sur ma page de documentation</p>
+  <!-- Mobile topbar -->
+  <header class="topbar">
+    <button id="burger" aria-label="Ouvrir le menu" title="Menu">☰</button>
+    <h1>BTS SIO SISR — Docs</h1>
+    <button id="themeToggle" aria-label="Basculer thème" title="Thème">🌓</button>
   </header>
 
-  <nav>
-    <ul>
-      <li><a href="#reseaux">Réseaux</a></li>
-      <li><a href="#systeme">Systèmes</a></li>
-      <li><a href="#securite">Sécurité</a></li>
-      <li><a href="#projets">Projets</a></li>
-      <li><a href="#ressources">Ressources</a></li>
-    </ul>
-  </nav>
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="card slide-in-left">
+      <div class="brand">
+        <div class="logo">SISR</div>
+        <div class="subtitle">Documentation</div>
+      </div>
 
-  <main>
-    <section id="reseaux">
-      <h2>Réseaux</h2>
-      <p>Protocoles, topologies, adressage IP, VLAN, routage…</p>
-      <a class="btn" href="reseaux.md">Voir les docs</a>
-    </section>
+      <div class="search">
+        <input id="searchInput" type="search" placeholder="Rechercher…" />
+      </div>
 
-    <section id="systeme">
-      <h2>Systèmes</h2>
-      <p>Installation, administration, virtualisation (:contentReference[oaicite:1]{index=1}, :contentReference[oaicite:2]{index=2})…</p>
-      <a class="btn" href="systeme.md">Voir les docs</a>
-    </section>
+      <nav id="nav">
+        <!-- Exemples de rubriques. Mets tes .md dans /docs -->
+        <h3>Introduction</h3>
+        <a href="#doc=docs/intro.md">Présentation</a>
+        <a href="#doc=docs/plan.md">Plan & Objectifs</a>
 
-    <section id="securite">
-      <h2>Sécurité</h2>
-      <p>Politiques de sécurité, pare-feu, sauvegardes, supervision…</p>
-      <a class="btn" href="securite.md">Voir les docs</a>
-    </section>
+        <h3>Réseaux</h3>
+        <a href="#doc=docs/reseaux/ip.md">Adressage IP</a>
+        <a href="#doc=docs/reseaux/vlan.md">VLAN</a>
+        <a href="#doc=docs/reseaux/routage.md">Routage</a>
 
-    <section id="projets">
-      <h2>Projets</h2>
-      <p>Projets réalisés en BTS SIO SISR.</p>
-      <a class="btn" href="projets.md">Voir les docs</a>
-    </section>
+        <h3>Systèmes</h3>
+        <a href="#doc=docs/systeme/linux.md">Linux</a>
+        <a href="#doc=docs/systeme/windows.md">Windows</a>
+        <a href="#doc=docs/systeme/virtualisation.md">Virtualisation</a>
 
-    <section id="ressources">
-      <h2>Ressources utiles</h2>
-      <p>Liens, outils et documentation complémentaire.</p>
-      <a class="btn" href="ressources.md">Voir les docs</a>
-    </section>
-  </main>
+        <h3>Sécurité</h3>
+        <a href="#doc=docs/securite/parefeu.md">Pare-feu</a>
+        <a href="#doc=docs/securite/sauvegardes.md">Sauvegardes</a>
+        <a href="#doc=docs/securite/monitoring.md">Supervision</a>
 
-  <footer>
-    <p>© 2025 - Documentation BTS SIO SISR - Lukaz-sio</p>
-  </footer>
+        <h3>Projets</h3>
+        <a href="#doc=docs/projets/projet1.md">Projet 1</a>
+        <a href="#doc=docs/projets/projet2.md">Projet 2</a>
 
+        <h3>Ressources</h3>
+        <a href="#doc=docs/ressources/liens.md">Liens utiles</a>
+        <a href="#doc=docs/ressources/glossaire.md">Glossaire</a>
+      </nav>
+
+      <footer class="side-footer">
+        <a class="small" href="https://lukaz-sio.github.io/DOCS/">Accueil</a>
+        <span class="dot"></span>
+        <span class="small">© 2025 Lukaz-sio</span>
+      </footer>
+    </aside>
+
+    <!-- Contenu -->
+    <main id="content">
+      <!-- Page d’accueil (remplacée quand un doc est chargé) -->
+      <section class="hero fade-in">
+        <h2>Bienvenue dans la documentation BTS SIO — SISR</h2>
+        <p>
+          Choisis une rubrique dans le menu de gauche.  
+          Les pages sont écrites en <strong>Markdown</strong> et rendues automatiquement.
+        </p>
+        <div class="grid">
+          <div class="info card pop">
+            <h3>Réseaux</h3>
+            <p>Adressage, VLAN, routage, services…</p>
+            <a class="btn" href="#doc=docs/reseaux/ip.md">Commencer</a>
+          </div>
+          <div class="info card pop">
+            <h3>Systèmes</h3>
+            <p>Linux, Windows, virtualisation & automatisation.</p>
+            <a class="btn" href="#doc=docs/systeme/linux.md">Commencer</a>
+          </div>
+          <div class="info card pop">
+            <h3>Sécurité</h3>
+            <p>Pare-feu, sauvegardes, supervision, bonnes pratiques.</p>
+            <a class="btn" href="#doc=docs/securite/parefeu.md">Commencer</a>
+          </div>
+        </div>
+      </section>
+
+      <article id="docContainer" class="doc card fade-in" hidden>
+        <div id="docHeader" class="doc-header">
+          <h2 id="docTitle">Titre</h2>
+          <div class="doc-actions">
+            <button id="copyLink" title="Copier le lien">🔗</button>
+            <button id="backToTop" title="Haut de page">⬆️</button>
+          </div>
+        </div>
+        <div id="docContent" class="markdown-body"></div>
+      </article>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
