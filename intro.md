@@ -2,7 +2,7 @@
 # Utilisation d'une autorité de certification interne
 
 ## 1. Préparation de la machine CA
--Configuration IP : /etc/network/interfaces
+- Configuration IP : /etc/network/interfaces
 ````bash
 allow-hotplug ens33
 iface ens33 inet static
