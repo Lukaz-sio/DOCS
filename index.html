@@ -1,121 +1,76 @@
 <!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Docs • BTS SIO SISR</title>
-  <link rel="stylesheet" href="style.css" />
-  <!-- Markdown + Highlight -->
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/common.min.js"></script>
-</head>
-<body>
-  <!-- Barre du haut -->
-  <header class="topbar">
-    <button id="burger" aria-label="menu">☰</button>
-    <div class="brand">
-      <span class="logo">📘</span>
-      <h1>BTS SIO — SISR</h1>
-    </div>
-    <div class="spacer"></div>
-    <button id="themeToggle" aria-label="thème">🌓</button>
-  </header>
+<p class="subtitle">Accueil de la documentation · Markdown reader</p>
+</div>
+</div>
 
-  <div class="layout">
-    <!-- Sidebar navigation -->
-    <aside id="sidebar">
-      <div class="search">
-        <input id="searchInput" type="search" placeholder="Rechercher…" />
-      </div>
 
-      <nav id="nav">
-        <!-- Regroupe par rubriques (tu peux modifier à volonté) -->
-        <details open>
-          <summary>Introduction</summary>
-          <a href="#doc=docs/intro.md">Présentation</a>
-          <a href="#doc=docs/plan.md">Plan & objectifs</a>
-        </details>
+<form id="searchForm" class="search" role="search" autocomplete="off">
+<input id="searchInput" type="search" placeholder="Rechercher (/, Ctrl+K)…" aria-label="Rechercher dans la doc" />
+<button class="ghost" type="submit" aria-label="Lancer la recherche">🔎</button>
+<div id="searchResults" class="search-results" role="listbox" aria-label="Résultats de recherche"></div>
+</form>
+</header>
 
-        <details open>
-          <summary>Réseaux</summary>
-          <a href="#doc=docs/reseaux/ip.md">Adressage IP</a>
-          <a href="#doc=docs/reseaux/vlan.md">VLAN</a>
-          <a href="#doc=docs/reseaux/routage.md">Routage</a>
-        </details>
 
-        <details open>
-          <summary>Systèmes</summary>
-          <a href="#doc=docs/systeme/linux.md">Linux</a>
-          <a href="#doc=docs/systeme/windows.md">Windows</a>
-          <a href="#doc=docs/systeme/virtualisation.md">Virtualisation</a>
-        </details>
+<div class="layout">
+<aside class="sidebar" aria-label="Rubriques">
+<nav id="nav">
+<h2>Rubriques</h2>
+<!-- Remplies par script.js depuis config -->
+<ul id="sections"></ul>
 
-        <details open>
-          <summary>Sécurité</summary>
-          <a href="#doc=docs/securite/parefeu.md">Pare-feu</a>
-          <a href="#doc=docs/securite/sauvegardes.md">Sauvegardes</a>
-          <a href="#doc=docs/securite/monitoring.md">Supervision</a>
-        </details>
 
-        <details>
-          <summary>Projets</summary>
-          <a href="#doc=docs/projets/projet1.md">Projet 1</a>
-          <a href="#doc=docs/projets/projet2.md">Projet 2</a>
-        </details>
+<h3>Raccourcis</h3>
+<ul class="shortcuts">
+<li><a href="#/recent">🕓 Récents</a></li>
+<li><a href="#/all">📄 Tous les docs</a></li>
+<li><a href="#/about">ℹ️ À propos</a></li>
+</ul>
+</nav>
 
-        <details>
-          <summary>Ressources</summary>
-          <a href="#doc=docs/ressources/liens.md">Liens utiles</a>
-          <a href="#doc=docs/ressources/glossaire.md">Glossaire</a>
-        </details>
-      </nav>
 
-      <footer class="side-footer">
-        <span>© 2025 Lukaz-sio</span>
-      </footer>
-    </aside>
+<footer class="sidebar-footer">
+<label class="theme-toggle">
+<input id="themeSwitch" type="checkbox" aria-label="Basculer clair/sombre">
+<span>Thème sombre</span>
+</label>
+</footer>
+</aside>
 
-    <!-- Zone contenu -->
-    <main>
-      <!-- Bandeau d’accueil -->
-      <section id="welcome" class="welcome card">
-        <h2>Bienvenue dans la doc BTS SIO — SISR</h2>
-        <p>Choisis une rubrique à gauche. Les pages sont écrites en <b>Markdown</b> et rendues automatiquement.</p>
-        <div class="tiles">
-          <a class="tile" href="#doc=docs/reseaux/ip.md">
-            <h3>Réseaux</h3><p>IP, VLAN, Routage, Services…</p>
-          </a>
-          <a class="tile" href="#doc=docs/systeme/linux.md">
-            <h3>Systèmes</h3><p>Linux, Windows, Virtualisation</p>
-          </a>
-          <a class="tile" href="#doc=docs/securite/parefeu.md">
-            <h3>Sécurité</h3><p>Pare-feu, sauvegardes, supervision</p>
-          </a>
-        </div>
-      </section>
 
-      <!-- Article -->
-      <article id="docView" class="doc card" hidden>
-        <header class="doc-head">
-          <div>
-            <h2 id="docTitle">Titre du document</h2>
-            <div class="meta"><span id="docPath"></span> · <span id="docReading"></span></div>
-          </div>
-          <div class="actions">
-            <button id="copyLink" title="Copier le lien">🔗</button>
-            <button id="backTop" title="Haut de page">⬆️</button>
-          </div>
-        </header>
+<main id="main" class="content" tabindex="-1">
+<article id="docView" class="doc-view">
+<section class="hero">
+<h2>Bienvenue 👋</h2>
+<p>Voici la page d’accueil de ta documentation <strong>BTS SIO SISR</strong>. Utilise la barre de recherche, explore les rubriques, et clique sur un document pour l’afficher (les pages sont écrites en <code>.md</code>).</p>
+</section>
 
-        <div class="doc-body">
-          <aside id="toc" class="toc"></aside>
-          <div id="docContent" class="markdown-body"></div>
-        </div>
-      </article>
-    </main>
-  </div>
 
-  <script src="script.js"></script>
+<section>
+<h3>📌 Sélection</h3>
+<div id="featured" class="cards"></div>
+</section>
+
+
+<section>
+<h3>🆕 Derniers ajouts</h3>
+<ul id="recent" class="list"></ul>
+</section>
+</article>
+</main>
+</div>
+
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+
+<!-- Librairie Markdown (client-side) -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
+<!-- Highlight (optionnel) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.9.0/styles/github.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.9.0/highlight.min.js"></script>
+
+
+<script src="script.js" defer></script>
 </body>
 </html>
