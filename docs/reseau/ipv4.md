@@ -79,3 +79,14 @@ On travaille sur le serveur web srv-web1
 mv /home/etudiant/srvwebcert.pemc/etc/ssl/certs/
 chown root:root srvwebcert.pem
 ````
+
+#5. Configuration d'Apache2 sur le serveur web
+- Activation du module ssl sous Apache2
+````
+a2enmod ssl
+````
+- Création du virtualhost pour https
+````bsh
+cd /etc/apache2/sites-available/
+cp web.conf web-ssl.conf
+````
