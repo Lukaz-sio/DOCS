@@ -96,3 +96,8 @@ SSLEngine on
 SSLCertificateFile /etc/ssl/certs/srvwebcert.pem
 SSLCertificateKeyFile /etc/ssl/private/srvwebkey.pem
 ````
+- Activation du site et redémarrage du service
+````bash
+a2ensite web-ssl.conf
+systemctl restart apache2
+````
