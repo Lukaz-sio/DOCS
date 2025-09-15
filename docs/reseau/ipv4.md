@@ -23,6 +23,15 @@ dir = ./sodecaf
 - Création des dossiers et fichiers nécessaires
 ````bash
 mkdir /etc/ssl/sodecaf/
+mkdir certs
+mkdir private
 touch index.txt
 echo "01" > serail
+````
+
+## 3. Génération du certificat de l'autorité de certification 
+- Création de la clé privé de l'autorité de certification
+````bash
+openssl genrsa -des3 -out /etc/ssl/sodecaf/private/cakey.pem 4096
+chmod 400 cakey.pem
 ````
