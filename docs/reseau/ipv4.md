@@ -80,10 +80,11 @@ mv /home/etudiant/srvwebcert.pemc/etc/ssl/certs/
 chown root:root srvwebcert.pem
 ````
 
-#5. Configuration d'Apache2 sur le serveur web
+##5. Configuration d'Apache2 sur le serveur web
 - Activation du module ssl sous Apache2
 ````
 a2enmod ssl
+a2enmod rewrite
 ````
 - Création du virtualhost pour https
 ````bash
@@ -95,6 +96,12 @@ cp web.conf web-ssl.conf
 SSLEngine on
 SSLCertificateFile /etc/ssl/certs/srvwebcert.pem
 SSLCertificateKeyFile /etc/ssl/private/srvwebkey.pem
++
+<VirtualHost *:80>
+RewriteEngine On
+RewriteCond %{HTTPS} !=on
+RewriteRule ^/?(.*) https://%{SERVER_NAME}/$1 [R,L]
+</VirtualHost>
 ````
 - Activation du site et redémarrage du service
 ````bash
