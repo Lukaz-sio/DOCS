@@ -86,7 +86,13 @@ chown root:root srvwebcert.pem
 a2enmod ssl
 ````
 - Création du virtualhost pour https
-````bsh
+````bash
 cd /etc/apache2/sites-available/
 cp web.conf web-ssl.conf
+````
+- Modification du fichier web-ssl.conf
+````apache
+SSLEngine on
+SSLCertificateFile /etc/ssl/certs/srvwebcert.pem
+SSLCertificateKeyFile /etc/ssl/private/srvwebkey.pem
 ````
