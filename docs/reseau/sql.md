@@ -13,5 +13,6 @@ mysql gsb_valide < nom_fichier.sql
 ````
 - Donner les droits d'un utilisateur à une base
 ````sql
-grant all privileges on gsb_valide.* to 'userGsb'@'localhost'
+grant all privileges on gsb_valide.* to 'userGsb'@'localhost';
+flush privileges;
 ````
