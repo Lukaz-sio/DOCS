@@ -14,3 +14,15 @@ iface ens33 inet static
 apt upadte && sudo apt upgrade -y
 apt install openssl
 ````
+
+## 2. Configuration d'openssl
+- Editez le fichier /etc/ssl/openssl.cnf
+````bash
+dir = ./sodecaf
+````
+- Création des dossiers et fichiers nécessaires
+````bash
+mkdir /etc/ssl/sodecaf/
+touch index.txt
+echo "01" > serail
+````
