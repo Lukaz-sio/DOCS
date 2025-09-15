@@ -35,3 +35,9 @@ echo "01" > serail
 openssl genrsa -des3 -out /etc/ssl/sodecaf/private/cakey.pem 4096
 chmod 400 cakey.pem
 ````
+
+- Création du certificat auto-signé de l'autorité de certification
+````bash
+cd /etc/ssl/sodecaf/
+openssl req -new -x509 -days 1825 -key private/cakey.pem -out certs/cacert.pem
+````
