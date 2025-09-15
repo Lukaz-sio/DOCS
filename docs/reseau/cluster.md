@@ -8,3 +8,18 @@ apt install corosync pacemaker crmsh
 corosync-keygen
 ls -l /etc/corosync/
 ````
+- Création d'un nouveau fichier de configuration de corosync
+````bash
+mv corosync.conf corosync.conf.sav
+nano corosync.conf
+````
+- Vérification de la configuration
+````bash
+corosync-cfgtool -s
+````
+- Cloner le serveur web, modifier le nom et ip du clone
+- Visualiser l'état du cluster
+- Désactiver le stonith
+````bash
+stonith
+````
