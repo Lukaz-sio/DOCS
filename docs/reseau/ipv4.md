@@ -18,13 +18,15 @@ apt install openssl
 ## 2. Configuration d'openssl
 - Editez le fichier /etc/ssl/openssl.cnf
 ````bash
-dir = ./sodecaf
+dir = /etc/ssl/sodecaf
+certificate = $dir/certs/cacert.pem
 ````
 - Création des dossiers et fichiers nécessaires
 ````bash
 mkdir /etc/ssl/sodecaf/
 mkdir certs
 mkdir private
+mkdir newcerts
 touch index.txt
 echo "01" > serail
 ````
@@ -51,4 +53,18 @@ dir = /etc/ssl
 - Création de la clé privée du serveur web
 ````bash
 openssl genrsa -out /etc/ssl/private/srvwebkey.pem 4096
+````
+- Création du fichier de demande de certificat
+```` bash
+openssl req -new -key private/srvwebkey.pem -out certs/srvwebkey_dem.pem
+````
+- Copie du fichier de demande de certificat sur la machine CA
+````bash
+scp srvwebkey_dem.pem etudiant@172.16.0.20:/home/etudiant/
+````
+
+On travaille sur le serveur CA
+- Création du certificat
+````bash
+openssl ca -policy policy_anything -out /etc/ssl/sodecaf/certs/srvwebcert.pem -infiles /home/etudiant/srvwebkey_dem.pem
 ````
