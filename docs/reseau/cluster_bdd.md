@@ -183,3 +183,10 @@ select * from Visiteur;
 update gsb_valide.Visiteur set mdp='toto' where login'agest';
 select * from Visiteur;
 ````
+-Intégrerla réplication dans le cluster (srv-web1)
+````bash
+crm status
+crm configure primitive serviceMySQL ocf:heartbeat:mysql params socket=/var/run/mysqld/mysql.sock
+crm configure clone cServiceMySQL serviceMySQL
+crm status
+````
