@@ -21,12 +21,16 @@ systemctl restart mariadb.service
 - Création du compte réplicateur + droit
 ````sql
 mysql
+
 create user 'replicateur'@'%' identified by 'Btssio2017';
 grant replication slave on *.* to 'replicateur'@'%';
 ````
 - Bloqué l'écriture sur les tables de la base de donnée
 ````sql
 mysql
+
 flush tables with read lock;
 unlock tables (Débloque la table si besoin)
+
+show master status; (visualiser le status, si rien = pas bon)
 ````
