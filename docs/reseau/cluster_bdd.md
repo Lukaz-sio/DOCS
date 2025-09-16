@@ -190,3 +190,7 @@ crm configure primitive serviceMySQL ocf:heartbeat:mysql params socket=/var/run/
 crm configure clone cServiceMySQL serviceMySQL
 crm status
 ````
+- Lié la base de donnée au serveur
+````bash
+nano /var/www/appliFrais/include/_bdGest
+````
