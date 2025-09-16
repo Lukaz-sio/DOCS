@@ -31,3 +31,8 @@ crm configure property no-quorum-policy="ignore"
 ````bash
 crm configure primitive IPFailover ocf:heartbeat:IPaddr2 params ip=172.16.0.12 cidr_netmask=24 nic=ens33 iflabel=VIP
 ````
+- Test de basculement
+````bash
+crm node online
+crm node standby
+````
