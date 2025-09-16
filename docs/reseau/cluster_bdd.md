@@ -174,3 +174,12 @@ mysql
 
 start slave;
 ````
+- Vérifier la mise à jour des bases (srv-web1 et srv-web2)
+````sql
+mysql
+
+use gsb_valide
+select * from Visiteur;
+update gsb_valide.Visiteur set mdp='toto' where login'agest';
+select * from Visiteur;
+````
