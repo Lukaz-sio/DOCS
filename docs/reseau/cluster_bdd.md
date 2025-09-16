@@ -58,6 +58,7 @@ stop slave;
 mysql
 
 change master to master_host='172.16.0.10', master_user='replicateur', master_password='Btssio2017', master_log_file='mysql-bin.000001', master_log_pos=328;
+ATTENTION METTRE LA BONNE POSITION DU MASTER ET LE NOM DU LOG FILE(srv-web1)
 ````
 - Activer l'esclave
 ````sql
@@ -99,5 +100,5 @@ Voir si la valeur à bien changer aussi
 mysql
 
 change master to master_host='172.16.0.10', master_user='replicateur', master_password='Btssio2017', master_log_file='mysql-bin.000001', master_log_pos=X;
-ATTENTION METTRE LA BONNE POSITION DU MASTER (srv-web1)
+ATTENTION METTRE LA BONNE POSITION DU MASTER ET LE NOM DU LOG FILE(srv-web1)
 ````
