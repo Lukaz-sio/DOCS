@@ -73,7 +73,31 @@ show slave status \G;
 ````
 - Déverrouiller les tables de la bases (srv-web1)
 ````sql
-my sql
+mysql
 
 unlock tables;
+````
+- Vérifier la mise à jour de la base (srv-web1)
+````sql
+mysql
+
+use gsb_valide
+select * from Visiteur;
+update gsb_valide.Visiteur set mdp='toto' where login'agest';
+````
+- Vérifier la mise à jour de la base (srv-web2)
+````sql
+mysql
+
+use gsb_valide
+select * from Visiteur;
+
+Voir si la valeur à bien changer aussi 
+````
+- Si mise à jour pas faite
+````sql
+mysql
+
+change master to master_host='172.16.0.10', master_user='replicateur', master_password='Btssio2017', master_log_file='mysql-bin.000001', master_log_pos=X;
+ATTENTION METTRE LA BONNE POSITION DU MASTER (srv-web1)
 ````
