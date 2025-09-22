@@ -52,3 +52,29 @@ cd /var/cache/bind
 CLE PRIVE KSK puis ZSK
 dnssec-signzone -o sodecaf.fr -t -k /etc/bind/keys/Ksodecaf.fr.+005+26006 db.sodecaf.fr /etc/bind/keys/Ksodecaf.fr.+005+38466
 ````
+- Modifier le fichier name.conf.local
+````bash
+nano /etc/bind/named.conf.options
+
+
+//
+// Do any local configuration here
+//
+
+// Consider adding the 1918 zones here, if they are not used in your
+// organization
+//include "/etc/bind/zones.rfc1918";
+zone "sodecaf.fr" {
+        type master;
+        file "db.sodecaf.fr.signed"; <-
+        allow-transfer {172.16.0.4;};
+};
+
+zone "0.16.172.in-addr.arpa" {
+        type master;
+        file "db.172.16.0.rev";
+        allow-transfer {172.16.0.4;};
+};
+
+systemctl restart bind9
+````
