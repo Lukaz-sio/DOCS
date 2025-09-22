@@ -177,5 +177,7 @@ forwarders {
                 8.8.8.8;
         };
 
+allow-query {any;};
+
 systemctl restart bind9
 ````
