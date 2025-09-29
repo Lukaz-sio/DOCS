@@ -30,14 +30,16 @@ $IPDNSSecondaire ="8.8.8.8"
 $DomainNameDNS = "sodecaf.local"
 $DureeBail ="14440" # Durée du bail = 4h
 
-#Création d'étendue avec nom, ip et masque
+#Création de l'étendue
 Add-DhcpServerv4Scope -Name $NomEtendue -StartRange $DebutEtendueDHCP -EndRange $FinEtendueDHCP -SubnetMask $MasqueIP
-#Définition de la passerelle
 Set-DhcpServerv4OptionDefinition -ScopeId $IPreseau -OptionId 3 -Value $IPPasserelle
-#Fixer les DNS 
 Set-DhcpServerv4OptionDefinition -ScopeId $IPreseau -OptionId 6 -Value $IPDNSPrimaire,$IPDNSSecondaire -Force
-#Suffixe DNS
 Set-DhcpServerv4OptionDefinition -ScopeId $IPreseau -OptionId 15 -Value $DomainNameDNS
-#Durée du bail
 Set-DhcpServerv4OptionDefinition -ScopeId $IPreseau -OptionId 51 -Valuev $DureeBail
+
+#Activation de l'étendue
+Set-DhcpServerv4Scope -ScopeId $IPreseau -Name $NomEtendue -State Active
+
+#Vérification
+Get-DhcpServerv4Scope
 ````
