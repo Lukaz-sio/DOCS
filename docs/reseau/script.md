@@ -29,6 +29,7 @@ $IPDNSPrimaire = "172.16.0.1"
 $IPDNSSecondaire ="8.8.8.8"
 $DomainNameDNS = "sodecaf.local"
 $DureeBail ="14440" # Durée du bail = 4h
+$nomServeurDHCP = "SRV-WIN-CORE1"
 
 #Création de l'étendue
 Add-DhcpServerv4Scope -Name $NomEtendue -StartRange $DebutEtendueDHCP -EndRange $FinEtendueDHCP -SubnetMask $MasqueIP
@@ -41,5 +42,6 @@ Set-DhcpServerv4OptionDefinition -ScopeId $IPreseau -OptionId 51 -Valuev $DureeB
 Set-DhcpServerv4Scope -ScopeId $IPreseau -Name $NomEtendue -State Active
 
 #Vérification
-Get-DhcpServerv4Scope
+Get-DhcpServerv4Scope -ScopeId $IPreseau
+Get-DhcpServerv4OptionValue -ComputerName $nomServeurDHCP -ScopeId $IPreseau
 ````
