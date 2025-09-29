@@ -1,4 +1,5 @@
 # Script d'installation et confugartion role DHCP
+## Configuration à faire en Powershell Win CORE
 ````bash
 $DomainNameDNS = "sodecaf.local"
 $IPServeur = "172.16.0.2"
