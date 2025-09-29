@@ -31,6 +31,12 @@ $DomainNameDNS = "sodecaf.local"
 $DureeBail = "14400" # durée du bail = 4h
 $nomServeurDHCP = "SRV-WIN-CORE1"
 
+# Effacement de l'étendue si existante
+if ((Get-DhcpServerv4Scope -ComputerName $nomServeurDHCP) -ne $null) {
+	write-host ("Etendue déjà présente, elle sera supprimée")
+	Remove-DhcpServerv4Scope -ScopeId $IPreseau -Force
+}
+
 # Création de l'étendue
 Add-DhcpServerv4Scope -Name $NomEtendue -StartRange $DebutEtendueDHCP  -EndRange $FinEtendueDHCP -SubnetMask $MasqueIP
 Set-DhcpServerv4OptionValue -ScopeId $IPreseau -OptionId 3 -Value $IPPasserelle
