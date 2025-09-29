@@ -54,3 +54,18 @@ Get-DhcpServerv4OptionValue -ComputerName $nomServeurDHCP -ScopeId $IPreseau
 # Supprimer une étendue
 # Remove-DhcpServerv4Scope -ScopeId $IPreseau -Force
 ````
+## Création d'un compte dans l'AD + Ajout dans un groupe
+````bash
+# Étape 1 : Créer un compte utilisateur dans l'AD
+New-ADUser -Name "admin" `
+-SamAccountName "admin" `
+-UserPrincipalName "admin@sodecaf.local" `
+-Path "CN=Users,DC=sodecaf,DC=local" `
+-AccountPassword (ConvertTo-SecureString "Btssio2017" -AsPlainText -Force) `
+-Enabled $true `
+-PasswordNeverExpires $true `
+-Description "Compte administrateur avec droits de connexion à distance"
+
+# Étape 2 : Ajouter l'utilisateur au groupe Administrateurs
+Add-ADGroupMember -Identity "Administrateurs" -Members "admin"
+````
