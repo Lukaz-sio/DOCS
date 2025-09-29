@@ -20,10 +20,24 @@ Set-ItemProperty –Path registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\ServerM
 ## Configuration à faire en Powershell Win CORE
 ````bash
 $NomEtendue = "DHCP_sodecaf"
-$DebutEtendueDHCP = 172.16.0.150
-$FinEtendueDHCP = 172.16.0.200
-$MasqueIP = 255.255.255.0
+$IPreseau = "172.16.0.0"
+$DebutEtendueDHCP = "172.16.0.150"
+$FinEtendueDHCP = "172.16.0.200"
+$MasqueIP = "255.255.255.0"
+$IPPasserelle ="172.16.0.254"
+$IPDNSPrimaire = "172.16.0.1"
+$IPDNSSecondaire ="8.8.8.8"
+$DomainNameDNS = "sodecaf.local"
+$DureeBail ="14440" # Durée du bail = 4h
 
 #Création d'étendue avec nom, ip et masque
 Add-DhcpServerv4Scope -Name $NomEtendue -StartRange $DebutEtendueDHCP -EndRange $FinEtendueDHCP -SubnetMask $MasqueIP
+#Définition de la passerelle
+Set-DhcpServerv4OptionDefinition -ScopeId $IPreseau -OptionId 3 -Value $IPPasserelle
+#Fixer les DNS 
+Set-DhcpServerv4OptionDefinition -ScopeId $IPreseau -OptionId 6 -Value $IPDNSPrimaire,$IPDNSSecondaire -Force
+#Suffixe DNS
+Set-DhcpServerv4OptionDefinition -ScopeId $IPreseau -OptionId 15 -Value $DomainNameDNS
+#Durée du bail
+Set-DhcpServerv4OptionDefinition -ScopeId $IPreseau -OptionId 51 -Valuev $DureeBail
 ````
