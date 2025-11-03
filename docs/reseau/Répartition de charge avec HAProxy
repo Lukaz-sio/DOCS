@@ -1,1 +1,24 @@
+ srv web1
+crm resource stop serviceWeb
+crm resource stop IPFailover
+crm configure delete servWeb
 
+crm configure clone cServiceweb serviceWeb
+crm resource start cServiceweb serviceWeb
+crm resource start serviceWeb
+crm resource start IPFailover
+
+modif sur les deux serv web
+nano /etc/network/interfaces
+changer le reseau 172 en 192
+srv web 1 en .1
+srv web 2 en .2
+
+crm configure edit
+
+
+machine haproxy
+config haproxy.cfg
+ajouter ligne frontend et backend
+
+ajouter https
