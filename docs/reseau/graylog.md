@@ -78,3 +78,16 @@ dpkg -i libssl1.1_1.1.1f-1ubuntu2.24_amd64.deb
 
 ---
 
+## Relancez l'installation de MongoDB
+````bash
+apt install -y mongodb-org
+````
+### Ensuite, relancez le service MongoDB et activez son démarrage automatique au lancement du serveur Debian.
+````bash
+systemctl daemon-reload
+systemctl enable mongod.service
+systemctl restart mongod.service
+systemctl --type=service --state=active | grep mongod
+
+apt update
+````
