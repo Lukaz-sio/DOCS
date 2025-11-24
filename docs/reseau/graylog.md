@@ -164,3 +164,26 @@ systemctl restart opensearch
 
 Puis top pour afficher la ligne tout en haut
 ````
+
+---
+
+## Installation de Graylog
+
+### Pour effectuer l'installation de Graylog 6.1 dans sa dernière version, exécutez les 4 commandes suivantes afin de télécharger et d'installer Graylog Server
+````bash
+wget https://packages.graylog2.org/repo/packages/graylog-6.1-repository_latest.deb
+dpkg -i graylog-6.1-repository_latest.deb
+apt update
+apt install graylog-server
+````
+
+### Nous allons commencer par générer une clé de 96 caractères pour le paramètre password_secret 
+````bash
+pwgen -N 1 -s 96
+wVSGYwOmwBIDmtQvGzSuBevWoXe0MWpNWCzhorBfvMMhia2zIjHguTbfl4uXZJdHOA0EEb1sOXJTZKINhIIBm3V57vwfQV59
+````
+
+### Copiez la valeur retournée, puis ouvrez le fichier de configuration de Graylog 
+````bash
+nano /etc/graylog/server/server.conf
+````
