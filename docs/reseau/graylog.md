@@ -39,6 +39,7 @@ systemctl restart systemd-timesyncd
 Vérifier l’état de la synchronisation :
 ```bash
 timedatectl timesync-status
+timedatectl status
 ```
 
 ### Mise à jour et installation des dépendances
