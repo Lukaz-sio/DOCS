@@ -95,18 +95,18 @@ apt update
 ---
 
 ## Installation d'OpenSearch
-Nous allons passer à l'installation d'OpenSearch sur le serveur. La commande suivante permet d’ajouter la clé de signature pour les paquets OpenSearch
+### Nous allons passer à l'installation d'OpenSearch sur le serveur. La commande suivante permet d’ajouter la clé de signature pour les paquets OpenSearch
 
 ````bash
 curl -o- https://artifacts.opensearch.org/publickeys/opensearch.pgp | sudo gpg --dearmor --batch --yes -o /usr/share/keyrings/opensearch-keyring
 ````
 
-Puis, ajoutez le dépôt OpenSearch pour que nous puissions télécharger le paquet avec apt par la suite 
+### Puis, ajoutez le dépôt OpenSearch pour que nous puissions télécharger le paquet avec apt par la suite 
 ````bash
 echo "deb [signed-by=/usr/share/keyrings/opensearch-keyring] https://artifacts.opensearch.org/releases/bundle/opensearch/2.x/apt stable main" | sudo tee /etc/apt/sources.list.d/opensearch-2.x.list
 ````
 
-Mettez à jour votre cache de paquets
+### Mettez à jour votre cache de paquets
 ````bash
 apt update
 ````
