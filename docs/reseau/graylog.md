@@ -199,8 +199,8 @@ echo -n "PuitsDeLogs@" | shasum -a 256
 nano /etc/graylog/server/server.conf
 
 Collez la valeur au niveau de l'option root_password_sha2
-
-Configurer l'option nommée "http_bind_address". Indiquez "0.0.0.0:9000" pour que l'interface web de Graylog soit accessible sur le port 9000, via n'importe quelle adresse IP du serveur.
-Puis, configurez l'option "elasticsearch_hosts" avec la valeur "http://127.0.0.1:9200" pour déclarer notre instance locale OpenSearch.
 ````
+
+### Configurer l'option nommée "http_bind_address". Indiquez "0.0.0.0:9000" pour que l'interface web de Graylog soit accessible sur le port 9000, via n'importe quelle adresse IP du serveur. Puis, configurez l'option "elasticsearch_hosts" avec la valeur "http://127.0.0.1:9200" pour déclarer notre instance locale OpenSearch.
+
 
