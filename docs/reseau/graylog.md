@@ -7,6 +7,39 @@
 timedatectl set-timezone Europe/Paris
 ```
 
+## Configuration NTP (synchronisation de l’heure)
+
+Éditer le fichier de configuration `timesyncd` :
+```bash
+nano /etc/systemd/timesyncd.conf
+```
+
+Modifier ou ajouter les lignes suivantes :
+```ini
+[Time]
+NTP=ntp.univ-rennes2.fr
+FallbackNTP=0.debian.pool.ntp.org 1.debian.pool.ntp.org 2.debian.pool.ntp.org 3.debian.pool.ntp.org
+```
+
+Redémarrer le service :
+```bash
+systemctl restart systemd-timesyncd
+systemctl status systemd-timesyncd
+```
+
+
+### Activation de NTP si désactivé
+
+Activer la synchronisation :
+```bash
+timedatectl set-ntp true
+```
+
+Vérifier l’état de la synchronisation :
+```bash
+timedatectl timesync-status
+```
+
 ### Mise à jour et installation des dépendances
 ```bash
 apt update
@@ -40,3 +73,6 @@ apt install -y mongodb-org
 wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2.23_amd64.deb
 dpkg -i libssl1.1_1.1.1f-1ubuntu2.23_amd64.deb
 ```
+
+---
+
