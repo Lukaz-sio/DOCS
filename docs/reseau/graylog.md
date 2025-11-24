@@ -180,10 +180,27 @@ apt install graylog-server
 ### Nous allons commencer par générer une clé de 96 caractères pour le paramètre password_secret 
 ````bash
 pwgen -N 1 -s 96
-wVSGYwOmwBIDmtQvGzSuBevWoXe0MWpNWCzhorBfvMMhia2zIjHguTbfl4uXZJdHOA0EEb1sOXJTZKINhIIBm3V57vwfQV59
 ````
 
 ### Copiez la valeur retournée, puis ouvrez le fichier de configuration de Graylog 
 ````bash
 nano /etc/graylog/server/server.conf
+
+Collez la clé au niveau du paramètre password_secret
 ````
+
+### Ensuite, vous devez définir le mot de passe du compte "admin" créé par défaut
+````bash
+echo -n "PuitsDeLogs@" | shasum -a 256
+````
+
+### Copiez la valeur obtenue en sortie (sans le tiret en bout de ligne). Ouvrez de nouveau le fichier de configuration de Graylog
+````bash
+nano /etc/graylog/server/server.conf
+
+Collez la valeur au niveau de l'option root_password_sha2
+
+Configurer l'option nommée "http_bind_address". Indiquez "0.0.0.0:9000" pour que l'interface web de Graylog soit accessible sur le port 9000, via n'importe quelle adresse IP du serveur.
+Puis, configurez l'option "elasticsearch_hosts" avec la valeur "http://127.0.0.1:9200" pour déclarer notre instance locale OpenSearch.
+````
+
