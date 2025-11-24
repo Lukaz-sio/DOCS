@@ -33,6 +33,7 @@ systemctl status systemd-timesyncd
 Activer la synchronisation :
 ```bash
 timedatectl set-ntp true
+systemctl restart systemd-timesyncd
 ```
 
 Vérifier l’état de la synchronisation :
