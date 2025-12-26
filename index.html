@@ -32,16 +32,29 @@
         body { font-family: 'Inter', sans-serif; }
         
         /* Typography Styles for Preview */
-        .markdown-preview { line-height: 1.7; }
+        .markdown-preview { line-height: 1.7; word-wrap: break-word; }
         .markdown-preview h1 { font-size: 2.25em; font-weight: 800; margin-bottom: 0.5em; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.3em; }
         .markdown-preview h2 { font-size: 1.75em; font-weight: 700; margin-top: 1.5em; margin-bottom: 0.5em; }
         .markdown-preview h3 { font-size: 1.5em; font-weight: 600; margin-top: 1.25em; margin-bottom: 0.5em; }
         .markdown-preview p { margin-bottom: 1em; }
         .markdown-preview ul { list-style-type: disc; padding-left: 1.5em; margin-bottom: 1em; }
         .markdown-preview ol { list-style-type: decimal; padding-left: 1.5em; margin-bottom: 1em; }
-        /* Checkbox lists */
-        .markdown-preview ul:has(input[type="checkbox"]) { list-style-type: none; padding-left: 0.5em; }
-        .markdown-preview li:has(input[type="checkbox"]) { display: flex; align-items: center; gap: 0.5em; }
+        
+        /* Checkbox lists fixes */
+        .markdown-preview ul:has(input[type="checkbox"]), 
+        .markdown-preview li:has(input[type="checkbox"]) { 
+            list-style-type: none; 
+            padding-left: 0;
+        }
+        .markdown-preview li:has(input[type="checkbox"]) { 
+            display: flex; 
+            align-items: flex-start; 
+            gap: 0.5em; 
+        }
+        .markdown-preview input[type="checkbox"] {
+            margin-top: 0.4em; /* Better alignment with text */
+            cursor: pointer;
+        }
 
         .markdown-preview code { background-color: rgba(0,0,0,0.05); padding: 0.2em 0.4em; border-radius: 0.25em; font-family: 'Menlo', monospace; font-size: 0.9em; color: #db2777; }
         .dark .markdown-preview code { background-color: rgba(255,255,255,0.1); color: #f472b6; }
@@ -87,7 +100,6 @@
         
         .tool-btn:active { transform: scale(0.95); }
         
-        /* Color picker custom style hack */
         .color-picker-wrapper { position: relative; display: inline-block; }
         .color-input-hidden { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
     </style>
@@ -205,7 +217,7 @@
                 
                 <div class="w-px h-4 bg-gray-300 dark:bg-gray-600 mx-1"></div>
 
-                <!-- COULEURS (Nouveau) -->
+                <!-- COULEURS -->
                 <div class="color-picker-wrapper tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 relative" title="Couleur du texte">
                     <i class="ph ph-text-a text-lg"></i>
                     <div class="absolute bottom-0.5 right-0.5 w-full h-1 bg-red-500 rounded-full opacity-50" id="textColorIndicator"></div>
@@ -336,7 +348,10 @@
             loadDocs();
             renderDocList();
             
+            // Set Marked options with breaks enabled for new lines
             marked.setOptions({
+                breaks: true, // IMPORTANT: Enables line breaks
+                gfm: true,
                 highlight: function(code, lang) {
                     const language = highlight.getLanguage(lang) ? lang : 'plaintext';
                     return highlight.highlight(code, { language }).value;
@@ -464,7 +479,7 @@
             docs = [{
                 id: 'demo-1',
                 title: 'Guide de Démarrage',
-                content: '# Bienvenue sur WikiDocs Ultimate\n\nVoici les nouveautés :\n- **Mode Sombre** 🌙\n- **Barre d\'outils intelligente** (HTML/MD)\n- <span style="color:#ff0000">**Couleurs**</span> et <span style="background-color:#fde047">Surlignage</span>\n\n```javascript\n// Code highlight\nfunction hello() {\n  console.log("Hello Wiki!");\n}\n```',
+                content: '# Bienvenue sur WikiDocs Ultimate\n\nVoici les nouveautés :\n- **Mode Sombre** 🌙\n- **Barre d\'outils intelligente**\n- <span style="color:#ef4444; background-color:#fde047">**Couleurs combinées !**</span>\n- Sauts de ligne automatiques\n\n```javascript\nfunction hello() {\n  console.log("Hello Wiki!");\n}\n```\n\n- [ ] Tâche à faire\n- [x] Tâche faite',
                 format: 'markdown',
                 updatedAt: Date.now()
             }];
@@ -620,6 +635,7 @@
 
             if (format === 'markdown' || !format) {
                 previewArea.className = "preview-pane markdown-preview w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors";
+                // Marked is configured with breaks: true for line breaks
                 previewArea.innerHTML = DOMPurify.sanitize(marked.parse(content));
             } else if (format === 'html') {
                 previewArea.className = "preview-pane w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors";
@@ -664,24 +680,50 @@
             updateUIForFormat(docFormatSelect.value);
         }
 
-        // --- NEW: COLOR LOGIC ---
+        // --- NEW: COMBINED COLOR LOGIC (MERGE STYLES) ---
         function applyColor(type, value) {
             if (!currentDocId) return;
             const textarea = markdownEditor;
             const start = textarea.selectionStart;
             const end = textarea.selectionEnd;
-            const sel = textarea.value.substring(start, end) || 'texte';
+            let sel = textarea.value.substring(start, end) || 'texte';
             
-            let tagStart = '', tagEnd = '</span>';
-            if (type === 'text') tagStart = `<span style="color:${value}">`;
-            if (type === 'bg') tagStart = `<span style="background-color:${value}">`;
+            // 1. Detect existing span with style
+            const spanRegex = /^<span style="([^"]*)">(.*?)<\/span>$/i;
+            let existingStyle = "";
+            let innerText = sel;
+
+            if (spanRegex.test(sel)) {
+                const match = sel.match(spanRegex);
+                existingStyle = match[1]; // e.g., "color:red;"
+                innerText = match[2];     // e.g., "Texte"
+            }
+
+            // 2. Parse existing styles into object
+            const styleObj = {};
+            existingStyle.split(';').forEach(style => {
+                const [prop, val] = style.split(':');
+                if (prop && val) styleObj[prop.trim().toLowerCase()] = val.trim();
+            });
+
+            // 3. Update style object
+            if (type === 'text') styleObj['color'] = value;
+            if (type === 'bg') styleObj['background-color'] = value;
+
+            // 4. Reconstruct style string
+            const newStyleString = Object.entries(styleObj)
+                .map(([k, v]) => `${k}:${v}`)
+                .join('; ');
+
+            // 5. Apply
+            const newHTML = `<span style="${newStyleString}">${innerText}</span>`;
             
-            textarea.setRangeText(`${tagStart}${sel}${tagEnd}`, start, end, 'select');
+            textarea.setRangeText(newHTML, start, end, 'select');
             updateCurrentContent();
             textarea.focus();
         }
 
-        // --- NEW: ADAPTIVE FORMAT LOGIC ---
+        // --- ADAPTIVE FORMAT LOGIC ---
         function applyFormat(type) {
             if (!currentDocId) return;
             const doc = docs.find(d => d.id === currentDocId);
@@ -693,11 +735,12 @@
             let end = textarea.selectionEnd;
             let sel = fullText.substring(start, end);
 
-            // Helpers pour MD
+            // --- HELPER MARKDOWN ---
             const toggleInlineMD = (marker) => {
                 const len = marker.length;
                 const before = fullText.substring(start - len, start);
                 const after = fullText.substring(end, end + len);
+                
                 if (sel.startsWith(marker) && sel.endsWith(marker) && sel.length >= 2*len) {
                     textarea.setRangeText(sel.substring(len, sel.length - len), start, end, 'select');
                 } else if (before === marker && after === marker) {
@@ -706,41 +749,90 @@
                     textarea.setRangeText(`${marker}${sel || 'texte'}${marker}`, start, end, 'select');
                 }
             };
+            
             const toggleBlockMD = (prefix) => {
                 let lineStart = fullText.lastIndexOf('\n', start - 1) + 1;
                 let lineEnd = fullText.indexOf('\n', end);
                 if (lineEnd === -1) lineEnd = fullText.length;
-                const lineContent = fullText.substring(lineStart, lineEnd);
-                if (lineContent.startsWith(prefix)) {
-                    textarea.setRangeText(lineContent.substring(prefix.length), lineStart, lineEnd, 'select');
+                
+                const block = fullText.substring(lineStart, lineEnd);
+                const lines = block.split('\n');
+                const allHave = lines.every(l => l.startsWith(prefix) || l.trim() === '');
+                
+                const newBlock = lines.map(line => {
+                    if (line.trim() === '') return line;
+                    if (allHave) return line.substring(prefix.length);
+                    return line.startsWith(prefix) ? line : prefix + line;
+                }).join('\n');
+                
+                textarea.setRangeText(newBlock, lineStart, lineEnd, 'select');
+            };
+
+            // Fixed Checkbox Logic for MD
+            const toggleCheckboxMD = () => {
+                let lineStart = fullText.lastIndexOf('\n', start - 1) + 1;
+                let lineEnd = fullText.indexOf('\n', end);
+                if (lineEnd === -1) lineEnd = fullText.length;
+                
+                const line = fullText.substring(lineStart, lineEnd);
+                // Toggle cycle: - [ ] -> - [x] -> [empty] -> - [ ]
+                if (line.includes('- [ ] ')) {
+                    textarea.setRangeText(line.replace('- [ ] ', '- [x] '), lineStart, lineEnd, 'select');
+                } else if (line.includes('- [x] ')) {
+                    textarea.setRangeText(line.replace('- [x] ', ''), lineStart, lineEnd, 'select'); // Remove
                 } else {
-                    textarea.setRangeText(prefix + lineContent, lineStart, lineEnd, 'select');
+                    textarea.setRangeText(`- [ ] ${line}`, lineStart, lineEnd, 'select');
                 }
             };
 
-            // Helpers pour HTML
-            const wrapHTML = (tag) => {
-                textarea.setRangeText(`<${tag}>${sel || 'texte'}</${tag}>`, start, end, 'select');
+            // --- HELPER HTML (Regex based) ---
+            const toggleHTML = (tag) => {
+                const openRegex = new RegExp(`^<${tag}(\\s[^>]*)?>`, 'i');
+                const closeRegex = new RegExp(`</${tag}>$`, 'i');
+                
+                if (openRegex.test(sel) && closeRegex.test(sel)) {
+                    const match = sel.match(openRegex);
+                    const inner = sel.substring(match[0].length, sel.length - (tag.length + 3));
+                    textarea.setRangeText(inner, start, end, 'select');
+                } else {
+                    textarea.setRangeText(`<${tag}>${sel || 'texte'}</${tag}>`, start, end, 'select');
+                }
+            };
+            
+            const wrapListHTML = (type) => { 
+                const openRegex = new RegExp(`^<${type}(\\s[^>]*)?>`, 'i');
+                const closeRegex = new RegExp(`</${type}>$`, 'i');
+                
+                if (openRegex.test(sel.trim()) && closeRegex.test(sel.trim())) {
+                    let content = sel.trim().replace(openRegex, '').replace(closeRegex, '').trim();
+                    content = content.replace(/<li>/gi, '').replace(/<\/li>/gi, '');
+                    content = content.split('\n').map(l => l.trim()).join('\n');
+                    textarea.setRangeText(content, start, end, 'select');
+                } else {
+                    const lines = sel ? sel.split('\n') : ['texte'];
+                    const inner = lines.map(l => l.trim() ? `  <li>${l}</li>` : '').join('\n');
+                    textarea.setRangeText(`<${type}>\n${inner}\n</${type}>`, start, end, 'select');
+                }
             };
 
             // Switch Logic based on Format
             if (format === 'html') {
                 switch (type) {
-                    case 'bold': wrapHTML('strong'); break;
-                    case 'italic': wrapHTML('em'); break;
-                    case 'strike': wrapHTML('s'); break;
-                    case 'code': wrapHTML('code'); break;
-                    case 'heading': wrapHTML('h3'); break;
-                    case 'list-ul': wrapHTML('li'); break; // Simplifié
-                    case 'list-ol': wrapHTML('li'); break;
+                    case 'bold': toggleHTML('strong'); break;
+                    case 'italic': toggleHTML('em'); break;
+                    case 'strike': toggleHTML('s'); break;
+                    case 'code': toggleHTML('code'); break;
+                    case 'heading': toggleHTML('h3'); break;
+                    case 'list-ul': wrapListHTML('ul'); break; 
+                    case 'list-ol': wrapListHTML('ol'); break;
                     case 'check': textarea.setRangeText(`<input type="checkbox"> ${sel}`, start, end, 'select'); break;
-                    case 'quote': wrapHTML('blockquote'); break;
+                    case 'quote': toggleHTML('blockquote'); break;
                     case 'link': textarea.setRangeText(`<a href="url">${sel || 'lien'}</a>`, start, end, 'select'); break;
                     case 'image': textarea.setRangeText(`<img src="url" alt="${sel || 'image'}">`, start, end, 'select'); break;
                     case 'hr': textarea.setRangeText(`\n<hr>\n`, start, end, 'select'); break;
                 }
             } else {
-                // Default to Markdown behavior (works for Text too)
+                // Default to Markdown behavior
                 switch (type) {
                     case 'bold': toggleInlineMD('**'); break;
                     case 'italic': toggleInlineMD('*'); break;
@@ -749,7 +841,7 @@
                     case 'heading': toggleBlockMD('### '); break;
                     case 'list-ul': toggleBlockMD('- '); break;
                     case 'list-ol': toggleBlockMD('1. '); break;
-                    case 'check': toggleBlockMD('- [ ] '); break;
+                    case 'check': toggleCheckboxMD(); break; // Smart toggle
                     case 'quote': toggleBlockMD('> '); break;
                     case 'link': textarea.setRangeText(`[${sel || 'titre'}](url)`, start, end, 'select'); break;
                     case 'image': textarea.setRangeText(`![${sel || 'alt'}](url_image)`, start, end, 'select'); break;
