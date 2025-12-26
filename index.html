@@ -1,83 +1,435 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Docs — BTS SIO SISR</title>
-  <meta name="description" content="Documentation BTS SIO SISR — Accueil, recherche, et lecture de fichiers Markdown (.md)">
-  <link rel="stylesheet" href="style.css" />
-  <link rel="icon" href="data:," />
-  <!-- Icônes (optionnel) -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Wiki Markdown</title>
+    <!-- Tailwind CSS pour le style rapide et responsive -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Marked.js pour convertir le Markdown en HTML -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- DOMPurify pour la sécurité (nettoyer le HTML généré) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+    <!-- Phosphor Icons pour les icônes -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        /* CSS Personnalisé pour compléter Tailwind */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+
+        /* Styles pour le contenu Markdown (Typography) */
+        .markdown-preview h1 { font-size: 2.25em; font-weight: 800; margin-bottom: 0.5em; color: #111827; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.3em; }
+        .markdown-preview h2 { font-size: 1.75em; font-weight: 700; margin-top: 1.5em; margin-bottom: 0.5em; color: #1f2937; }
+        .markdown-preview h3 { font-size: 1.5em; font-weight: 600; margin-top: 1.25em; margin-bottom: 0.5em; color: #374151; }
+        .markdown-preview p { margin-bottom: 1em; line-height: 1.7; color: #374151; }
+        .markdown-preview ul { list-style-type: disc; padding-left: 1.5em; margin-bottom: 1em; }
+        .markdown-preview ol { list-style-type: decimal; padding-left: 1.5em; margin-bottom: 1em; }
+        .markdown-preview code { background-color: #f3f4f6; padding: 0.2em 0.4em; border-radius: 0.25em; font-family: monospace; font-size: 0.9em; color: #db2777; }
+        .markdown-preview pre { background-color: #1f2937; color: #f9fafb; padding: 1em; border-radius: 0.5em; overflow-x: auto; margin-bottom: 1em; }
+        .markdown-preview pre code { background-color: transparent; color: inherit; padding: 0; }
+        .markdown-preview blockquote { border-left: 4px solid #3b82f6; padding-left: 1em; color: #4b5563; font-style: italic; background-color: #eff6ff; padding: 0.5em 0.5em 0.5em 1em; border-radius: 0 0.5em 0.5em 0; margin-bottom: 1em;}
+        .markdown-preview a { color: #2563eb; text-decoration: underline; }
+        .markdown-preview img { max-width: 100%; border-radius: 0.5em; margin: 1em 0; }
+        .markdown-preview table { width: 100%; border-collapse: collapse; margin-bottom: 1em; }
+        .markdown-preview th, .markdown-preview td { border: 1px solid #e5e7eb; padding: 0.5em; text-align: left; }
+        .markdown-preview th { background-color: #f9fafb; font-weight: 600; }
+
+        /* Animation pour les transitions */
+        .fade-in { animation: fadeIn 0.2s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Scrollbar personnalisée */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
 </head>
-<body>
-  <header class="site-header">
-    <div class="brand">
-      <span class="logo" aria-hidden="true">📚</span>
-      <div class="titles">
-        <h1>BTS SIO SISR — Docs</h1>
-        <p class="subtitle">Accueil de la documentation · Markdown reader</p>
-      </div>
-    </div>
+<body class="h-screen flex flex-col md:flex-row overflow-hidden text-gray-800">
 
-    <form id="searchForm" class="search" role="search" autocomplete="off">
-      <input id="searchInput" type="search" placeholder="Rechercher (/, Ctrl+K)…" aria-label="Rechercher dans la doc" />
-      <button class="ghost" type="submit" aria-label="Lancer la recherche">🔎</button>
-      <div id="searchResults" class="search-results" role="listbox" aria-label="Résultats de recherche"></div>
-    </form>
-  </header>
+    <!-- Sidebar / Liste des documents -->
+    <aside class="w-full md:w-72 bg-gray-900 text-gray-100 flex flex-col border-r border-gray-800 flex-shrink-0 z-20">
+        <div class="p-4 border-b border-gray-800 flex justify-between items-center bg-gray-900">
+            <h1 class="text-xl font-bold flex items-center gap-2 text-blue-400">
+                <i class="ph ph-books text-2xl"></i>
+                WikiDocs
+            </h1>
+            <button onclick="createNewDoc()" class="md:hidden text-gray-400 hover:text-white">
+                <i class="ph ph-plus-circle text-2xl"></i>
+            </button>
+        </div>
+        
+        <!-- Barre de recherche -->
+        <div class="p-3">
+            <div class="relative">
+                <i class="ph ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+                <input type="text" id="searchInput" placeholder="Rechercher..." 
+                       class="w-full bg-gray-800 text-sm text-white rounded-lg pl-9 pr-3 py-2 border border-gray-700 focus:outline-none focus:border-blue-500 transition-colors">
+            </div>
+        </div>
 
-  <div class="layout">
-    <aside class="sidebar" aria-label="Rubriques">
-      <nav id="nav">
-        <h2>Rubriques</h2>
-        <!-- Remplies par script.js depuis config -->
-        <ul id="sections"></ul>
+        <!-- Liste des docs -->
+        <div class="flex-1 overflow-y-auto p-2 space-y-1" id="docList">
+            <!-- Les éléments seront injectés ici par JS -->
+        </div>
 
-        <h3>Raccourcis</h3>
-        <ul class="shortcuts">
-          <li><a href="#/recent">🕓 Récents</a></li>
-          <li><a href="#/all">📄 Tous les docs</a></li>
-          <li><a href="#/about">ℹ️ À propos</a></li>
-        </ul>
-      </nav>
-
-      <footer class="sidebar-footer">
-        <label class="theme-toggle">
-          <input id="themeSwitch" type="checkbox" aria-label="Basculer clair/sombre">
-          <span>Thème sombre</span>
-        </label>
-      </footer>
+        <!-- Bouton Nouveau (Desktop) -->
+        <div class="p-4 border-t border-gray-800 hidden md:block">
+            <button onclick="createNewDoc()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-blue-500/20">
+                <i class="ph ph-plus-circle text-lg"></i>
+                Nouveau Document
+            </button>
+        </div>
     </aside>
 
-    <main id="main" class="content" tabindex="-1">
-      <article id="docView" class="doc-view">
-        <section class="hero">
-          <h2>Bienvenue 👋</h2>
-          <p>Voici la page d’accueil de ta documentation <strong>BTS SIO SISR</strong>. Utilise la barre de recherche, explore les rubriques, et clique sur un document pour l’afficher (les pages sont écrites en <code>.md</code>).</p>
-        </section>
+    <!-- Zone Principale -->
+    <main class="flex-1 flex flex-col bg-white relative h-full">
+        
+        <!-- Empty State (Quand aucun doc n'est sélectionné) -->
+        <div id="emptyState" class="absolute inset-0 flex flex-col items-center justify-center text-gray-400 z-10 bg-white">
+            <i class="ph ph-files text-6xl mb-4 text-gray-200"></i>
+            <h2 class="text-xl font-semibold text-gray-600">Aucun document sélectionné</h2>
+            <p class="mt-2 text-sm">Sélectionnez un document ou créez-en un nouveau.</p>
+            <button onclick="createNewDoc()" class="mt-6 px-6 py-2 bg-blue-100 text-blue-700 rounded-full font-medium hover:bg-blue-200 transition-colors">
+                Commencer
+            </button>
+        </div>
 
-        <section>
-          <h3>📌 Sélection</h3>
-          <div id="featured" class="cards"></div>
-        </section>
+        <!-- Editeur / Visualiseur Wrapper -->
+        <div id="editorWrapper" class="hidden flex flex-col h-full w-full z-10 bg-white">
+            
+            <!-- Toolbar -->
+            <header class="h-16 border-b border-gray-200 flex items-center justify-between px-4 md:px-8 bg-white flex-shrink-0">
+                <div class="flex-1 mr-4">
+                    <input type="text" id="docTitleInput" placeholder="Titre du document" 
+                           class="w-full text-xl md:text-2xl font-bold text-gray-800 placeholder-gray-300 border-none focus:ring-0 focus:outline-none bg-transparent truncate"
+                           oninput="updateCurrentTitle()">
+                </div>
+                
+                <div class="flex items-center gap-2 md:gap-3">
+                    <span id="saveStatus" class="text-xs text-gray-400 italic hidden md:inline-block mr-2">Sauvegardé</span>
+                    
+                    <button onclick="toggleEditMode()" id="viewToggleBtn" 
+                            class="p-2 text-gray-500 hover:bg-gray-100 rounded-lg flex items-center gap-2 transition-colors"
+                            title="Basculer Édition/Aperçu">
+                        <i class="ph ph-pencil-simple text-xl" id="toggleIcon"></i>
+                        <span class="text-sm font-medium hidden md:inline" id="toggleText">Éditer</span>
+                    </button>
 
-        <section>
-          <h3>🆕 Derniers ajouts</h3>
-          <ul id="recent" class="list"></ul>
-        </section>
-      </article>
+                    <div class="h-6 w-px bg-gray-300 mx-1"></div>
+
+                    <button onclick="showDeleteConfirm()" 
+                            class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Supprimer">
+                        <i class="ph ph-trash text-xl"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <div class="flex-1 overflow-hidden relative group">
+                
+                <!-- Zone de texte (Mode Édition) -->
+                <textarea id="markdownEditor" 
+                          class="w-full h-full p-4 md:p-8 resize-none focus:outline-none font-mono text-sm leading-relaxed text-gray-700 bg-gray-50 hidden"
+                          placeholder="# Commencez à écrire votre documentation ici..."></textarea>
+                
+                <!-- Zone de prévisualisation (Mode Lecture) -->
+                <div id="previewArea" class="markdown-preview w-full h-full p-4 md:p-8 overflow-y-auto">
+                    <!-- Markdown rendu ici -->
+                </div>
+            </div>
+            
+            <!-- Footer Info -->
+            <div class="h-8 border-t border-gray-100 flex items-center px-4 text-xs text-gray-400 bg-gray-50 justify-between flex-shrink-0">
+                <span>Format: Markdown</span>
+                <span id="wordCount">0 mots</span>
+            </div>
+        </div>
     </main>
-  </div>
 
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <!-- Modal de confirmation de suppression (Custom implementation, no alert()) -->
+    <div id="deleteModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center fade-in">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-11/12 max-w-sm transform scale-100 transition-transform">
+            <div class="text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                    <i class="ph ph-warning text-red-600 text-2xl"></i>
+                </div>
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Supprimer le document ?</h3>
+                <p class="text-sm text-gray-500 mt-2">
+                    Cette action est irréversible. Voulez-vous vraiment supprimer ce document ?
+                </p>
+            </div>
+            <div class="mt-5 sm:mt-6 grid grid-cols-2 gap-3">
+                <button onclick="closeDeleteModal()" 
+                        class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:text-sm">
+                    Annuler
+                </button>
+                <button onclick="confirmDelete()" 
+                        class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none sm:text-sm">
+                    Supprimer
+                </button>
+            </div>
+        </div>
+    </div>
 
-  <!-- Librairie Markdown (client-side) -->
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
-  <!-- Highlight (optionnel) -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.9.0/styles/github.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.9.0/highlight.min.js"></script>
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-4 right-4 bg-gray-900 text-white px-4 py-2 rounded-lg shadow-lg transform translate-y-20 transition-transform duration-300 z-50 flex items-center gap-2">
+        <i class="ph ph-check-circle text-green-400"></i>
+        <span id="toastMsg">Opération réussie</span>
+    </div>
 
-  <script src="script.js" defer></script>
+    <script>
+        // --- ETAT DE L'APPLICATION ---
+        let docs = [];
+        let currentDocId = null;
+        let isEditMode = false;
+
+        // --- DOM ELEMENTS ---
+        const docListEl = document.getElementById('docList');
+        const searchInput = document.getElementById('searchInput');
+        const emptyState = document.getElementById('emptyState');
+        const editorWrapper = document.getElementById('editorWrapper');
+        const docTitleInput = document.getElementById('docTitleInput');
+        const markdownEditor = document.getElementById('markdownEditor');
+        const previewArea = document.getElementById('previewArea');
+        const toggleIcon = document.getElementById('toggleIcon');
+        const toggleText = document.getElementById('toggleText');
+        const saveStatus = document.getElementById('saveStatus');
+        const wordCountEl = document.getElementById('wordCount');
+        const deleteModal = document.getElementById('deleteModal');
+        const toast = document.getElementById('toast');
+        const toastMsg = document.getElementById('toastMsg');
+
+        // --- INITIALISATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDocs();
+            renderDocList();
+            
+            // Auto-select premier doc si dispo
+            if(docs.length > 0) {
+                // Optionnel : selectDoc(docs[0].id);
+            }
+
+            // Listeners
+            searchInput.addEventListener('input', (e) => renderDocList(e.target.value));
+            
+            markdownEditor.addEventListener('input', () => {
+                updateCurrentContent();
+                updateWordCount();
+                showSavingStatus();
+            });
+        });
+
+        // --- GESTION DES DONNÉES (CRUD) ---
+
+        function loadDocs() {
+            const stored = localStorage.getItem('wiki_docs');
+            if (stored) {
+                docs = JSON.parse(stored);
+                // Trier par date de modif (plus récent en haut)
+                docs.sort((a, b) => b.updatedAt - a.updatedAt);
+            } else {
+                // Données de démo
+                docs = [
+                    {
+                        id: 'demo-1',
+                        title: 'Bienvenue sur WikiDocs',
+                        content: '# Bienvenue !\n\nCeci est votre nouveau gestionnaire de documentation.\n\n## Fonctionnalités\n- **Markdown** supporté\n- Sauvegarde automatique\n- Interface simple\n\nEssayez de modifier ce texte en cliquant sur le bouton **Éditer** en haut à droite.',
+                        updatedAt: Date.now()
+                    }
+                ];
+                saveToStorage();
+            }
+        }
+
+        function saveToStorage() {
+            localStorage.setItem('wiki_docs', JSON.stringify(docs));
+        }
+
+        function createNewDoc() {
+            const newDoc = {
+                id: crypto.randomUUID(),
+                title: 'Nouvelle Documentation',
+                content: '# Titre\n\nCommencez à rédiger ici...',
+                updatedAt: Date.now()
+            };
+            docs.unshift(newDoc); // Ajouter au début
+            saveToStorage();
+            renderDocList();
+            selectDoc(newDoc.id);
+            
+            // Passer directement en mode édition
+            if (!isEditMode) toggleEditMode();
+            
+            // Focus sur le titre
+            setTimeout(() => docTitleInput.focus(), 100);
+            showToast('Document créé');
+        }
+
+        function selectDoc(id) {
+            currentDocId = id;
+            const doc = docs.find(d => d.id === id);
+            if (!doc) return;
+
+            // UI Updates
+            emptyState.classList.add('hidden');
+            editorWrapper.classList.remove('hidden');
+            
+            docTitleInput.value = doc.title;
+            markdownEditor.value = doc.content;
+            
+            renderPreview(doc.content);
+            updateWordCount();
+            
+            // Highlight active in list
+            document.querySelectorAll('.doc-item').forEach(el => {
+                el.classList.remove('bg-gray-800', 'border-l-4', 'border-blue-500');
+                el.classList.add('hover:bg-gray-800', 'border-l-4', 'border-transparent');
+            });
+            const activeEl = document.getElementById(`doc-${id}`);
+            if(activeEl) {
+                activeEl.classList.add('bg-gray-800', 'border-blue-500');
+                activeEl.classList.remove('border-transparent');
+            }
+        }
+
+        function updateCurrentTitle() {
+            if (!currentDocId) return;
+            const doc = docs.find(d => d.id === currentDocId);
+            doc.title = docTitleInput.value || 'Sans titre';
+            doc.updatedAt = Date.now();
+            
+            saveToStorage();
+            renderDocList(searchInput.value, false); // false = ne pas perdre le focus
+            showSavingStatus();
+        }
+
+        function updateCurrentContent() {
+            if (!currentDocId) return;
+            const doc = docs.find(d => d.id === currentDocId);
+            doc.content = markdownEditor.value;
+            doc.updatedAt = Date.now();
+            
+            saveToStorage();
+            renderPreview(doc.content);
+        }
+
+        function confirmDelete() {
+            if (!currentDocId) return;
+            docs = docs.filter(d => d.id !== currentDocId);
+            saveToStorage();
+            
+            currentDocId = null;
+            renderDocList();
+            
+            emptyState.classList.remove('hidden');
+            editorWrapper.classList.add('hidden');
+            closeDeleteModal();
+            showToast('Document supprimé');
+        }
+
+        // --- UI & RENDU ---
+
+        function renderDocList(filter = '', resetScroll = true) {
+            docListEl.innerHTML = '';
+            
+            const filteredDocs = docs.filter(d => 
+                d.title.toLowerCase().includes(filter.toLowerCase()) || 
+                d.content.toLowerCase().includes(filter.toLowerCase())
+            );
+
+            if (filteredDocs.length === 0) {
+                docListEl.innerHTML = `<div class="text-gray-500 text-center text-sm mt-4">Aucun résultat</div>`;
+                return;
+            }
+
+            filteredDocs.forEach(doc => {
+                const date = new Date(doc.updatedAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+                const div = document.createElement('div');
+                div.id = `doc-${doc.id}`;
+                div.className = `doc-item p-3 mb-1 rounded-r-lg cursor-pointer transition-all border-l-4 border-transparent text-gray-300 hover:bg-gray-800 hover:text-white group`;
+                if (doc.id === currentDocId) {
+                    div.className += ' bg-gray-800 border-blue-500 text-white';
+                }
+                
+                div.onclick = () => selectDoc(doc.id);
+                div.innerHTML = `
+                    <div class="font-medium truncate text-sm">${doc.title}</div>
+                    <div class="text-xs text-gray-500 mt-1 flex justify-between">
+                        <span>${date}</span>
+                    </div>
+                `;
+                docListEl.appendChild(div);
+            });
+        }
+
+        function renderPreview(markdown) {
+            // Utilisation de Marked.js + DOMPurify pour la sécurité
+            const rawHtml = marked.parse(markdown);
+            const cleanHtml = DOMPurify.sanitize(rawHtml);
+            previewArea.innerHTML = cleanHtml;
+        }
+
+        function toggleEditMode() {
+            isEditMode = !isEditMode;
+            
+            if (isEditMode) {
+                // Passer en mode Edition
+                previewArea.classList.add('hidden');
+                markdownEditor.classList.remove('hidden');
+                markdownEditor.focus();
+                
+                toggleIcon.classList.remove('ph-pencil-simple');
+                toggleIcon.classList.add('ph-eye');
+                toggleText.innerText = "Aperçu";
+                document.getElementById('viewToggleBtn').classList.add('bg-blue-50', 'text-blue-600');
+            } else {
+                // Passer en mode Aperçu
+                markdownEditor.classList.add('hidden');
+                previewArea.classList.remove('hidden');
+                
+                toggleIcon.classList.remove('ph-eye');
+                toggleIcon.classList.add('ph-pencil-simple');
+                toggleText.innerText = "Éditer";
+                document.getElementById('viewToggleBtn').classList.remove('bg-blue-50', 'text-blue-600');
+                
+                // Rafraichir le rendu au cas où
+                renderPreview(markdownEditor.value);
+            }
+        }
+
+        // --- UTILITAIRES ---
+
+        function updateWordCount() {
+            const text = markdownEditor.value || '';
+            const count = text.trim().split(/\s+/).filter(w => w.length > 0).length;
+            wordCountEl.innerText = `${count} mot${count > 1 ? 's' : ''}`;
+        }
+
+        let saveTimeout;
+        function showSavingStatus() {
+            saveStatus.innerText = "Enregistrement...";
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                saveStatus.innerText = "Sauvegardé";
+            }, 1000);
+        }
+
+        function showDeleteModal() { deleteModal.classList.remove('hidden'); }
+        function closeDeleteModal() { deleteModal.classList.add('hidden'); }
+        function showDeleteConfirm() { showDeleteModal(); } // Alias
+
+        function showToast(message) {
+            toastMsg.innerText = message;
+            toast.classList.remove('translate-y-20');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20');
+            }, 3000);
+        }
+    </script>
 </body>
 </html>
