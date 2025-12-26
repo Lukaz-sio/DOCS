@@ -72,6 +72,7 @@
         .color-picker-wrapper { position: relative; display: inline-block; }
         .color-input-hidden { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
         
+        /* UI States based on Auth */
         .auth-only { display: none !important; }
         .is-admin .auth-only { display: flex !important; }
         .is-admin .auth-only-block { display: block !important; }
@@ -101,6 +102,7 @@
             </div>
         </div>
 
+        <!-- Connection Status -->
         <div class="px-4 py-2 text-xs flex items-center gap-2 border-b border-gray-800">
             <div id="dbStatusIndicator" class="w-2 h-2 rounded-full bg-red-500"></div>
             <span id="dbStatusText" class="text-gray-400">Déconnecté</span>
@@ -110,26 +112,38 @@
             <div class="text-center text-gray-500 mt-10 text-sm">Chargement...</div>
         </div>
 
+        <!-- Auth Controls -->
         <div class="p-4 border-t border-gray-800 bg-gray-900 flex flex-col gap-2">
+            
+            <!-- Boutons Édition (Cachés par défaut) -->
             <div class="auth-only-block hidden space-y-2">
                 <button onclick="createNewDoc()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-all shadow-lg">
-                    <i class="ph ph-plus-circle text-lg"></i> Nouveau Doc
+                    <i class="ph ph-plus-circle text-lg"></i>
+                    Nouveau Doc
                 </button>
                 <label class="w-full cursor-pointer bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-all text-sm border border-gray-700">
-                    <i class="ph ph-upload-simple text-lg"></i> Importer
+                    <i class="ph ph-upload-simple text-lg"></i>
+                    Importer
                     <input type="file" id="fileInput" class="hidden" accept=".md,.txt,.html" onchange="handleFileUpload(this)">
                 </label>
             </div>
+
+            <!-- Login / Logout -->
             <button id="loginBtn" onclick="openLoginModal()" class="w-full border border-gray-600 hover:bg-gray-800 text-gray-300 py-2 px-4 rounded-lg flex items-center justify-center gap-2 text-sm transition-colors">
-                <i class="ph ph-sign-in text-lg"></i> Connexion Admin
+                <i class="ph ph-sign-in text-lg"></i>
+                Connexion
             </button>
             <button id="logoutBtn" onclick="logoutAdmin()" class="hidden w-full border border-red-900/50 text-red-400 hover:bg-red-900/20 py-2 px-4 rounded-lg flex items-center justify-center gap-2 text-sm transition-colors">
-                <i class="ph ph-sign-out text-lg"></i> Déconnexion
+                <i class="ph ph-sign-out text-lg"></i>
+                Déconnexion
             </button>
         </div>
     </aside>
 
+    <!-- Main Content -->
     <main class="flex-1 flex flex-col bg-white dark:bg-gray-900 relative h-full transition-colors duration-200">
+        
+        <!-- Empty State -->
         <div id="emptyState" class="absolute inset-0 flex flex-col items-center justify-center text-gray-400 z-10 bg-white dark:bg-gray-900 transition-colors">
             <div class="w-24 h-24 bg-gray-50 dark:bg-gray-800 rounded-full flex items-center justify-center mb-6">
                 <i class="ph ph-cloud text-5xl text-gray-300 dark:text-gray-600"></i>
@@ -138,14 +152,20 @@
             <p class="mt-2 text-sm text-gray-500">Sélectionnez un document pour le lire.</p>
         </div>
 
+        <!-- Editor Wrapper -->
         <div id="editorWrapper" class="hidden flex flex-col h-full w-full z-10 bg-white dark:bg-gray-900">
+            
+            <!-- Top Bar -->
             <header class="h-16 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-4 md:px-6 bg-white dark:bg-gray-900 flex-shrink-0 gap-4 transition-colors">
                 <div class="flex-1 min-w-0">
+                    <!-- Title Input (Editable only if admin) -->
                     <input type="text" id="docTitleInput" placeholder="Titre du document" readonly
                            class="w-full text-lg md:text-xl font-bold text-gray-800 dark:text-gray-100 placeholder-gray-300 dark:placeholder-gray-600 border-none focus:ring-0 focus:outline-none bg-transparent truncate cursor-default auth-cursor-text"
                            oninput="updateCurrentTitle()">
                 </div>
+                
                 <div class="flex items-center gap-2 md:gap-3 flex-shrink-0 auth-only">
+                    <!-- Format Selector -->
                     <div class="relative group hidden md:block">
                         <select id="docFormatSelect" onchange="updateCurrentFormat()" 
                                 class="appearance-none bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded-md py-1.5 pl-3 pr-8 leading-tight focus:outline-none focus:border-blue-500 cursor-pointer">
@@ -153,16 +173,35 @@
                             <option value="html">HTML</option>
                             <option value="text">Texte Brut</option>
                         </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500"><i class="ph ph-caret-down text-xs"></i></div>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+                            <i class="ph ph-caret-down text-xs"></i>
+                        </div>
                     </div>
+
                     <div class="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-1 hidden md:block"></div>
-                    <button onclick="toggleSplitView()" class="hidden md:flex p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors" title="Vue Partagée"><i id="splitIcon" class="ph ph-columns text-xl"></i></button>
-                    <button onclick="toggleEditMode()" id="viewToggleBtn" class="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg flex items-center gap-2 transition-colors border border-transparent" title="Éditer"><i class="ph ph-pencil-simple text-xl" id="toggleIcon"></i></button>
-                    <button onclick="showDeleteConfirm()" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" title="Supprimer"><i class="ph ph-trash text-xl"></i></button>
+                    
+                    <button onclick="toggleSplitView()" class="hidden md:flex p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors" title="Vue Partagée">
+                        <i id="splitIcon" class="ph ph-columns text-xl"></i>
+                    </button>
+
+                    <button onclick="toggleEditMode()" id="viewToggleBtn" 
+                            class="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg flex items-center gap-2 transition-colors border border-transparent"
+                            title="Éditer">
+                        <i class="ph ph-pencil-simple text-xl" id="toggleIcon"></i>
+                    </button>
+
+                    <button onclick="showDeleteConfirm()" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" title="Supprimer">
+                        <i class="ph ph-trash text-xl"></i>
+                    </button>
                 </div>
-                <button onclick="exportDoc()" class="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-blue-600 rounded-lg transition-colors" title="Télécharger"><i class="ph ph-download-simple text-xl"></i></button>
+                
+                <!-- Export is available for everyone -->
+                <button onclick="exportDoc()" class="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-blue-600 rounded-lg transition-colors" title="Télécharger">
+                    <i class="ph ph-download-simple text-xl"></i>
+                </button>
             </header>
 
+            <!-- Adaptive Toolbar (Auth Only) -->
             <div id="formatToolbar" class="auth-only h-10 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 items-center px-2 gap-1 overflow-x-auto hidden flex-shrink-0 transition-colors">
                 <button onclick="applyFormat('bold')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Gras"><i class="ph ph-text-b text-lg"></i></button>
                 <button onclick="applyFormat('italic')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Italique"><i class="ph ph-text-i text-lg"></i></button>
@@ -191,25 +230,41 @@
                 <button onclick="applyFormat('hr')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Ligne horizontale"><i class="ph ph-minus text-lg"></i></button>
             </div>
 
+            <!-- Content Area -->
             <div id="contentContainer" class="flex-1 overflow-hidden relative group flex flex-row">
-                <textarea id="markdownEditor" class="editor-pane w-full h-full p-6 md:p-8 resize-none focus:outline-none font-mono text-sm leading-relaxed text-gray-800 bg-gray-50 dark:bg-gray-850 dark:text-gray-200 hidden border-r-0" placeholder="Commencez à écrire ici..." spellcheck="false"></textarea>
-                <div id="previewArea" class="preview-pane markdown-preview w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors"></div>
+                <!-- Zone de texte (Mode Édition) -->
+                <textarea id="markdownEditor" 
+                          class="editor-pane w-full h-full p-6 md:p-8 resize-none focus:outline-none font-mono text-sm leading-relaxed text-gray-800 bg-gray-50 dark:bg-gray-850 dark:text-gray-200 hidden border-r-0"
+                          placeholder="Commencez à écrire ici..." spellcheck="false"></textarea>
+                
+                <!-- Zone de prévisualisation (Mode Lecture) -->
+                <div id="previewArea" class="preview-pane markdown-preview w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors">
+                    <!-- Rendu ici -->
+                </div>
             </div>
             
+            <!-- Footer Info -->
             <div class="h-8 border-t border-gray-200 dark:border-gray-800 flex items-center px-4 text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-900 justify-between flex-shrink-0 transition-colors">
                 <div class="flex items-center gap-3">
-                    <span id="saveStatus" class="flex items-center gap-1 text-green-600 dark:text-green-400 font-medium opacity-0 transition-opacity duration-500"><i class="ph-fill ph-check-circle"></i> Synchro</span>
+                    <span id="saveStatus" class="flex items-center gap-1 text-green-600 dark:text-green-400 font-medium opacity-0 transition-opacity duration-500">
+                        <i class="ph-fill ph-check-circle"></i> Synchro
+                    </span>
                     <span id="formatDisplay" class="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-gray-600 dark:text-gray-300 uppercase font-semibold text-[10px] tracking-wider">Markdown</span>
                 </div>
-                <div class="flex gap-3"><span id="readTime">0 min lecture</span><span id="wordCount">0 mots</span></div>
+                <div class="flex gap-3">
+                     <span id="readTime">0 min lecture</span>
+                     <span id="wordCount">0 mots</span>
+                </div>
             </div>
         </div>
     </main>
 
+    <!-- Modal Login -->
     <div id="loginModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center fade-in">
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-11/12 max-w-sm transform scale-100 transition-transform border border-gray-100 dark:border-gray-700">
             <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Connexion Éditeur</h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Entrez le mot de passe pour passer en mode édition.</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Connectez-vous avec votre compte Firebase.</p>
+            <input type="email" id="adminEmail" placeholder="Email" class="w-full p-2 border rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white mb-2" onkeypress="handleLoginKey(event)">
             <input type="password" id="adminPassword" placeholder="Mot de passe" class="w-full p-2 border rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white mb-4" onkeypress="handleLoginKey(event)">
             <div class="flex gap-3">
                 <button onclick="closeLoginModal()" class="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 text-gray-800 dark:text-white">Annuler</button>
@@ -218,20 +273,32 @@
         </div>
     </div>
 
+    <!-- Modal Delete -->
     <div id="deleteModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center fade-in">
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-11/12 max-w-sm transform scale-100 transition-transform border border-gray-100 dark:border-gray-700">
             <div class="text-center">
-                <div class="mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-red-50 dark:bg-red-900/20 mb-4"><i class="ph ph-trash text-red-500 text-3xl"></i></div>
+                <div class="mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-red-50 dark:bg-red-900/20 mb-4">
+                    <i class="ph ph-trash text-red-500 text-3xl"></i>
+                </div>
                 <h3 class="text-xl font-bold text-gray-900 dark:text-white">Supprimer ?</h3>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Cette action supprimera définitivement <strong id="deleteDocTitle" class="text-gray-800 dark:text-gray-200">ce document</strong> de la base Firebase.</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                    Cette action supprimera définitivement <strong id="deleteDocTitle" class="text-gray-800 dark:text-gray-200">ce document</strong> de la base Firebase.
+                </p>
             </div>
             <div class="mt-6 flex gap-3">
-                <button onclick="closeDeleteModal()" class="flex-1 justify-center rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2.5 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 font-medium transition-colors">Annuler</button>
-                <button onclick="confirmDelete()" class="flex-1 justify-center rounded-lg px-4 py-2.5 bg-red-600 text-white hover:bg-red-700 font-medium shadow-lg shadow-red-500/30 transition-colors">Supprimer</button>
+                <button onclick="closeDeleteModal()" 
+                        class="flex-1 justify-center rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2.5 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 font-medium transition-colors">
+                    Annuler
+                </button>
+                <button onclick="confirmDelete()" 
+                        class="flex-1 justify-center rounded-lg px-4 py-2.5 bg-red-600 text-white hover:bg-red-700 font-medium shadow-lg shadow-red-500/30 transition-colors">
+                    Supprimer
+                </button>
             </div>
         </div>
     </div>
 
+    <!-- Toast Notification -->
     <div id="toast" class="fixed bottom-6 right-6 bg-gray-800 dark:bg-gray-700 text-white px-5 py-3 rounded-lg shadow-xl transform translate-y-32 transition-transform duration-300 z-50 flex items-center gap-3 border border-gray-700 dark:border-gray-600">
         <i id="toastIcon" class="ph-fill ph-check-circle text-green-400 text-xl"></i>
         <span id="toastMsg" class="font-medium">Notification</span>
@@ -239,9 +306,10 @@
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
-        import { getAuth, signInWithCustomToken, signInAnonymously } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+        import { getAuth, signInWithCustomToken, signInAnonymously, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
         import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
+        // --- FIREBASE CONFIGURATION ---
         const firebaseConfig = {
             apiKey: "AIzaSyC57xDrplkTksyVMgEItGRu-HIo3-MFbRg",
             authDomain: "wiki-b6d3f.firebaseapp.com",
@@ -255,16 +323,21 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        
+        // Nom de la collection à la racine de votre base de données
         const collectionName = 'wiki_documents';
         
         let currentUser = null;
-        let isAdmin = false; 
+        let isAdmin = false; // "Login" state for UI
+
+        // --- DATA STATE ---
         let docs = [];
         let currentDocId = null;
         let isEditMode = false;
         let isSplitView = false;
         let isDarkMode = false;
 
+        // --- DOM REFS ---
         const docListEl = document.getElementById('docList');
         const searchInput = document.getElementById('searchInput');
         const emptyState = document.getElementById('emptyState');
@@ -292,6 +365,7 @@
         const dbStatusIndicator = document.getElementById('dbStatusIndicator');
         const dbStatusText = document.getElementById('dbStatusText');
 
+        // --- INIT ---
         window.addEventListener('DOMContentLoaded', async () => {
             // FIX: Expose functions immediately before any async calls
             window.createNewDoc = createNewDoc;
@@ -315,6 +389,8 @@
             window.handleLoginKey = handleLoginKey;
 
             initTheme();
+            
+            // Set Marked options
             marked.setOptions({
                 breaks: true,
                 gfm: true,
@@ -325,8 +401,10 @@
                 langPrefix: 'hljs language-'
             });
 
+            // Initialize Auth & Data
             await initAuth();
             
+            // Listeners
             searchInput.addEventListener('input', (e) => renderDocList(e.target.value));
             markdownEditor.addEventListener('input', () => {
                 updateCurrentContent();
@@ -343,6 +421,8 @@
             document.getElementById('bgColorPicker').addEventListener('input', (e) => bgColorIndicator.style.backgroundColor = e.target.value);
         });
 
+        // --- THEME & VIEW LOGIC ---
+
         function initTheme() {
             const savedTheme = localStorage.getItem('wiki_theme');
             if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -351,7 +431,8 @@
         }
 
         function toggleDarkMode() { setDarkMode(!isDarkMode); }
-
+        
+        // ... (Le reste des fonctions de thème reste identique) ...
         function setDarkMode(enable) {
             isDarkMode = enable;
             if (isDarkMode) {
@@ -370,6 +451,7 @@
                 showToast("Vue partagée uniquement sur ordinateur", "info");
                 return;
             }
+
             isSplitView = !isSplitView;
             if (isSplitView) {
                 contentContainer.classList.add('split-active');
@@ -387,41 +469,87 @@
             }
         }
 
+        // --- FIREBASE AUTH & FIRESTORE ---
         async function initAuth() {
-            try {
-                await signInAnonymously(auth);
-                currentUser = auth.currentUser;
-                console.log("Auth success:", currentUser.uid);
-                dbStatusIndicator.className = "w-2 h-2 rounded-full bg-green-500";
-                dbStatusText.innerText = "En ligne";
-                subscribeToDocs();
-            } catch (error) {
-                console.error("Auth failed:", error);
-                dbStatusText.innerText = "Erreur Connexion (Vérifiez Console)";
-            }
+            // Surveille l'état de connexion (Admin ou rien du tout)
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    // UTILISATEUR CONNECTÉ (Admin)
+                    currentUser = user;
+                    isAdmin = true;
+                    console.log("Connecté en tant que :", user.email);
+                    
+                    document.body.classList.add('is-admin');
+                    document.getElementById('loginBtn').classList.add('hidden');
+                    document.getElementById('logoutBtn').classList.remove('hidden');
+                    
+                    // Activer l'édition du titre
+                    document.getElementById('docTitleInput').readOnly = false;
+                    document.getElementById('docTitleInput').classList.remove('cursor-default');
+                    
+                    dbStatusIndicator.className = "w-2 h-2 rounded-full bg-green-500";
+                    dbStatusText.innerText = user.email; // Affiche l'email
+                    
+                } else {
+                    // UTILISATEUR DÉCONNECTÉ (Visiteur / Lecture seule)
+                    currentUser = null;
+                    isAdmin = false;
+                    console.log("Mode Visiteur (Non connecté)");
+
+                    document.body.classList.remove('is-admin');
+                    document.getElementById('loginBtn').classList.remove('hidden');
+                    document.getElementById('logoutBtn').classList.add('hidden');
+                    
+                    // Désactiver l'édition du titre
+                    document.getElementById('docTitleInput').readOnly = true;
+                    document.getElementById('docTitleInput').classList.add('cursor-default');
+
+                    dbStatusIndicator.className = "w-2 h-2 rounded-full bg-blue-400";
+                    dbStatusText.innerText = "Mode Lecture Publique";
+                }
+                
+                // Mettre à jour l'interface si un doc est ouvert
+                if (currentDocId) {
+                    const doc = docs.find(d => d.id === currentDocId);
+                    updateUIForFormat(doc ? doc.format : 'markdown');
+                }
+            });
+            
+            // On lance l'écoute des données immédiatement (Lecture publique)
+            subscribeToDocs();
         }
 
         function subscribeToDocs() {
             const docsRef = collection(db, collectionName);
+            
             onSnapshot(docsRef, (snapshot) => {
                 docs = [];
                 snapshot.forEach((doc) => {
                     docs.push({ id: doc.id, ...doc.data() });
                 });
+                // Tri par date de modification
                 docs.sort((a, b) => b.updatedAt - a.updatedAt);
+                
                 renderDocList(searchInput.value);
+                
+                // Si le document en cours est supprimé par quelqu'un d'autre
                 if (currentDocId) {
                     const currentDoc = docs.find(d => d.id === currentDocId);
                     if (!currentDoc) {
                         currentDocId = null;
                         emptyState.classList.remove('hidden');
                         editorWrapper.classList.add('hidden');
+                    } else if (!isEditMode && markdownEditor.value !== currentDoc.content) {
+                        // Mise à jour live si on n'édite pas
+                        // (On évite d'écraser ce que l'admin tape s'il est en train d'écrire)
                     }
                 }
             }, (error) => {
                 console.error("Firestore Error:", error);
                 if(error.code === 'permission-denied') {
-                    showToast("Erreur Permission: Configurez les règles Firestore !", "delete");
+                    showToast("Erreur: Activez la lecture publique dans Firebase !", "delete");
+                    dbStatusText.innerText = "Accès refusé";
+                    dbStatusIndicator.className = "w-2 h-2 rounded-full bg-red-500";
                 } else {
                     showToast("Erreur de synchronisation", "delete");
                 }
@@ -429,7 +557,10 @@
         }
 
         async function saveDocToFirebase(docData) {
-            if (!currentUser) return;
+            if (!currentUser) {
+                showToast("Connectez-vous pour sauvegarder", "delete");
+                return;
+            }
             try {
                 const docRef = doc(db, collectionName, docData.id);
                 await setDoc(docRef, docData);
@@ -451,49 +582,54 @@
             }
         }
 
-        function openLoginModal() { document.getElementById('loginModal').classList.remove('hidden'); document.getElementById('adminPassword').focus(); }
+        // --- AUTH UI LOGIC ---
+        function openLoginModal() { document.getElementById('loginModal').classList.remove('hidden'); document.getElementById('adminEmail').focus(); }
         function closeLoginModal() { document.getElementById('loginModal').classList.add('hidden'); document.getElementById('adminPassword').value = ''; }
         function handleLoginKey(e) { if(e.key === 'Enter') checkLogin(); }
         
-        function checkLogin() {
+        async function checkLogin() {
+            const email = document.getElementById('adminEmail').value;
             const pass = document.getElementById('adminPassword').value;
-            if (pass === 'admin123') { 
-                isAdmin = true;
-                document.body.classList.add('is-admin');
-                document.getElementById('loginBtn').classList.add('hidden');
-                document.getElementById('logoutBtn').classList.remove('hidden');
-                document.getElementById('docTitleInput').readOnly = false;
-                document.getElementById('docTitleInput').classList.remove('cursor-default');
+            
+            if (!email || !pass) {
+                showToast("Veuillez remplir tous les champs", "delete");
+                return;
+            }
+
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+                // onAuthStateChanged s'occupera de mettre à jour l'interface
                 closeLoginModal();
-                showToast("Mode Éditeur Activé");
-                if (currentDocId) {
-                    const doc = docs.find(d => d.id === currentDocId);
-                    updateUIForFormat(doc ? doc.format : 'markdown');
-                }
-            } else {
-                showToast("Mot de passe incorrect", "delete");
+                showToast("Connexion réussie");
+            } catch (error) {
+                console.error("Login Error:", error);
+                let msg = "Erreur de connexion";
+                if (error.code === 'auth/invalid-credential') msg = "Email ou mot de passe incorrect";
+                if (error.code === 'auth/too-many-requests') msg = "Trop de tentatives, réessayez plus tard";
+                showToast(msg, "delete");
             }
         }
 
-        function logoutAdmin() {
-            isAdmin = false;
-            document.body.classList.remove('is-admin');
-            document.getElementById('loginBtn').classList.remove('hidden');
-            document.getElementById('logoutBtn').classList.add('hidden');
-            document.getElementById('docTitleInput').readOnly = true;
-            document.getElementById('docTitleInput').classList.add('cursor-default');
-            
-            // Force exit edit mode directly via DOM logic without relying on potentially blocked toggles
-            isEditMode = false;
-            markdownEditor.classList.add('hidden');
-            previewArea.classList.remove('hidden');
-            toggleIcon.classList.replace('ph-eye', 'ph-pencil-simple');
-            viewToggleBtn.classList.remove('bg-blue-50', 'text-blue-600', 'dark:bg-blue-900/30', 'dark:text-blue-400');
-            
-            if (isSplitView) toggleSplitView();
-            updateUIForFormat(docFormatSelect.value);
-            showToast("Déconnecté");
+        async function logoutAdmin() {
+            try {
+                await signOut(auth);
+                
+                // On quitte le mode édition proprement
+                isEditMode = false;
+                markdownEditor.classList.add('hidden');
+                previewArea.classList.remove('hidden');
+                toggleIcon.classList.replace('ph-eye', 'ph-pencil-simple');
+                viewToggleBtn.classList.remove('bg-blue-50', 'text-blue-600', 'dark:bg-blue-900/30', 'dark:text-blue-400');
+                
+                if (isSplitView) toggleSplitView();
+                
+                showToast("Déconnecté");
+            } catch (error) {
+                console.error("Logout Error:", error);
+            }
         }
+
+        // --- CRUD OPERATIONS ---
 
         function createNewDoc() {
             if (!isAdmin) return;
@@ -504,10 +640,13 @@
                 format: 'markdown',
                 updatedAt: Date.now()
             };
+            // Optimistic UI update
             docs.unshift(newDoc);
             renderDocList();
             selectDoc(newDoc.id);
+            // Save to cloud
             saveDocToFirebase(newDoc);
+            
             if (!isEditMode && !isSplitView) toggleEditMode();
             setTimeout(() => docTitleInput.focus(), 100);
         }
@@ -516,11 +655,14 @@
             currentDocId = id;
             const doc = docs.find(d => d.id === id);
             if (!doc) return;
+
             emptyState.classList.add('hidden');
             editorWrapper.classList.remove('hidden');
+            
             docTitleInput.value = doc.title;
             markdownEditor.value = doc.content;
             docFormatSelect.value = doc.format || 'markdown';
+            
             updateUIForFormat(doc.format);
             renderPreview(doc.content, doc.format);
             updateStats();
@@ -540,6 +682,7 @@
             if (!currentDocId || !isAdmin) return;
             const doc = docs.find(d => d.id === currentDocId);
             const newFormat = docFormatSelect.value;
+            
             if (doc.format !== newFormat) {
                 doc.format = newFormat;
                 doc.updatedAt = Date.now();
@@ -555,7 +698,7 @@
             const doc = docs.find(d => d.id === currentDocId);
             doc.content = markdownEditor.value;
             doc.updatedAt = Date.now();
-            saveDocToFirebase(doc);
+            saveDocToFirebase(doc); // Auto-save to cloud
             renderPreview(doc.content, doc.format);
         }
 
@@ -563,6 +706,8 @@
             if (!currentDocId || !isAdmin) return;
             const idToDelete = currentDocId;
             deleteDocFromFirebase(idToDelete);
+            
+            // UI cleanup handled by onSnapshot, but we can do optimistic cleanup
             docs = docs.filter(d => d.id !== idToDelete);
             currentDocId = null;
             renderDocList();
@@ -579,6 +724,7 @@
             let mimeType = 'text/plain';
             if (doc.format === 'markdown') { extension = 'md'; mimeType = 'text/markdown'; }
             else if (doc.format === 'html') { extension = 'html'; mimeType = 'text/html'; }
+            
             const blob = new Blob([doc.content], { type: mimeType });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -591,29 +737,40 @@
             showToast('Téléchargement lancé');
         }
 
+        // --- UI & RENDERING ---
+
         function renderDocList(filter = '', resetScroll = true) {
             docListEl.innerHTML = '';
             const filtered = docs.filter(d => d.title.toLowerCase().includes(filter.toLowerCase()));
+
             if (filtered.length === 0) {
                 docListEl.innerHTML = `<div class="text-gray-500 text-center text-sm mt-8 opacity-50">Aucun document</div>`;
                 return;
             }
+
             filtered.forEach(doc => {
                 const isActive = doc.id === currentDocId;
                 const div = document.createElement('div');
                 div.className = `p-3 rounded-lg cursor-pointer transition-all mb-1 border border-transparent group ${isActive ? 'bg-gray-800 border-blue-500/50 shadow-md' : 'hover:bg-gray-800 hover:border-gray-700'}`;
                 div.onclick = () => selectDoc(doc.id);
+                
                 let icon = 'ph-file-text';
                 if(doc.format === 'markdown') icon = 'ph-markdown-logo';
                 if(doc.format === 'html') icon = 'ph-code';
+                
                 div.innerHTML = `
                     <div class="flex items-center gap-3">
-                        <div class="${isActive ? 'text-blue-400' : 'text-gray-600 dark:text-gray-500 group-hover:text-gray-400'}"><i class="ph ${icon} text-xl"></i></div>
+                        <div class="${isActive ? 'text-blue-400' : 'text-gray-600 dark:text-gray-500 group-hover:text-gray-400'}">
+                            <i class="ph ${icon} text-xl"></i>
+                        </div>
                         <div class="overflow-hidden">
                             <div class="font-medium text-sm truncate ${isActive ? 'text-white' : 'text-gray-300 group-hover:text-white'}">${doc.title}</div>
-                            <div class="text-[10px] ${isActive ? 'text-blue-300' : 'text-gray-600 dark:text-gray-500'} mt-0.5">${new Date(doc.updatedAt).toLocaleDateString()} • ${doc.format ? doc.format.toUpperCase() : 'MD'}</div>
+                            <div class="text-[10px] ${isActive ? 'text-blue-300' : 'text-gray-600 dark:text-gray-500'} mt-0.5">
+                                ${new Date(doc.updatedAt).toLocaleDateString()} • ${doc.format ? doc.format.toUpperCase() : 'MD'}
+                            </div>
                         </div>
-                    </div>`;
+                    </div>
+                `;
                 docListEl.appendChild(div);
             });
         }
@@ -623,12 +780,16 @@
                 previewArea.innerHTML = '<div class="text-gray-300 dark:text-gray-600 italic">Vide...</div>';
                 return;
             }
+
             if (format === 'markdown' || !format) {
                 previewArea.className = "preview-pane markdown-preview w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors";
+                // Marked is configured with breaks: true for line breaks
                 previewArea.innerHTML = DOMPurify.sanitize(marked.parse(content));
             } else if (format === 'html') {
                 previewArea.className = "preview-pane w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors";
-                previewArea.innerHTML = DOMPurify.sanitize(content);
+                // Simple formatting preservation for HTML preview
+                let htmlContent = content; // Can add .replace(/\n/g, '<br>') if needed
+                previewArea.innerHTML = DOMPurify.sanitize(htmlContent);
             } else {
                 previewArea.className = "preview-pane preview-text w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors text-gray-700";
                 previewArea.innerText = content;
@@ -637,7 +798,10 @@
 
         function updateUIForFormat(format) {
             formatDisplay.innerText = format;
+            
+            // Logic: Toolbar visible ONLY if isAdmin AND (EditMode OR SplitView)
             const showToolbar = isAdmin && (isEditMode || isSplitView);
+            
             if (showToolbar) {
                 formatToolbar.classList.remove('hidden');
                 formatToolbar.classList.add('flex');
@@ -648,37 +812,56 @@
         }
 
         function toggleEditMode(forceState) {
-            if (!isAdmin) return;
+            if (!isAdmin) return; // Prevent unauthorized editing toggles
+            
             isEditMode = (typeof forceState !== 'undefined') ? forceState : !isEditMode;
+            
             if(isSplitView) return; 
+
             if (isEditMode) {
                 previewArea.classList.add('hidden');
                 markdownEditor.classList.remove('hidden');
                 markdownEditor.focus();
+                
                 toggleIcon.classList.replace('ph-pencil-simple', 'ph-eye');
                 viewToggleBtn.classList.add('bg-blue-50', 'text-blue-600', 'dark:bg-blue-900/30', 'dark:text-blue-400');
             } else {
                 markdownEditor.classList.add('hidden');
                 previewArea.classList.remove('hidden');
+                
                 toggleIcon.classList.replace('ph-eye', 'ph-pencil-simple');
                 viewToggleBtn.classList.remove('bg-blue-50', 'text-blue-600', 'dark:bg-blue-900/30', 'dark:text-blue-400');
             }
             updateUIForFormat(docFormatSelect.value);
         }
 
+        // --- IMPORT LOGIC ---
         function handleFileUpload(input) {
             if (!isAdmin) return;
             const file = input.files[0];
             if (!file) return;
+
             const reader = new FileReader();
             reader.onload = function(e) {
                 const content = e.target.result;
                 const title = file.name.replace(/\.[^/.]+$/, "");
+                
                 let format = 'text';
                 if(file.name.endsWith('.md')) format = 'markdown';
                 if(file.name.endsWith('.html')) format = 'html';
-                const newDoc = { id: crypto.randomUUID(), title: title, content: content, format: format, updatedAt: Date.now() };
+
+                const newDoc = {
+                    id: crypto.randomUUID(),
+                    title: title,
+                    content: content,
+                    format: format,
+                    updatedAt: Date.now()
+                };
+                
+                // Save directly to cloud
                 saveDocToFirebase(newDoc);
+                
+                // Optimistic UI
                 docs.unshift(newDoc);
                 renderDocList();
                 selectDoc(newDoc.id);
@@ -688,34 +871,42 @@
             reader.readAsText(file);
         }
 
+        // --- COLOR LOGIC ---
         function applyColor(type, value) {
             if (!currentDocId || !isAdmin) return;
             const textarea = markdownEditor;
             const start = textarea.selectionStart;
             const end = textarea.selectionEnd;
             let sel = textarea.value.substring(start, end) || 'texte';
+            
             const spanRegex = /^<span style="([^"]*)">(.*?)<\/span>$/i;
             let existingStyle = "";
             let innerText = sel;
+
             if (spanRegex.test(sel)) {
                 const match = sel.match(spanRegex);
                 existingStyle = match[1];
                 innerText = match[2];
             }
+
             const styleObj = {};
             existingStyle.split(';').forEach(style => {
                 const [prop, val] = style.split(':');
                 if (prop && val) styleObj[prop.trim().toLowerCase()] = val.trim();
             });
+
             if (type === 'text') styleObj['color'] = value;
             if (type === 'bg') styleObj['background-color'] = value;
+
             const newStyleString = Object.entries(styleObj).map(([k, v]) => `${k}:${v}`).join('; ');
             const newHTML = `<span style="${newStyleString}">${innerText}</span>`;
+            
             textarea.setRangeText(newHTML, start, end, 'select');
             updateCurrentContent();
             textarea.focus();
         }
 
+        // --- FORMAT LOGIC ---
         function applyFormat(type) {
             if (!currentDocId || !isAdmin) return;
             const doc = docs.find(d => d.id === currentDocId);
@@ -726,6 +917,7 @@
             let end = textarea.selectionEnd;
             let sel = fullText.substring(start, end);
 
+            // Helpers from previous robust version...
             const toggleInlineMD = (marker) => {
                 const len = marker.length;
                 const before = fullText.substring(start - len, start);
