@@ -1,39 +1,70 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" class="">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WikiDocs Pro</title>
+    <title>WikiDocs Ultimate</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        gray: { 750: '#2d3748', 850: '#1a202c', 950: '#0d1117' }
+                    }
+                }
+            }
+        }
+    </script>
     <!-- Marked.js -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <!-- DOMPurify -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Highlight.js pour la coloration syntaxique -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        body { font-family: 'Inter', sans-serif; }
         
         /* Typography Styles for Preview */
-        .markdown-preview { color: #374151; line-height: 1.7; }
-        .markdown-preview h1 { font-size: 2.25em; font-weight: 800; margin-bottom: 0.5em; color: #111827; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.3em; }
-        .markdown-preview h2 { font-size: 1.75em; font-weight: 700; margin-top: 1.5em; margin-bottom: 0.5em; color: #1f2937; }
-        .markdown-preview h3 { font-size: 1.5em; font-weight: 600; margin-top: 1.25em; margin-bottom: 0.5em; color: #374151; }
+        .markdown-preview { line-height: 1.7; }
+        .markdown-preview h1 { font-size: 2.25em; font-weight: 800; margin-bottom: 0.5em; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.3em; }
+        .markdown-preview h2 { font-size: 1.75em; font-weight: 700; margin-top: 1.5em; margin-bottom: 0.5em; }
+        .markdown-preview h3 { font-size: 1.5em; font-weight: 600; margin-top: 1.25em; margin-bottom: 0.5em; }
         .markdown-preview p { margin-bottom: 1em; }
         .markdown-preview ul { list-style-type: disc; padding-left: 1.5em; margin-bottom: 1em; }
         .markdown-preview ol { list-style-type: decimal; padding-left: 1.5em; margin-bottom: 1em; }
-        .markdown-preview code { background-color: #f3f4f6; padding: 0.2em 0.4em; border-radius: 0.25em; font-family: 'Menlo', monospace; font-size: 0.9em; color: #db2777; }
+        /* Checkbox lists */
+        .markdown-preview ul:has(input[type="checkbox"]) { list-style-type: none; padding-left: 0.5em; }
+        .markdown-preview li:has(input[type="checkbox"]) { display: flex; align-items: center; gap: 0.5em; }
+
+        .markdown-preview code { background-color: rgba(0,0,0,0.05); padding: 0.2em 0.4em; border-radius: 0.25em; font-family: 'Menlo', monospace; font-size: 0.9em; color: #db2777; }
+        .dark .markdown-preview code { background-color: rgba(255,255,255,0.1); color: #f472b6; }
+        
         .markdown-preview pre { background-color: #1f2937; color: #f9fafb; padding: 1em; border-radius: 0.5em; overflow-x: auto; margin-bottom: 1em; }
         .markdown-preview pre code { background-color: transparent; color: inherit; padding: 0; }
-        .markdown-preview blockquote { border-left: 4px solid #3b82f6; padding-left: 1em; color: #4b5563; font-style: italic; background-color: #eff6ff; padding: 0.5em; border-radius: 0 0.5em 0.5em 0; margin-bottom: 1em;}
+        
+        .markdown-preview blockquote { border-left: 4px solid #3b82f6; padding-left: 1em; font-style: italic; background-color: rgba(59, 130, 246, 0.1); padding: 0.5em; border-radius: 0 0.5em 0.5em 0; margin-bottom: 1em;}
+        
         .markdown-preview a { color: #2563eb; text-decoration: underline; }
+        .dark .markdown-preview a { color: #60a5fa; }
+        
         .markdown-preview img { max-width: 100%; border-radius: 0.5em; margin: 1em 0; border: 1px solid #e5e7eb; }
+        .dark .markdown-preview img { border-color: #374151; }
+        
         .markdown-preview table { width: 100%; border-collapse: collapse; margin-bottom: 1em; }
         .markdown-preview th, .markdown-preview td { border: 1px solid #e5e7eb; padding: 0.5em; text-align: left; }
-        .markdown-preview th { background-color: #f9fafb; font-weight: 600; }
+        .dark .markdown-preview th, .dark .markdown-preview td { border-color: #374151; }
+        .markdown-preview th { background-color: rgba(0,0,0,0.02); font-weight: 600; }
+        .dark .markdown-preview th { background-color: rgba(255,255,255,0.05); }
+        
         .markdown-preview hr { border: 0; border-top: 2px solid #e5e7eb; margin: 2em 0; }
+        .dark .markdown-preview hr { border-color: #374151; }
 
         /* Specific styles for Text format */
         .preview-text { white-space: pre-wrap; font-family: 'Courier New', monospace; }
@@ -46,69 +77,81 @@
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark ::-webkit-scrollbar-thumb { background: #4b5563; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Split View Layout */
+        .split-active .editor-pane { display: block !important; width: 50%; border-right: 1px solid #e5e7eb; }
+        .dark .split-active .editor-pane { border-right: 1px solid #374151; }
+        .split-active .preview-pane { display: block !important; width: 50%; }
         
-        /* Toolbar Button Active State */
         .tool-btn:active { transform: scale(0.95); }
     </style>
 </head>
-<body class="h-screen flex flex-col md:flex-row overflow-hidden text-gray-800">
+<body class="h-screen flex flex-col md:flex-row overflow-hidden bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-200">
 
     <!-- Sidebar -->
     <aside class="w-full md:w-72 bg-gray-900 text-gray-100 flex flex-col border-r border-gray-800 flex-shrink-0 z-20 shadow-xl">
-        <div class="p-4 border-b border-gray-800 flex justify-between items-center bg-gray-900">
+        <div class="p-4 border-b border-gray-800 flex justify-between items-center bg-gray-950">
             <h1 class="text-xl font-bold flex items-center gap-2 text-blue-400">
                 <i class="ph ph-books text-2xl"></i>
-                WikiDocs <span class="text-xs bg-blue-900 text-blue-200 px-1.5 py-0.5 rounded ml-1">Pro</span>
+                WikiDocs <span class="text-xs bg-blue-900 text-blue-200 px-1.5 py-0.5 rounded ml-1">Ult</span>
             </h1>
-            <button onclick="createNewDoc()" class="md:hidden text-gray-400 hover:text-white">
-                <i class="ph ph-plus-circle text-2xl"></i>
-            </button>
+            <div class="flex items-center gap-2">
+                <button onclick="toggleDarkMode()" class="text-gray-400 hover:text-yellow-400 transition-colors p-1" title="Mode Sombre/Clair">
+                    <i id="themeIcon" class="ph ph-moon text-xl"></i>
+                </button>
+                <button onclick="createNewDoc()" class="md:hidden text-gray-400 hover:text-white">
+                    <i class="ph ph-plus-circle text-2xl"></i>
+                </button>
+            </div>
         </div>
         
-        <div class="p-3">
+        <div class="p-3 bg-gray-900">
             <div class="relative">
                 <i class="ph ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
                 <input type="text" id="searchInput" placeholder="Rechercher..." 
-                       class="w-full bg-gray-800 text-sm text-white rounded-lg pl-9 pr-3 py-2 border border-gray-700 focus:outline-none focus:border-blue-500 transition-colors">
+                       class="w-full bg-gray-800 text-sm text-white rounded-lg pl-9 pr-3 py-2 border border-gray-700 focus:outline-none focus:border-blue-500 transition-colors placeholder-gray-500">
             </div>
         </div>
 
-        <div class="flex-1 overflow-y-auto p-2 space-y-1" id="docList">
+        <div class="flex-1 overflow-y-auto p-2 space-y-1 bg-gray-900" id="docList">
             <!-- Doc list via JS -->
         </div>
 
-        <div class="p-4 border-t border-gray-800 hidden md:block">
+        <div class="p-4 border-t border-gray-800 bg-gray-900 flex flex-col gap-2">
             <button onclick="createNewDoc()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-blue-500/20 active:translate-y-0.5">
                 <i class="ph ph-plus-circle text-lg"></i>
                 Nouveau Document
             </button>
+            <label class="w-full cursor-pointer bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-all text-sm border border-gray-700">
+                <i class="ph ph-upload-simple text-lg"></i>
+                Importer Fichier
+                <input type="file" id="fileInput" class="hidden" accept=".md,.txt,.html" onchange="handleFileUpload(this)">
+            </label>
         </div>
     </aside>
 
     <!-- Main Content -->
-    <main class="flex-1 flex flex-col bg-white relative h-full">
+    <main class="flex-1 flex flex-col bg-white dark:bg-gray-900 relative h-full transition-colors duration-200">
         
         <!-- Empty State -->
-        <div id="emptyState" class="absolute inset-0 flex flex-col items-center justify-center text-gray-400 z-10 bg-white">
-            <div class="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mb-6">
-                <i class="ph ph-files text-5xl text-gray-300"></i>
+        <div id="emptyState" class="absolute inset-0 flex flex-col items-center justify-center text-gray-400 z-10 bg-white dark:bg-gray-900 transition-colors">
+            <div class="w-24 h-24 bg-gray-50 dark:bg-gray-800 rounded-full flex items-center justify-center mb-6">
+                <i class="ph ph-files text-5xl text-gray-300 dark:text-gray-600"></i>
             </div>
-            <h2 class="text-xl font-semibold text-gray-700">Aucun document ouvert</h2>
-            <p class="mt-2 text-sm text-gray-500">Sélectionnez un document à gauche ou créez-en un nouveau.</p>
-            <button onclick="createNewDoc()" class="mt-6 px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors shadow-md">
-                + Créer un document
-            </button>
+            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300">Aucun document ouvert</h2>
+            <p class="mt-2 text-sm text-gray-500">Sélectionnez un document ou importez-en un.</p>
         </div>
 
         <!-- Editor Wrapper -->
-        <div id="editorWrapper" class="hidden flex flex-col h-full w-full z-10 bg-white">
+        <div id="editorWrapper" class="hidden flex flex-col h-full w-full z-10 bg-white dark:bg-gray-900">
             
             <!-- Top Bar -->
-            <header class="h-16 border-b border-gray-200 flex items-center justify-between px-4 md:px-6 bg-white flex-shrink-0 gap-4">
+            <header class="h-16 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-4 md:px-6 bg-white dark:bg-gray-900 flex-shrink-0 gap-4 transition-colors">
                 <div class="flex-1 min-w-0">
                     <input type="text" id="docTitleInput" placeholder="Titre du document" 
-                           class="w-full text-lg md:text-xl font-bold text-gray-800 placeholder-gray-300 border-none focus:ring-0 focus:outline-none bg-transparent truncate"
+                           class="w-full text-lg md:text-xl font-bold text-gray-800 dark:text-gray-100 placeholder-gray-300 dark:placeholder-gray-600 border-none focus:ring-0 focus:outline-none bg-transparent truncate"
                            oninput="updateCurrentTitle()">
                 </div>
                 
@@ -116,7 +159,7 @@
                     <!-- Format Selector -->
                     <div class="relative group hidden md:block">
                         <select id="docFormatSelect" onchange="updateCurrentFormat()" 
-                                class="appearance-none bg-gray-50 border border-gray-200 text-gray-700 text-xs rounded-md py-1.5 pl-3 pr-8 leading-tight focus:outline-none focus:bg-white focus:border-blue-500 cursor-pointer">
+                                class="appearance-none bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded-md py-1.5 pl-3 pr-8 leading-tight focus:outline-none focus:border-blue-500 cursor-pointer">
                             <option value="markdown">Markdown</option>
                             <option value="html">HTML</option>
                             <option value="text">Texte Brut</option>
@@ -126,82 +169,90 @@
                         </div>
                     </div>
 
-                    <div class="h-6 w-px bg-gray-200 mx-1 hidden md:block"></div>
+                    <div class="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-1 hidden md:block"></div>
+                    
+                    <button onclick="toggleSplitView()" class="hidden md:flex p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors" title="Vue Partagée (Split View)">
+                        <i id="splitIcon" class="ph ph-columns text-xl"></i>
+                    </button>
 
-                    <button onclick="exportDoc()" class="p-2 text-gray-500 hover:bg-gray-100 hover:text-blue-600 rounded-lg transition-colors" title="Exporter">
+                    <button onclick="exportDoc()" class="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-blue-600 rounded-lg transition-colors" title="Exporter">
                         <i class="ph ph-download-simple text-xl"></i>
                     </button>
 
                     <button onclick="toggleEditMode()" id="viewToggleBtn" 
-                            class="p-2 text-gray-500 hover:bg-gray-100 rounded-lg flex items-center gap-2 transition-colors border border-transparent"
+                            class="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg flex items-center gap-2 transition-colors border border-transparent md:hidden"
                             title="Basculer Édition/Aperçu">
                         <i class="ph ph-pencil-simple text-xl" id="toggleIcon"></i>
                     </button>
 
-                    <button onclick="showDeleteConfirm()" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Supprimer">
+                    <button onclick="showDeleteConfirm()" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" title="Supprimer">
                         <i class="ph ph-trash text-xl"></i>
                     </button>
                 </div>
             </header>
 
-            <!-- Markdown Toolbar (Visible only in Edit mode & Markdown format) -->
-            <div id="markdownToolbar" class="h-10 border-b border-gray-100 bg-gray-50 flex items-center px-2 gap-1 overflow-x-auto hidden flex-shrink-0">
-                <button onclick="insertMD('bold')" class="tool-btn p-1.5 rounded hover:bg-gray-200 text-gray-600" title="Gras"><i class="ph ph-text-b text-lg"></i></button>
-                <button onclick="insertMD('italic')" class="tool-btn p-1.5 rounded hover:bg-gray-200 text-gray-600" title="Italique"><i class="ph ph-text-i text-lg"></i></button>
-                <button onclick="insertMD('heading')" class="tool-btn p-1.5 rounded hover:bg-gray-200 text-gray-600" title="Titre"><i class="ph ph-text-h text-lg"></i></button>
-                <div class="w-px h-4 bg-gray-300 mx-1"></div>
-                <button onclick="insertMD('list-ul')" class="tool-btn p-1.5 rounded hover:bg-gray-200 text-gray-600" title="Liste à puces"><i class="ph ph-list-bullets text-lg"></i></button>
-                <button onclick="insertMD('list-ol')" class="tool-btn p-1.5 rounded hover:bg-gray-200 text-gray-600" title="Liste numérotée"><i class="ph ph-list-numbers text-lg"></i></button>
-                <button onclick="insertMD('code')" class="tool-btn p-1.5 rounded hover:bg-gray-200 text-gray-600" title="Code"><i class="ph ph-code text-lg"></i></button>
-                <button onclick="insertMD('quote')" class="tool-btn p-1.5 rounded hover:bg-gray-200 text-gray-600" title="Citation"><i class="ph ph-quotes text-lg"></i></button>
-                <div class="w-px h-4 bg-gray-300 mx-1"></div>
-                <button onclick="insertMD('link')" class="tool-btn p-1.5 rounded hover:bg-gray-200 text-gray-600" title="Lien"><i class="ph ph-link text-lg"></i></button>
-                <button onclick="insertMD('image')" class="tool-btn p-1.5 rounded hover:bg-gray-200 text-gray-600" title="Image"><i class="ph ph-image text-lg"></i></button>
-                <div class="w-px h-4 bg-gray-300 mx-1"></div>
-                <button onclick="insertMD('table')" class="tool-btn p-1.5 rounded hover:bg-gray-200 text-gray-600" title="Tableau"><i class="ph ph-table text-lg"></i></button>
+            <!-- Markdown Toolbar -->
+            <div id="markdownToolbar" class="h-10 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 flex items-center px-2 gap-1 overflow-x-auto hidden flex-shrink-0 transition-colors">
+                <button onclick="insertMD('bold')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Gras"><i class="ph ph-text-b text-lg"></i></button>
+                <button onclick="insertMD('italic')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Italique"><i class="ph ph-text-i text-lg"></i></button>
+                <button onclick="insertMD('strike')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Barré"><i class="ph ph-text-strikethrough text-lg"></i></button>
+                <button onclick="insertMD('heading')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Titre"><i class="ph ph-text-h text-lg"></i></button>
+                <div class="w-px h-4 bg-gray-300 dark:bg-gray-600 mx-1"></div>
+                <button onclick="insertMD('list-ul')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Liste à puces"><i class="ph ph-list-bullets text-lg"></i></button>
+                <button onclick="insertMD('list-ol')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Liste numérotée"><i class="ph ph-list-numbers text-lg"></i></button>
+                <button onclick="insertMD('check')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Tâche"><i class="ph ph-check-square text-lg"></i></button>
+                <button onclick="insertMD('code')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Code"><i class="ph ph-code text-lg"></i></button>
+                <button onclick="insertMD('quote')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Citation"><i class="ph ph-quotes text-lg"></i></button>
+                <div class="w-px h-4 bg-gray-300 dark:bg-gray-600 mx-1"></div>
+                <button onclick="insertMD('link')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Lien"><i class="ph ph-link text-lg"></i></button>
+                <button onclick="insertMD('image')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Image"><i class="ph ph-image text-lg"></i></button>
+                <button onclick="insertMD('hr')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Ligne horizontale"><i class="ph ph-minus text-lg"></i></button>
             </div>
 
-            <!-- Content Area -->
-            <div class="flex-1 overflow-hidden relative group">
+            <!-- Content Area (Split Container) -->
+            <div id="contentContainer" class="flex-1 overflow-hidden relative group flex flex-row">
                 <!-- Zone de texte (Mode Édition) -->
                 <textarea id="markdownEditor" 
-                          class="w-full h-full p-6 md:p-8 resize-none focus:outline-none font-mono text-sm leading-relaxed text-gray-700 bg-gray-50 hidden"
-                          placeholder="Commencez à écrire ici..."></textarea>
+                          class="editor-pane w-full h-full p-6 md:p-8 resize-none focus:outline-none font-mono text-sm leading-relaxed text-gray-800 bg-gray-50 dark:bg-gray-850 dark:text-gray-200 hidden border-r-0"
+                          placeholder="Commencez à écrire ici..." spellcheck="false"></textarea>
                 
                 <!-- Zone de prévisualisation (Mode Lecture) -->
-                <div id="previewArea" class="markdown-preview w-full h-full p-6 md:p-8 overflow-y-auto bg-white">
+                <div id="previewArea" class="preview-pane markdown-preview w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors">
                     <!-- Rendu ici -->
                 </div>
             </div>
             
             <!-- Footer Info -->
-            <div class="h-8 border-t border-gray-200 flex items-center px-4 text-xs text-gray-500 bg-white justify-between flex-shrink-0">
+            <div class="h-8 border-t border-gray-200 dark:border-gray-800 flex items-center px-4 text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-900 justify-between flex-shrink-0 transition-colors">
                 <div class="flex items-center gap-3">
-                    <span id="saveStatus" class="flex items-center gap-1 text-green-600 font-medium opacity-0 transition-opacity duration-500">
+                    <span id="saveStatus" class="flex items-center gap-1 text-green-600 dark:text-green-400 font-medium opacity-0 transition-opacity duration-500">
                         <i class="ph-fill ph-check-circle"></i> Sauvegardé
                     </span>
-                    <span id="formatDisplay" class="px-2 py-0.5 bg-gray-100 rounded text-gray-600 uppercase font-semibold text-[10px] tracking-wider">Markdown</span>
+                    <span id="formatDisplay" class="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-gray-600 dark:text-gray-300 uppercase font-semibold text-[10px] tracking-wider">Markdown</span>
                 </div>
-                <span id="wordCount">0 mots, 0 caractères</span>
+                <div class="flex gap-3">
+                     <span id="readTime">0 min lecture</span>
+                     <span id="wordCount">0 mots</span>
+                </div>
             </div>
         </div>
     </main>
 
     <!-- Modal Delete -->
     <div id="deleteModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center fade-in">
-        <div class="bg-white rounded-xl shadow-2xl p-6 w-11/12 max-w-sm transform scale-100 transition-transform border border-gray-100">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-11/12 max-w-sm transform scale-100 transition-transform border border-gray-100 dark:border-gray-700">
             <div class="text-center">
-                <div class="mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-red-50 mb-4">
+                <div class="mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-red-50 dark:bg-red-900/20 mb-4">
                     <i class="ph ph-trash text-red-500 text-3xl"></i>
                 </div>
-                <h3 class="text-xl font-bold text-gray-900">Supprimer ?</h3>
-                <p class="text-sm text-gray-500 mt-2">
-                    Cette action supprimera définitivement <strong id="deleteDocTitle" class="text-gray-800">ce document</strong>. Impossible d'annuler.
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white">Supprimer ?</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                    Cette action supprimera définitivement <strong id="deleteDocTitle" class="text-gray-800 dark:text-gray-200">ce document</strong>. Impossible d'annuler.
                 </p>
             </div>
             <div class="mt-6 flex gap-3">
                 <button onclick="closeDeleteModal()" 
-                        class="flex-1 justify-center rounded-lg border border-gray-300 px-4 py-2.5 bg-white text-gray-700 hover:bg-gray-50 font-medium transition-colors">
+                        class="flex-1 justify-center rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2.5 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 font-medium transition-colors">
                     Annuler
                 </button>
                 <button onclick="confirmDelete()" 
@@ -213,7 +264,7 @@
     </div>
 
     <!-- Toast Notification -->
-    <div id="toast" class="fixed bottom-6 right-6 bg-gray-800 text-white px-5 py-3 rounded-lg shadow-xl transform translate-y-32 transition-transform duration-300 z-50 flex items-center gap-3">
+    <div id="toast" class="fixed bottom-6 right-6 bg-gray-800 dark:bg-gray-700 text-white px-5 py-3 rounded-lg shadow-xl transform translate-y-32 transition-transform duration-300 z-50 flex items-center gap-3 border border-gray-700 dark:border-gray-600">
         <i id="toastIcon" class="ph-fill ph-check-circle text-green-400 text-xl"></i>
         <span id="toastMsg" class="font-medium">Notification</span>
     </div>
@@ -223,6 +274,8 @@
         let docs = [];
         let currentDocId = null;
         let isEditMode = false;
+        let isSplitView = false;
+        let isDarkMode = false;
 
         // --- DOM REFS ---
         const docListEl = document.getElementById('docList');
@@ -238,17 +291,31 @@
         const toggleIcon = document.getElementById('toggleIcon');
         const saveStatus = document.getElementById('saveStatus');
         const wordCountEl = document.getElementById('wordCount');
+        const readTimeEl = document.getElementById('readTime');
         const formatDisplay = document.getElementById('formatDisplay');
         const deleteModal = document.getElementById('deleteModal');
         const deleteDocTitle = document.getElementById('deleteDocTitle');
         const toast = document.getElementById('toast');
         const toastMsg = document.getElementById('toastMsg');
+        const contentContainer = document.getElementById('contentContainer');
+        const splitIcon = document.getElementById('splitIcon');
+        const themeIcon = document.getElementById('themeIcon');
 
         // --- INIT ---
         document.addEventListener('DOMContentLoaded', () => {
+            initTheme();
             loadDocs();
             renderDocList();
             
+            // Setup Marked options (Highlight.js)
+            marked.setOptions({
+                highlight: function(code, lang) {
+                    const language = highlight.getLanguage(lang) ? lang : 'plaintext';
+                    return highlight.highlight(code, { language }).value;
+                },
+                langPrefix: 'hljs language-'
+            });
+
             searchInput.addEventListener('input', (e) => renderDocList(e.target.value));
             
             markdownEditor.addEventListener('input', () => {
@@ -257,8 +324,9 @@
                 triggerSaveStatus();
             });
 
-            // Keyboard Shortcuts (Ctrl+S)
+            // Keyboard Shortcuts
             document.addEventListener('keydown', (e) => {
+                // Ctrl+S: Save
                 if ((e.ctrlKey || e.metaKey) && e.key === 's') {
                     e.preventDefault();
                     triggerSaveStatus();
@@ -266,24 +334,103 @@
             });
         });
 
+        // --- THEME & VIEW LOGIC ---
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem('wiki_theme');
+            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                setDarkMode(true);
+            }
+        }
+
+        function toggleDarkMode() {
+            setDarkMode(!isDarkMode);
+        }
+
+        function setDarkMode(enable) {
+            isDarkMode = enable;
+            if (isDarkMode) {
+                document.documentElement.classList.add('dark');
+                themeIcon.classList.replace('ph-moon', 'ph-sun');
+                localStorage.setItem('wiki_theme', 'dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+                themeIcon.classList.replace('ph-sun', 'ph-moon');
+                localStorage.setItem('wiki_theme', 'light');
+            }
+        }
+
+        function toggleSplitView() {
+            if(window.innerWidth < 768) {
+                showToast("Vue partagée uniquement sur ordinateur", "info");
+                return;
+            }
+
+            isSplitView = !isSplitView;
+            if (isSplitView) {
+                contentContainer.classList.add('split-active');
+                splitIcon.classList.replace('ph-columns', 'ph-sidebar');
+                splitIcon.parentElement.classList.add('bg-blue-50', 'text-blue-600', 'dark:bg-blue-900/30', 'dark:text-blue-400');
+                
+                // Ensure edit toolbar is visible if Markdown
+                const doc = docs.find(d => d.id === currentDocId);
+                if(doc && doc.format === 'markdown') markdownToolbar.classList.remove('hidden');
+            } else {
+                contentContainer.classList.remove('split-active');
+                splitIcon.classList.replace('ph-sidebar', 'ph-columns');
+                splitIcon.parentElement.classList.remove('bg-blue-50', 'text-blue-600', 'dark:bg-blue-900/30', 'dark:text-blue-400');
+                // Revert to toggle state logic
+                toggleEditMode(isEditMode); 
+            }
+        }
+
+        // --- IMPORT LOGIC ---
+        function handleFileUpload(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                const title = file.name.replace(/\.[^/.]+$/, ""); // Remove extension
+                
+                let format = 'text';
+                if(file.name.endsWith('.md')) format = 'markdown';
+                if(file.name.endsWith('.html')) format = 'html';
+
+                const newDoc = {
+                    id: crypto.randomUUID(),
+                    title: title,
+                    content: content,
+                    format: format,
+                    updatedAt: Date.now()
+                };
+
+                docs.unshift(newDoc);
+                saveToStorage();
+                renderDocList();
+                selectDoc(newDoc.id);
+                showToast(`Fichier "${file.name}" importé`);
+                input.value = ''; // Reset
+            };
+            reader.readAsText(file);
+        }
+
         // --- CRUD OPERATIONS ---
 
         function loadDocs() {
             const stored = localStorage.getItem('wiki_docs_v2');
             if (stored) {
                 docs = JSON.parse(stored);
-                // Migration: ensure format property exists
                 docs.forEach(d => { if(!d.format) d.format = 'markdown'; });
                 docs.sort((a, b) => b.updatedAt - a.updatedAt);
             } else {
-                // Check legacy
                 const legacy = localStorage.getItem('wiki_docs');
                 if (legacy) {
                     docs = JSON.parse(legacy);
                     docs.forEach(d => { d.format = 'markdown'; });
                     saveToStorage();
                 } else {
-                    // Demo Content
                     createDemoContent();
                 }
             }
@@ -293,7 +440,7 @@
             docs = [{
                 id: 'demo-1',
                 title: 'Guide de Démarrage',
-                content: '# Bienvenue sur WikiDocs Pro\n\nCeci est un document **Markdown**.\n\n## Nouvelles Fonctionnalités\n1. **Multi-formats** : Choisissez Markdown, HTML ou Texte.\n2. **Barre d\'outils** : Mettez en forme plus vite.\n3. **Export** : Téléchargez vos documents.\n\n```javascript\nconsole.log("Hello World");\n```',
+                content: '# Bienvenue sur WikiDocs Ultimate\n\nVoici les nouveautés :\n- **Mode Sombre** 🌙\n- **Import de fichiers**\n- **Coloration du code**\n\n```javascript\n// Exemple de code\nfunction hello() {\n  console.log("Hello Wiki!");\n}\n```\n\n- [ ] Tâche à faire\n- [x] Tâche faite',
                 format: 'markdown',
                 updatedAt: Date.now()
             }];
@@ -316,7 +463,7 @@
             saveToStorage();
             renderDocList();
             selectDoc(newDoc.id);
-            if (!isEditMode) toggleEditMode();
+            if (!isEditMode && !isSplitView) toggleEditMode();
             setTimeout(() => docTitleInput.focus(), 100);
             showToast('Document créé', 'success');
         }
@@ -329,17 +476,13 @@
             emptyState.classList.add('hidden');
             editorWrapper.classList.remove('hidden');
             
-            // Sync UI
             docTitleInput.value = doc.title;
             markdownEditor.value = doc.content;
             docFormatSelect.value = doc.format || 'markdown';
             
-            // Render
             updateUIForFormat(doc.format);
             renderPreview(doc.content, doc.format);
             updateStats();
-            
-            // List highlight
             renderDocList(searchInput.value, false);
         }
 
@@ -394,7 +537,6 @@
             
             let extension = 'txt';
             let mimeType = 'text/plain';
-            
             if (doc.format === 'markdown') { extension = 'md'; mimeType = 'text/markdown'; }
             else if (doc.format === 'html') { extension = 'html'; mimeType = 'text/html'; }
             
@@ -427,19 +569,18 @@
                 div.className = `p-3 rounded-lg cursor-pointer transition-all mb-1 border border-transparent group ${isActive ? 'bg-gray-800 border-blue-500/50 shadow-md' : 'hover:bg-gray-800 hover:border-gray-700'}`;
                 div.onclick = () => selectDoc(doc.id);
                 
-                // Icon based on format
                 let icon = 'ph-file-text';
                 if(doc.format === 'markdown') icon = 'ph-markdown-logo';
                 if(doc.format === 'html') icon = 'ph-code';
                 
                 div.innerHTML = `
                     <div class="flex items-center gap-3">
-                        <div class="${isActive ? 'text-blue-400' : 'text-gray-600 group-hover:text-gray-400'}">
+                        <div class="${isActive ? 'text-blue-400' : 'text-gray-600 dark:text-gray-500 group-hover:text-gray-400'}">
                             <i class="ph ${icon} text-xl"></i>
                         </div>
                         <div class="overflow-hidden">
                             <div class="font-medium text-sm truncate ${isActive ? 'text-white' : 'text-gray-300 group-hover:text-white'}">${doc.title}</div>
-                            <div class="text-[10px] ${isActive ? 'text-blue-300' : 'text-gray-600'} mt-0.5">
+                            <div class="text-[10px] ${isActive ? 'text-blue-300' : 'text-gray-600 dark:text-gray-500'} mt-0.5">
                                 ${new Date(doc.updatedAt).toLocaleDateString()} • ${doc.format ? doc.format.toUpperCase() : 'MD'}
                             </div>
                         </div>
@@ -451,19 +592,19 @@
 
         function renderPreview(content, format) {
             if (!content) {
-                previewArea.innerHTML = '<div class="text-gray-300 italic">Vide...</div>';
+                previewArea.innerHTML = '<div class="text-gray-300 dark:text-gray-600 italic">Vide...</div>';
                 return;
             }
 
             if (format === 'markdown' || !format) {
-                previewArea.className = "markdown-preview w-full h-full p-6 md:p-8 overflow-y-auto bg-white";
+                previewArea.className = "preview-pane markdown-preview w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors";
+                // Marked is configured to use highlight.js
                 previewArea.innerHTML = DOMPurify.sanitize(marked.parse(content));
             } else if (format === 'html') {
-                previewArea.className = "w-full h-full p-6 md:p-8 overflow-y-auto bg-white";
-                previewArea.innerHTML = DOMPurify.sanitize(content); // Direct HTML render
+                previewArea.className = "preview-pane w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors";
+                previewArea.innerHTML = DOMPurify.sanitize(content);
             } else {
-                // Plain text
-                previewArea.className = "preview-text w-full h-full p-6 md:p-8 overflow-y-auto bg-white text-gray-700";
+                previewArea.className = "preview-pane preview-text w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors text-gray-700";
                 previewArea.innerText = content;
             }
         }
@@ -471,74 +612,121 @@
         function updateUIForFormat(format) {
             formatDisplay.innerText = format;
             
-            // Show Toolbar only for Markdown
-            if (format === 'markdown' && isEditMode) {
+            // Show Toolbar only for Markdown & if visible editor
+            const showToolbar = format === 'markdown' && (isEditMode || isSplitView);
+            
+            if (showToolbar) {
                 markdownToolbar.classList.remove('hidden');
             } else {
                 markdownToolbar.classList.add('hidden');
             }
         }
 
-        function toggleEditMode() {
-            isEditMode = !isEditMode;
-            const doc = docs.find(d => d.id === currentDocId);
+        function toggleEditMode(forceState) {
+            // If called with arg, set specific state, else toggle
+            isEditMode = (typeof forceState !== 'undefined') ? forceState : !isEditMode;
             
+            if(isSplitView) return; // Ignore toggles in split mode
+
             if (isEditMode) {
                 previewArea.classList.add('hidden');
                 markdownEditor.classList.remove('hidden');
                 markdownEditor.focus();
                 
                 toggleIcon.classList.replace('ph-pencil-simple', 'ph-eye');
-                viewToggleBtn.classList.add('bg-blue-50', 'text-blue-600', 'border-blue-200');
-                
-                if (doc && doc.format === 'markdown') markdownToolbar.classList.remove('hidden');
+                viewToggleBtn.classList.add('bg-blue-50', 'text-blue-600', 'dark:bg-blue-900/30', 'dark:text-blue-400');
             } else {
                 markdownEditor.classList.add('hidden');
                 previewArea.classList.remove('hidden');
                 
                 toggleIcon.classList.replace('ph-eye', 'ph-pencil-simple');
-                viewToggleBtn.classList.remove('bg-blue-50', 'text-blue-600', 'border-blue-200');
-                markdownToolbar.classList.add('hidden');
-                
-                if(doc) renderPreview(doc.content, doc.format);
+                viewToggleBtn.classList.remove('bg-blue-50', 'text-blue-600', 'dark:bg-blue-900/30', 'dark:text-blue-400');
             }
+            // Update toolbar visibility
+            updateUIForFormat(docFormatSelect.value);
         }
-
-        // --- EDITOR TOOLBAR LOGIC ---
 
         function insertMD(type) {
             if (!currentDocId) return;
             const textarea = markdownEditor;
-            const start = textarea.selectionStart;
-            const end = textarea.selectionEnd;
-            const sel = textarea.value.substring(start, end);
-            let replace = '';
+            let start = textarea.selectionStart;
+            let end = textarea.selectionEnd;
+            let sel = textarea.value.substring(start, end);
+            const fullText = textarea.value;
             
+            // Fonction intelligente pour basculer le style (Ajouter/Enlever)
+            const toggleInline = (marker) => {
+                const len = marker.length;
+                
+                // Cas 1: La sélection contient déjà les marqueurs (ex: sélectionne "**texte**")
+                if (sel.startsWith(marker) && sel.endsWith(marker) && sel.length >= 2 * len) {
+                    const cleanText = sel.substring(len, sel.length - len);
+                    textarea.setRangeText(cleanText, start, end, 'select');
+                    return;
+                }
+                
+                // Cas 2: Les marqueurs sont juste autour de la sélection (ex: sélectionne "texte" dans "**texte**")
+                const before = fullText.substring(start - len, start);
+                const after = fullText.substring(end, end + len);
+                
+                if (before === marker && after === marker) {
+                    // On remplace la zone incluant les marqueurs par le texte seul
+                    textarea.setRangeText(sel, start - len, end + len, 'select');
+                    return;
+                }
+                
+                // Cas 3: On ajoute les marqueurs
+                const newText = `${marker}${sel || 'texte'}${marker}`;
+                textarea.setRangeText(newText, start, end, 'select');
+            };
+
+            // Logique spécifique par type
             switch (type) {
-                case 'bold': replace = `**${sel || 'texte'}**`; break;
-                case 'italic': replace = `*${sel || 'texte'}*`; break;
-                case 'heading': replace = `\n### ${sel || 'Titre'}\n`; break;
-                case 'list-ul': replace = `\n- ${sel || 'élément'}`; break;
-                case 'list-ol': replace = `\n1. ${sel || 'élément'}`; break;
-                case 'code': replace = `\`\`\`\n${sel || 'code'}\n\`\`\``; break;
-                case 'quote': replace = `\n> ${sel || 'citation'}`; break;
-                case 'link': replace = `[${sel || 'titre'}](url)`; break;
-                case 'image': replace = `![${sel || 'alt'}](url_image)`; break;
-                case 'table': replace = `\n| Col 1 | Col 2 |\n|---|---|\n| Val 1 | Val 2 |\n`; break;
+                case 'bold': toggleInline('**'); break;
+                case 'italic': toggleInline('*'); break;
+                case 'strike': toggleInline('~~'); break;
+                case 'code': toggleInline('`'); break;
+                
+                // Pour les blocs, on insère simplement (pas de toggle complexe nécessaire ici)
+                case 'heading': 
+                    textarea.setRangeText(`\n### ${sel || 'Titre'}\n`, start, end, 'select'); 
+                    break;
+                case 'list-ul': 
+                    textarea.setRangeText(`\n- ${sel || 'élément'}`, start, end, 'select'); 
+                    break;
+                case 'list-ol': 
+                    textarea.setRangeText(`\n1. ${sel || 'élément'}`, start, end, 'select'); 
+                    break;
+                case 'check': 
+                    textarea.setRangeText(`\n- [ ] ${sel || 'tâche'}`, start, end, 'select'); 
+                    break;
+                case 'quote': 
+                    textarea.setRangeText(`\n> ${sel || 'citation'}`, start, end, 'select'); 
+                    break;
+                case 'link': 
+                    textarea.setRangeText(`[${sel || 'titre'}](url)`, start, end, 'select'); 
+                    break;
+                case 'image': 
+                    textarea.setRangeText(`![${sel || 'alt'}](url_image)`, start, end, 'select'); 
+                    break;
+                case 'hr': 
+                    textarea.setRangeText(`\n---\n`, start, end, 'select'); 
+                    break;
             }
 
-            textarea.setRangeText(replace, start, end, 'select');
             updateCurrentContent();
+            updateStats();
             textarea.focus();
         }
-
-        // --- UTILS ---
 
         function updateStats() {
             const text = markdownEditor.value || '';
             const words = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
-            const chars = text.length;
-            wordCountEl.innerText = `${words} mot${words>1?'s':''} • ${chars} car.`;
+            wordCountEl.innerText = `${words} mots`;
+            
+            // Estim. lecture: 200 mots/min
+            const minutes = Math.ceil(words / 200);
+            readTimeEl.innerText = minutes < 1 ? '< 1 min' : `${minutes} min`;
         }
 
         let saveTimeout;
