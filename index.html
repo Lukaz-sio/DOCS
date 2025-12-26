@@ -33,29 +33,58 @@
         
         /* Typography Styles for Preview */
         .markdown-preview { line-height: 1.7; word-wrap: break-word; }
+        
+        /* Titres */
         .markdown-preview h1 { font-size: 2.25em; font-weight: 800; margin-bottom: 0.5em; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.3em; }
         .markdown-preview h2 { font-size: 1.75em; font-weight: 700; margin-top: 1.5em; margin-bottom: 0.5em; }
         .markdown-preview h3 { font-size: 1.5em; font-weight: 600; margin-top: 1.25em; margin-bottom: 0.5em; }
         .markdown-preview p { margin-bottom: 1em; }
-        .markdown-preview ul { list-style-type: disc; padding-left: 1.5em; margin-bottom: 1em; }
-        .markdown-preview ol { list-style-type: decimal; padding-left: 1.5em; margin-bottom: 1em; }
         
-        /* Checkbox lists fixes */
-        .markdown-preview ul:has(input[type="checkbox"]), 
-        .markdown-preview li:has(input[type="checkbox"]) { 
-            list-style-type: none; 
-            padding-left: 0;
+        /* LISTES : Correction forcée pour HTML et MD */
+        .markdown-preview ul { 
+            display: block; 
+            list-style-type: disc !important; 
+            padding-left: 2em !important; 
+            margin-bottom: 1em; 
         }
+        .markdown-preview ol { 
+            display: block; 
+            list-style-type: decimal !important; 
+            padding-left: 2em !important; 
+            margin-bottom: 1em; 
+        }
+        .markdown-preview li {
+            display: list-item; /* Assure que le point s'affiche */
+        }
+        
+        /* Italique visible */
+        .markdown-preview em, .markdown-preview i {
+            font-style: italic;
+            color: #8b5cf6; 
+            font-family: serif;
+            letter-spacing: 0.05em;
+        }
+
+        /* Gestion Spéciale Checkboxes */
+        /* Si une liste ou un item contient une checkbox, on enlève la puce par défaut */
+        .markdown-preview ul:has(> li > input[type="checkbox"]), 
+        .markdown-preview li:has(> input[type="checkbox"]) { 
+            list-style-type: none !important; 
+            padding-left: 0.5em !important;
+        }
+        
         .markdown-preview li:has(input[type="checkbox"]) { 
             display: flex; 
             align-items: flex-start; 
             gap: 0.5em; 
         }
         .markdown-preview input[type="checkbox"] {
-            margin-top: 0.4em; /* Better alignment with text */
+            margin-top: 0.35em; 
             cursor: pointer;
+            flex-shrink: 0;
         }
 
+        /* Code Blocks */
         .markdown-preview code { background-color: rgba(0,0,0,0.05); padding: 0.2em 0.4em; border-radius: 0.25em; font-family: 'Menlo', monospace; font-size: 0.9em; color: #db2777; }
         .dark .markdown-preview code { background-color: rgba(255,255,255,0.1); color: #f472b6; }
         
@@ -639,7 +668,11 @@
                 previewArea.innerHTML = DOMPurify.sanitize(marked.parse(content));
             } else if (format === 'html') {
                 previewArea.className = "preview-pane w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors";
-                previewArea.innerHTML = DOMPurify.sanitize(content);
+                // Petite astuce pour que les sauts de lignes simples soient visibles en mode HTML preview
+                let htmlContent = content;
+                // Si on veut que le HTML preview respecte les sauts de ligne "editor style" sans <br> explicites:
+                // htmlContent = content.replace(/\n/g, '<br>'); // Décommenter si souhaité
+                previewArea.innerHTML = DOMPurify.sanitize(htmlContent);
             } else {
                 previewArea.className = "preview-pane preview-text w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors text-gray-700";
                 previewArea.innerText = content;
@@ -785,6 +818,30 @@
                 }
             };
 
+            // --- HTML CHECKBOX LOGIC (Cycle 3 états) ---
+            const toggleCheckboxHTML = () => {
+                let lineStart = fullText.lastIndexOf('\n', start - 1) + 1;
+                let lineEnd = fullText.indexOf('\n', end);
+                if (lineEnd === -1) lineEnd = fullText.length;
+                
+                const line = fullText.substring(lineStart, lineEnd);
+                const unchecked = '<input type="checkbox">';
+                const checked = '<input type="checkbox" checked>';
+                
+                // Cycle: Rien -> Unchecked -> Checked -> Rien
+                
+                if (line.includes(checked)) {
+                    // Remove checked, return to nothing (or just remove the box)
+                    textarea.setRangeText(line.replace(checked, '').trim(), lineStart, lineEnd, 'select');
+                } else if (line.includes(unchecked)) {
+                    // Switch to checked
+                    textarea.setRangeText(line.replace(unchecked, checked), lineStart, lineEnd, 'select');
+                } else {
+                    // Add unchecked
+                    textarea.setRangeText(`${unchecked} ${line}`, lineStart, lineEnd, 'select');
+                }
+            };
+
             // --- HELPER HTML (Regex based) ---
             const toggleHTML = (tag) => {
                 const openRegex = new RegExp(`^<${tag}(\\s[^>]*)?>`, 'i');
@@ -803,14 +860,23 @@
                 const openRegex = new RegExp(`^<${type}(\\s[^>]*)?>`, 'i');
                 const closeRegex = new RegExp(`</${type}>$`, 'i');
                 
+                // Si la sélection entière est déjà une liste, on l'enlève (unwrap)
                 if (openRegex.test(sel.trim()) && closeRegex.test(sel.trim())) {
                     let content = sel.trim().replace(openRegex, '').replace(closeRegex, '').trim();
                     content = content.replace(/<li>/gi, '').replace(/<\/li>/gi, '');
                     content = content.split('\n').map(l => l.trim()).join('\n');
                     textarea.setRangeText(content, start, end, 'select');
                 } else {
+                    // Sinon, on wrap
                     const lines = sel ? sel.split('\n') : ['texte'];
-                    const inner = lines.map(l => l.trim() ? `  <li>${l}</li>` : '').join('\n');
+                    
+                    // On vérifie si les lignes sont déjà des <li> pour éviter le double wrap
+                    const inner = lines.map(l => {
+                        const trimmed = l.trim();
+                        if (trimmed.startsWith('<li>') && trimmed.endsWith('</li>')) return `  ${trimmed}`;
+                        return trimmed ? `  <li>${trimmed}</li>` : '';
+                    }).join('\n');
+                    
                     textarea.setRangeText(`<${type}>\n${inner}\n</${type}>`, start, end, 'select');
                 }
             };
@@ -825,7 +891,7 @@
                     case 'heading': toggleHTML('h3'); break;
                     case 'list-ul': wrapListHTML('ul'); break; 
                     case 'list-ol': wrapListHTML('ol'); break;
-                    case 'check': textarea.setRangeText(`<input type="checkbox"> ${sel}`, start, end, 'select'); break;
+                    case 'check': toggleCheckboxHTML(); break; // Cycle 3 états
                     case 'quote': toggleHTML('blockquote'); break;
                     case 'link': textarea.setRangeText(`<a href="url">${sel || 'lien'}</a>`, start, end, 'select'); break;
                     case 'image': textarea.setRangeText(`<img src="url" alt="${sel || 'image'}">`, start, end, 'select'); break;
