@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WikiDocs Ultimate</title>
+    <title>WikiDocs Cloud</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -24,113 +24,58 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <!-- Highlight.js pour la coloration syntaxique -->
+    <!-- Highlight.js -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 
     <style>
         body { font-family: 'Inter', sans-serif; }
-        
-        /* Typography Styles for Preview */
         .markdown-preview { line-height: 1.7; word-wrap: break-word; }
-        
-        /* Titres */
         .markdown-preview h1 { font-size: 2.25em; font-weight: 800; margin-bottom: 0.5em; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.3em; }
         .markdown-preview h2 { font-size: 1.75em; font-weight: 700; margin-top: 1.5em; margin-bottom: 0.5em; }
         .markdown-preview h3 { font-size: 1.5em; font-weight: 600; margin-top: 1.25em; margin-bottom: 0.5em; }
         .markdown-preview p { margin-bottom: 1em; }
-        
-        /* LISTES : Correction forcée pour HTML et MD */
-        .markdown-preview ul { 
-            display: block; 
-            list-style-type: disc !important; 
-            padding-left: 2em !important; 
-            margin-bottom: 1em; 
-        }
-        .markdown-preview ol { 
-            display: block; 
-            list-style-type: decimal !important; 
-            padding-left: 2em !important; 
-            margin-bottom: 1em; 
-        }
-        .markdown-preview li {
-            display: list-item; /* Assure que le point s'affiche */
-        }
-        
-        /* Italique visible */
-        .markdown-preview em, .markdown-preview i {
-            font-style: italic;
-            color: #8b5cf6; 
-            font-family: serif;
-            letter-spacing: 0.05em;
-        }
-
-        /* Gestion Spéciale Checkboxes */
-        /* Si une liste ou un item contient une checkbox, on enlève la puce par défaut */
-        .markdown-preview ul:has(> li > input[type="checkbox"]), 
-        .markdown-preview li:has(> input[type="checkbox"]) { 
-            list-style-type: none !important; 
-            padding-left: 0.5em !important;
-        }
-        
-        .markdown-preview li:has(input[type="checkbox"]) { 
-            display: flex; 
-            align-items: flex-start; 
-            gap: 0.5em; 
-        }
-        .markdown-preview input[type="checkbox"] {
-            margin-top: 0.35em; 
-            cursor: pointer;
-            flex-shrink: 0;
-        }
-
-        /* Code Blocks */
+        .markdown-preview ul { display: block; list-style-type: disc !important; padding-left: 2.5em !important; margin-bottom: 1em; }
+        .markdown-preview ol { display: block; list-style-type: decimal !important; padding-left: 2.5em !important; margin-bottom: 1em; }
+        .markdown-preview li { display: list-item; margin-bottom: 0.25em; }
+        .markdown-preview em, .markdown-preview i { font-style: italic; color: #8b5cf6; font-family: serif; letter-spacing: 0.05em; }
+        .markdown-preview li:has(> input[type="checkbox"]) { list-style-type: none !important; padding-left: 0 !important; display: flex; align-items: flex-start; gap: 0.5em; margin-left: -1em; }
+        .markdown-preview input[type="checkbox"] { margin-top: 0.4em; cursor: pointer; flex-shrink: 0; width: 1.1em; height: 1.1em; }
         .markdown-preview code { background-color: rgba(0,0,0,0.05); padding: 0.2em 0.4em; border-radius: 0.25em; font-family: 'Menlo', monospace; font-size: 0.9em; color: #db2777; }
         .dark .markdown-preview code { background-color: rgba(255,255,255,0.1); color: #f472b6; }
-        
         .markdown-preview pre { background-color: #1f2937; color: #f9fafb; padding: 1em; border-radius: 0.5em; overflow-x: auto; margin-bottom: 1em; }
         .markdown-preview pre code { background-color: transparent; color: inherit; padding: 0; }
-        
         .markdown-preview blockquote { border-left: 4px solid #3b82f6; padding-left: 1em; font-style: italic; background-color: rgba(59, 130, 246, 0.1); padding: 0.5em; border-radius: 0 0.5em 0.5em 0; margin-bottom: 1em;}
-        
         .markdown-preview a { color: #2563eb; text-decoration: underline; }
         .dark .markdown-preview a { color: #60a5fa; }
-        
         .markdown-preview img { max-width: 100%; border-radius: 0.5em; margin: 1em 0; border: 1px solid #e5e7eb; }
         .dark .markdown-preview img { border-color: #374151; }
-        
         .markdown-preview table { width: 100%; border-collapse: collapse; margin-bottom: 1em; }
         .markdown-preview th, .markdown-preview td { border: 1px solid #e5e7eb; padding: 0.5em; text-align: left; }
         .dark .markdown-preview th, .dark .markdown-preview td { border-color: #374151; }
         .markdown-preview th { background-color: rgba(0,0,0,0.02); font-weight: 600; }
         .dark .markdown-preview th { background-color: rgba(255,255,255,0.05); }
-        
         .markdown-preview hr { border: 0; border-top: 2px solid #e5e7eb; margin: 2em 0; }
         .dark .markdown-preview hr { border-color: #374151; }
-
-        /* Specific styles for Text format */
         .preview-text { white-space: pre-wrap; font-family: 'Courier New', monospace; }
-
-        /* Transitions */
         .fade-in { animation: fadeIn 0.2s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* Scrollbar */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .dark ::-webkit-scrollbar-thumb { background: #4b5563; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-        /* Split View Layout */
         .split-active .editor-pane { display: block !important; width: 50%; border-right: 1px solid #e5e7eb; }
         .dark .split-active .editor-pane { border-right: 1px solid #374151; }
         .split-active .preview-pane { display: block !important; width: 50%; }
-        
         .tool-btn:active { transform: scale(0.95); }
-        
         .color-picker-wrapper { position: relative; display: inline-block; }
         .color-input-hidden { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+        
+        /* UI States based on Auth */
+        .auth-only { display: none !important; }
+        .is-admin .auth-only { display: flex !important; }
+        .is-admin .auth-only-block { display: block !important; }
     </style>
 </head>
 <body class="h-screen flex flex-col md:flex-row overflow-hidden bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-200">
@@ -140,14 +85,11 @@
         <div class="p-4 border-b border-gray-800 flex justify-between items-center bg-gray-950">
             <h1 class="text-xl font-bold flex items-center gap-2 text-blue-400">
                 <i class="ph ph-books text-2xl"></i>
-                WikiDocs <span class="text-xs bg-blue-900 text-blue-200 px-1.5 py-0.5 rounded ml-1">Ult</span>
+                WikiDocs <span class="text-xs bg-purple-600 text-white px-1.5 py-0.5 rounded ml-1">Cloud</span>
             </h1>
             <div class="flex items-center gap-2">
                 <button onclick="toggleDarkMode()" class="text-gray-400 hover:text-yellow-400 transition-colors p-1" title="Mode Sombre/Clair">
                     <i id="themeIcon" class="ph ph-moon text-xl"></i>
-                </button>
-                <button onclick="createNewDoc()" class="md:hidden text-gray-400 hover:text-white">
-                    <i class="ph ph-plus-circle text-2xl"></i>
                 </button>
             </div>
         </div>
@@ -160,20 +102,41 @@
             </div>
         </div>
 
-        <div class="flex-1 overflow-y-auto p-2 space-y-1 bg-gray-900" id="docList">
-            <!-- Doc list via JS -->
+        <!-- Connection Status -->
+        <div class="px-4 py-2 text-xs flex items-center gap-2 border-b border-gray-800">
+            <div id="dbStatusIndicator" class="w-2 h-2 rounded-full bg-red-500"></div>
+            <span id="dbStatusText" class="text-gray-400">Déconnecté</span>
         </div>
 
+        <div class="flex-1 overflow-y-auto p-2 space-y-1 bg-gray-900" id="docList">
+            <div class="text-center text-gray-500 mt-10 text-sm">Chargement...</div>
+        </div>
+
+        <!-- Auth Controls -->
         <div class="p-4 border-t border-gray-800 bg-gray-900 flex flex-col gap-2">
-            <button onclick="createNewDoc()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-blue-500/20 active:translate-y-0.5">
-                <i class="ph ph-plus-circle text-lg"></i>
-                Nouveau Document
+            
+            <!-- Boutons Édition (Cachés par défaut) -->
+            <div class="auth-only-block hidden space-y-2">
+                <button onclick="createNewDoc()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-all shadow-lg">
+                    <i class="ph ph-plus-circle text-lg"></i>
+                    Nouveau Doc
+                </button>
+                <label class="w-full cursor-pointer bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-all text-sm border border-gray-700">
+                    <i class="ph ph-upload-simple text-lg"></i>
+                    Importer
+                    <input type="file" id="fileInput" class="hidden" accept=".md,.txt,.html" onchange="handleFileUpload(this)">
+                </label>
+            </div>
+
+            <!-- Login / Logout -->
+            <button id="loginBtn" onclick="openLoginModal()" class="w-full border border-gray-600 hover:bg-gray-800 text-gray-300 py-2 px-4 rounded-lg flex items-center justify-center gap-2 text-sm transition-colors">
+                <i class="ph ph-sign-in text-lg"></i>
+                Connexion Admin
             </button>
-            <label class="w-full cursor-pointer bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-all text-sm border border-gray-700">
-                <i class="ph ph-upload-simple text-lg"></i>
-                Importer Fichier
-                <input type="file" id="fileInput" class="hidden" accept=".md,.txt,.html" onchange="handleFileUpload(this)">
-            </label>
+            <button id="logoutBtn" onclick="logoutAdmin()" class="hidden w-full border border-red-900/50 text-red-400 hover:bg-red-900/20 py-2 px-4 rounded-lg flex items-center justify-center gap-2 text-sm transition-colors">
+                <i class="ph ph-sign-out text-lg"></i>
+                Déconnexion
+            </button>
         </div>
     </aside>
 
@@ -183,10 +146,10 @@
         <!-- Empty State -->
         <div id="emptyState" class="absolute inset-0 flex flex-col items-center justify-center text-gray-400 z-10 bg-white dark:bg-gray-900 transition-colors">
             <div class="w-24 h-24 bg-gray-50 dark:bg-gray-800 rounded-full flex items-center justify-center mb-6">
-                <i class="ph ph-files text-5xl text-gray-300 dark:text-gray-600"></i>
+                <i class="ph ph-cloud text-5xl text-gray-300 dark:text-gray-600"></i>
             </div>
-            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300">Aucun document ouvert</h2>
-            <p class="mt-2 text-sm text-gray-500">Sélectionnez un document ou importez-en un.</p>
+            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300">WikiDocs Cloud</h2>
+            <p class="mt-2 text-sm text-gray-500">Sélectionnez un document pour le lire.</p>
         </div>
 
         <!-- Editor Wrapper -->
@@ -195,12 +158,13 @@
             <!-- Top Bar -->
             <header class="h-16 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-4 md:px-6 bg-white dark:bg-gray-900 flex-shrink-0 gap-4 transition-colors">
                 <div class="flex-1 min-w-0">
-                    <input type="text" id="docTitleInput" placeholder="Titre du document" 
-                           class="w-full text-lg md:text-xl font-bold text-gray-800 dark:text-gray-100 placeholder-gray-300 dark:placeholder-gray-600 border-none focus:ring-0 focus:outline-none bg-transparent truncate"
+                    <!-- Title Input (Editable only if admin) -->
+                    <input type="text" id="docTitleInput" placeholder="Titre du document" readonly
+                           class="w-full text-lg md:text-xl font-bold text-gray-800 dark:text-gray-100 placeholder-gray-300 dark:placeholder-gray-600 border-none focus:ring-0 focus:outline-none bg-transparent truncate cursor-default auth-cursor-text"
                            oninput="updateCurrentTitle()">
                 </div>
                 
-                <div class="flex items-center gap-2 md:gap-3 flex-shrink-0">
+                <div class="flex items-center gap-2 md:gap-3 flex-shrink-0 auth-only">
                     <!-- Format Selector -->
                     <div class="relative group hidden md:block">
                         <select id="docFormatSelect" onchange="updateCurrentFormat()" 
@@ -216,17 +180,13 @@
 
                     <div class="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-1 hidden md:block"></div>
                     
-                    <button onclick="toggleSplitView()" class="hidden md:flex p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors" title="Vue Partagée (Split View)">
+                    <button onclick="toggleSplitView()" class="hidden md:flex p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors" title="Vue Partagée">
                         <i id="splitIcon" class="ph ph-columns text-xl"></i>
                     </button>
 
-                    <button onclick="exportDoc()" class="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-blue-600 rounded-lg transition-colors" title="Exporter">
-                        <i class="ph ph-download-simple text-xl"></i>
-                    </button>
-
                     <button onclick="toggleEditMode()" id="viewToggleBtn" 
-                            class="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg flex items-center gap-2 transition-colors border border-transparent md:hidden"
-                            title="Basculer Édition/Aperçu">
+                            class="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg flex items-center gap-2 transition-colors border border-transparent"
+                            title="Éditer">
                         <i class="ph ph-pencil-simple text-xl" id="toggleIcon"></i>
                     </button>
 
@@ -234,42 +194,35 @@
                         <i class="ph ph-trash text-xl"></i>
                     </button>
                 </div>
+                
+                <!-- Export is available for everyone -->
+                <button onclick="exportDoc()" class="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-blue-600 rounded-lg transition-colors" title="Télécharger">
+                    <i class="ph ph-download-simple text-xl"></i>
+                </button>
             </header>
 
-            <!-- Adaptive Toolbar -->
-            <div id="formatToolbar" class="h-10 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 flex items-center px-2 gap-1 overflow-x-auto hidden flex-shrink-0 transition-colors">
-                
-                <!-- Formatage Standard -->
+            <!-- Adaptive Toolbar (Auth Only) -->
+            <div id="formatToolbar" class="auth-only h-10 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 items-center px-2 gap-1 overflow-x-auto hidden flex-shrink-0 transition-colors">
                 <button onclick="applyFormat('bold')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Gras"><i class="ph ph-text-b text-lg"></i></button>
                 <button onclick="applyFormat('italic')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Italique"><i class="ph ph-text-i text-lg"></i></button>
                 <button onclick="applyFormat('strike')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Barré"><i class="ph ph-text-strikethrough text-lg"></i></button>
-                
                 <div class="w-px h-4 bg-gray-300 dark:bg-gray-600 mx-1"></div>
-
-                <!-- COULEURS -->
-                <div class="color-picker-wrapper tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 relative" title="Couleur du texte">
+                <div class="color-picker-wrapper tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 relative">
                     <i class="ph ph-text-a text-lg"></i>
                     <div class="absolute bottom-0.5 right-0.5 w-full h-1 bg-red-500 rounded-full opacity-50" id="textColorIndicator"></div>
                     <input type="color" id="textColorPicker" class="color-input-hidden" oninput="applyColor('text', this.value)" value="#ef4444">
                 </div>
-
-                <div class="color-picker-wrapper tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 relative" title="Surligner">
+                <div class="color-picker-wrapper tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 relative">
                     <i class="ph ph-highlighter text-lg"></i>
                     <div class="absolute bottom-0.5 right-0.5 w-full h-1 bg-yellow-300 rounded-full opacity-50" id="bgColorIndicator"></div>
                     <input type="color" id="bgColorPicker" class="color-input-hidden" oninput="applyColor('bg', this.value)" value="#fde047">
                 </div>
-
                 <div class="w-px h-4 bg-gray-300 dark:bg-gray-600 mx-1"></div>
-                
-                <!-- Structure -->
                 <button onclick="applyFormat('heading')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Titre"><i class="ph ph-text-h text-lg"></i></button>
                 <button onclick="applyFormat('list-ul')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Liste à puces"><i class="ph ph-list-bullets text-lg"></i></button>
                 <button onclick="applyFormat('list-ol')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Liste numérotée"><i class="ph ph-list-numbers text-lg"></i></button>
                 <button onclick="applyFormat('check')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Tâche"><i class="ph ph-check-square text-lg"></i></button>
-                
                 <div class="w-px h-4 bg-gray-300 dark:bg-gray-600 mx-1"></div>
-                
-                <!-- Insertions -->
                 <button onclick="applyFormat('code')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Code"><i class="ph ph-code text-lg"></i></button>
                 <button onclick="applyFormat('quote')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Citation"><i class="ph ph-quotes text-lg"></i></button>
                 <button onclick="applyFormat('link')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Lien"><i class="ph ph-link text-lg"></i></button>
@@ -277,7 +230,7 @@
                 <button onclick="applyFormat('hr')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Ligne horizontale"><i class="ph ph-minus text-lg"></i></button>
             </div>
 
-            <!-- Content Area (Split Container) -->
+            <!-- Content Area -->
             <div id="contentContainer" class="flex-1 overflow-hidden relative group flex flex-row">
                 <!-- Zone de texte (Mode Édition) -->
                 <textarea id="markdownEditor" 
@@ -294,7 +247,7 @@
             <div class="h-8 border-t border-gray-200 dark:border-gray-800 flex items-center px-4 text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-900 justify-between flex-shrink-0 transition-colors">
                 <div class="flex items-center gap-3">
                     <span id="saveStatus" class="flex items-center gap-1 text-green-600 dark:text-green-400 font-medium opacity-0 transition-opacity duration-500">
-                        <i class="ph-fill ph-check-circle"></i> Sauvegardé
+                        <i class="ph-fill ph-check-circle"></i> Synchro
                     </span>
                     <span id="formatDisplay" class="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-gray-600 dark:text-gray-300 uppercase font-semibold text-[10px] tracking-wider">Markdown</span>
                 </div>
@@ -306,6 +259,19 @@
         </div>
     </main>
 
+    <!-- Modal Login -->
+    <div id="loginModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center fade-in">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-11/12 max-w-sm transform scale-100 transition-transform border border-gray-100 dark:border-gray-700">
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Connexion Éditeur</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Entrez le mot de passe pour passer en mode édition.</p>
+            <input type="password" id="adminPassword" placeholder="Mot de passe" class="w-full p-2 border rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white mb-4" onkeypress="handleLoginKey(event)">
+            <div class="flex gap-3">
+                <button onclick="closeLoginModal()" class="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 text-gray-800 dark:text-white">Annuler</button>
+                <button onclick="checkLogin()" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Valider</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Delete -->
     <div id="deleteModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center fade-in">
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-11/12 max-w-sm transform scale-100 transition-transform border border-gray-100 dark:border-gray-700">
@@ -315,7 +281,7 @@
                 </div>
                 <h3 class="text-xl font-bold text-gray-900 dark:text-white">Supprimer ?</h3>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                    Cette action supprimera définitivement <strong id="deleteDocTitle" class="text-gray-800 dark:text-gray-200">ce document</strong>. Impossible d'annuler.
+                    Cette action supprimera définitivement <strong id="deleteDocTitle" class="text-gray-800 dark:text-gray-200">ce document</strong> de la base Firebase.
                 </p>
             </div>
             <div class="mt-6 flex gap-3">
@@ -337,7 +303,32 @@
         <span id="toastMsg" class="font-medium">Notification</span>
     </div>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+        import { getAuth, signInWithCustomToken, signInAnonymously } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+        import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+
+        // --- FIREBASE CONFIGURATION ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyC57xDrplkTksyVMgEItGRu-HIo3-MFbRg",
+            authDomain: "wiki-b6d3f.firebaseapp.com",
+            projectId: "wiki-b6d3f",
+            storageBucket: "wiki-b6d3f.firebasestorage.app",
+            messagingSenderId: "161712558258",
+            appId: "1:161712558258:web:cbbbdaf28de459a36079ab",
+            measurementId: "G-RQ97QVVJ56"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        // Nom de la collection à la racine de votre base de données
+        const collectionName = 'wiki_documents';
+        
+        let currentUser = null;
+        let isAdmin = false; // "Login" state for UI
+
         // --- DATA STATE ---
         let docs = [];
         let currentDocId = null;
@@ -370,16 +361,16 @@
         const themeIcon = document.getElementById('themeIcon');
         const textColorIndicator = document.getElementById('textColorIndicator');
         const bgColorIndicator = document.getElementById('bgColorIndicator');
+        const dbStatusIndicator = document.getElementById('dbStatusIndicator');
+        const dbStatusText = document.getElementById('dbStatusText');
 
         // --- INIT ---
-        document.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('DOMContentLoaded', async () => {
             initTheme();
-            loadDocs();
-            renderDocList();
             
-            // Set Marked options with breaks enabled for new lines
+            // Set Marked options
             marked.setOptions({
-                breaks: true, // IMPORTANT: Enables line breaks
+                breaks: true,
                 gfm: true,
                 highlight: function(code, lang) {
                     const language = highlight.getLanguage(lang) ? lang : 'plaintext';
@@ -388,150 +379,171 @@
                 langPrefix: 'hljs language-'
             });
 
-            searchInput.addEventListener('input', (e) => renderDocList(e.target.value));
+            // Initialize Auth & Data
+            await initAuth();
             
+            // Listeners
+            searchInput.addEventListener('input', (e) => renderDocList(e.target.value));
             markdownEditor.addEventListener('input', () => {
                 updateCurrentContent();
                 updateStats();
                 triggerSaveStatus();
             });
-
             document.addEventListener('keydown', (e) => {
                 if ((e.ctrlKey || e.metaKey) && e.key === 's') {
                     e.preventDefault();
                     triggerSaveStatus();
                 }
             });
-
-            // Update color indicators visually
             document.getElementById('textColorPicker').addEventListener('input', (e) => textColorIndicator.style.backgroundColor = e.target.value);
             document.getElementById('bgColorPicker').addEventListener('input', (e) => bgColorIndicator.style.backgroundColor = e.target.value);
+            
+            // Make functions available globally for HTML onclick
+            window.createNewDoc = createNewDoc;
+            window.selectDoc = selectDoc;
+            window.updateCurrentTitle = updateCurrentTitle;
+            window.updateCurrentFormat = updateCurrentFormat;
+            window.toggleEditMode = toggleEditMode;
+            window.toggleSplitView = toggleSplitView;
+            window.showDeleteConfirm = showDeleteConfirm;
+            window.closeDeleteModal = closeDeleteModal;
+            window.confirmDelete = confirmDelete;
+            window.exportDoc = exportDoc;
+            window.toggleDarkMode = toggleDarkMode;
+            window.handleFileUpload = handleFileUpload;
+            window.applyFormat = applyFormat;
+            window.applyColor = applyColor;
+            window.openLoginModal = openLoginModal;
+            window.closeLoginModal = closeLoginModal;
+            window.checkLogin = checkLogin;
+            window.logoutAdmin = logoutAdmin;
+            window.handleLoginKey = handleLoginKey;
         });
 
-        // --- THEME & VIEW LOGIC ---
-
-        function initTheme() {
-            const savedTheme = localStorage.getItem('wiki_theme');
-            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                setDarkMode(true);
-            }
-        }
-
-        function toggleDarkMode() { setDarkMode(!isDarkMode); }
-
-        function setDarkMode(enable) {
-            isDarkMode = enable;
-            if (isDarkMode) {
-                document.documentElement.classList.add('dark');
-                themeIcon.classList.replace('ph-moon', 'ph-sun');
-                localStorage.setItem('wiki_theme', 'dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-                themeIcon.classList.replace('ph-sun', 'ph-moon');
-                localStorage.setItem('wiki_theme', 'light');
-            }
-        }
-
-        function toggleSplitView() {
-            if(window.innerWidth < 768) {
-                showToast("Vue partagée uniquement sur ordinateur", "info");
-                return;
-            }
-
-            isSplitView = !isSplitView;
-            if (isSplitView) {
-                contentContainer.classList.add('split-active');
-                splitIcon.classList.replace('ph-columns', 'ph-sidebar');
-                splitIcon.parentElement.classList.add('bg-blue-50', 'text-blue-600', 'dark:bg-blue-900/30', 'dark:text-blue-400');
-                formatToolbar.classList.remove('hidden');
-            } else {
-                contentContainer.classList.remove('split-active');
-                splitIcon.classList.replace('ph-sidebar', 'ph-columns');
-                splitIcon.parentElement.classList.remove('bg-blue-50', 'text-blue-600', 'dark:bg-blue-900/30', 'dark:text-blue-400');
-                toggleEditMode(isEditMode); 
-            }
-        }
-
-        // --- IMPORT LOGIC ---
-        function handleFileUpload(input) {
-            const file = input.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const content = e.target.result;
-                const title = file.name.replace(/\.[^/.]+$/, "");
+        // --- FIREBASE AUTH & FIRESTORE ---
+        async function initAuth() {
+            try {
+                // Connexion anonyme par défaut pour l'accès DB
+                await signInAnonymously(auth);
+                currentUser = auth.currentUser;
+                console.log("Auth success:", currentUser.uid);
                 
-                let format = 'text';
-                if(file.name.endsWith('.md')) format = 'markdown';
-                if(file.name.endsWith('.html')) format = 'html';
+                dbStatusIndicator.className = "w-2 h-2 rounded-full bg-green-500";
+                dbStatusText.innerText = "En ligne";
+                
+                // Start listening to data
+                subscribeToDocs();
+            } catch (error) {
+                console.error("Auth failed:", error);
+                dbStatusText.innerText = "Erreur Connexion (Vérifiez Console)";
+            }
+        }
 
-                const newDoc = {
-                    id: crypto.randomUUID(),
-                    title: title,
-                    content: content,
-                    format: format,
-                    updatedAt: Date.now()
-                };
+        function subscribeToDocs() {
+            const docsRef = collection(db, collectionName);
+            
+            onSnapshot(docsRef, (snapshot) => {
+                docs = [];
+                snapshot.forEach((doc) => {
+                    docs.push({ id: doc.id, ...doc.data() });
+                });
+                docs.sort((a, b) => b.updatedAt - a.updatedAt);
+                
+                renderDocList(searchInput.value);
+                
+                if (currentDocId) {
+                    const currentDoc = docs.find(d => d.id === currentDocId);
+                    if (!currentDoc) {
+                        currentDocId = null;
+                        emptyState.classList.remove('hidden');
+                        editorWrapper.classList.add('hidden');
+                    }
+                }
+            }, (error) => {
+                console.error("Firestore Error:", error);
+                showToast("Erreur de synchronisation", "delete");
+            });
+        }
 
-                docs.unshift(newDoc);
-                saveToStorage();
-                renderDocList();
-                selectDoc(newDoc.id);
-                showToast(`Fichier "${file.name}" importé`);
-                input.value = '';
-            };
-            reader.readAsText(file);
+        async function saveDocToFirebase(docData) {
+            if (!currentUser) return;
+            try {
+                const docRef = doc(db, collectionName, docData.id);
+                await setDoc(docRef, docData);
+            } catch (e) {
+                console.error("Save error:", e);
+                showToast("Erreur sauvegarde", "delete");
+            }
+        }
+
+        async function deleteDocFromFirebase(id) {
+            if (!currentUser) return;
+            try {
+                const docRef = doc(db, collectionName, id);
+                await deleteDoc(docRef);
+            } catch (e) {
+                console.error("Delete error:", e);
+            }
+        }
+
+        // --- AUTH UI LOGIC ---
+        function openLoginModal() { document.getElementById('loginModal').classList.remove('hidden'); document.getElementById('adminPassword').focus(); }
+        function closeLoginModal() { document.getElementById('loginModal').classList.add('hidden'); document.getElementById('adminPassword').value = ''; }
+        function handleLoginKey(e) { if(e.key === 'Enter') checkLogin(); }
+        
+        function checkLogin() {
+            const pass = document.getElementById('adminPassword').value;
+            if (pass === 'admin123') { // Simple demo password
+                isAdmin = true;
+                document.body.classList.add('is-admin');
+                document.getElementById('loginBtn').classList.add('hidden');
+                document.getElementById('logoutBtn').classList.remove('hidden');
+                document.getElementById('docTitleInput').readOnly = false;
+                document.getElementById('docTitleInput').classList.remove('cursor-default');
+                closeLoginModal();
+                showToast("Mode Éditeur Activé");
+                
+                if (currentDocId) {
+                    const doc = docs.find(d => d.id === currentDocId);
+                    updateUIForFormat(doc ? doc.format : 'markdown');
+                }
+            } else {
+                showToast("Mot de passe incorrect", "delete");
+            }
+        }
+
+        function logoutAdmin() {
+            isAdmin = false;
+            document.body.classList.remove('is-admin');
+            document.getElementById('loginBtn').classList.remove('hidden');
+            document.getElementById('logoutBtn').classList.add('hidden');
+            document.getElementById('docTitleInput').readOnly = true;
+            document.getElementById('docTitleInput').classList.add('cursor-default');
+            
+            if (isEditMode) toggleEditMode(false);
+            if (isSplitView) toggleSplitView();
+            
+            showToast("Déconnecté");
         }
 
         // --- CRUD OPERATIONS ---
 
-        function loadDocs() {
-            const stored = localStorage.getItem('wiki_docs_v2');
-            if (stored) {
-                docs = JSON.parse(stored);
-                docs.forEach(d => { if(!d.format) d.format = 'markdown'; });
-                docs.sort((a, b) => b.updatedAt - a.updatedAt);
-            } else {
-                const legacy = localStorage.getItem('wiki_docs');
-                if (legacy) {
-                    docs = JSON.parse(legacy);
-                    docs.forEach(d => { d.format = 'markdown'; });
-                    saveToStorage();
-                } else {
-                    createDemoContent();
-                }
-            }
-        }
-
-        function createDemoContent() {
-            docs = [{
-                id: 'demo-1',
-                title: 'Guide de Démarrage',
-                content: '# Bienvenue sur WikiDocs Ultimate\n\nVoici les nouveautés :\n- **Mode Sombre** 🌙\n- **Barre d\'outils intelligente**\n- <span style="color:#ef4444; background-color:#fde047">**Couleurs combinées !**</span>\n- Sauts de ligne automatiques\n\n```javascript\nfunction hello() {\n  console.log("Hello Wiki!");\n}\n```\n\n- [ ] Tâche à faire\n- [x] Tâche faite',
-                format: 'markdown',
-                updatedAt: Date.now()
-            }];
-            saveToStorage();
-        }
-
-        function saveToStorage() { localStorage.setItem('wiki_docs_v2', JSON.stringify(docs)); }
-
         function createNewDoc() {
+            if (!isAdmin) return;
             const newDoc = {
                 id: crypto.randomUUID(),
                 title: 'Nouveau Document',
-                content: '',
+                content: '# Titre\n\nCommencez ici...',
                 format: 'markdown',
                 updatedAt: Date.now()
             };
             docs.unshift(newDoc);
-            saveToStorage();
             renderDocList();
             selectDoc(newDoc.id);
+            saveDocToFirebase(newDoc);
+            
             if (!isEditMode && !isSplitView) toggleEditMode();
             setTimeout(() => docTitleInput.focus(), 100);
-            showToast('Document créé', 'success');
         }
 
         function selectDoc(id) {
@@ -553,23 +565,23 @@
         }
 
         function updateCurrentTitle() {
-            if (!currentDocId) return;
+            if (!currentDocId || !isAdmin) return;
             const doc = docs.find(d => d.id === currentDocId);
             doc.title = docTitleInput.value || 'Sans titre';
             doc.updatedAt = Date.now();
-            saveToStorage();
+            saveDocToFirebase(doc);
             renderDocList(searchInput.value, false);
         }
 
         function updateCurrentFormat() {
-            if (!currentDocId) return;
+            if (!currentDocId || !isAdmin) return;
             const doc = docs.find(d => d.id === currentDocId);
             const newFormat = docFormatSelect.value;
             
             if (doc.format !== newFormat) {
                 doc.format = newFormat;
                 doc.updatedAt = Date.now();
-                saveToStorage();
+                saveDocToFirebase(doc);
                 updateUIForFormat(newFormat);
                 renderPreview(doc.content, newFormat);
                 showToast(`Format changé en ${newFormat.toUpperCase()}`);
@@ -577,18 +589,19 @@
         }
 
         function updateCurrentContent() {
-            if (!currentDocId) return;
+            if (!currentDocId || !isAdmin) return;
             const doc = docs.find(d => d.id === currentDocId);
             doc.content = markdownEditor.value;
             doc.updatedAt = Date.now();
-            saveToStorage();
+            saveDocToFirebase(doc); // Auto-save to cloud
             renderPreview(doc.content, doc.format);
         }
 
         function confirmDelete() {
-            if (!currentDocId) return;
-            docs = docs.filter(d => d.id !== currentDocId);
-            saveToStorage();
+            if (!currentDocId || !isAdmin) return;
+            const idToDelete = currentDocId;
+            deleteDocFromFirebase(idToDelete);
+            docs = docs.filter(d => d.id !== idToDelete);
             currentDocId = null;
             renderDocList();
             emptyState.classList.remove('hidden');
@@ -600,7 +613,6 @@
         function exportDoc() {
             if (!currentDocId) return;
             const doc = docs.find(d => d.id === currentDocId);
-            
             let extension = 'txt';
             let mimeType = 'text/plain';
             if (doc.format === 'markdown') { extension = 'md'; mimeType = 'text/markdown'; }
@@ -664,15 +676,10 @@
 
             if (format === 'markdown' || !format) {
                 previewArea.className = "preview-pane markdown-preview w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors";
-                // Marked is configured with breaks: true for line breaks
                 previewArea.innerHTML = DOMPurify.sanitize(marked.parse(content));
             } else if (format === 'html') {
                 previewArea.className = "preview-pane w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors";
-                // Petite astuce pour que les sauts de lignes simples soient visibles en mode HTML preview
-                let htmlContent = content;
-                // Si on veut que le HTML preview respecte les sauts de ligne "editor style" sans <br> explicites:
-                // htmlContent = content.replace(/\n/g, '<br>'); // Décommenter si souhaité
-                previewArea.innerHTML = DOMPurify.sanitize(htmlContent);
+                previewArea.innerHTML = DOMPurify.sanitize(content);
             } else {
                 previewArea.className = "preview-pane preview-text w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors text-gray-700";
                 previewArea.innerText = content;
@@ -681,99 +688,108 @@
 
         function updateUIForFormat(format) {
             formatDisplay.innerText = format;
-            
-            const showToolbar = (isEditMode || isSplitView);
-            
+            const showToolbar = isAdmin && (isEditMode || isSplitView);
             if (showToolbar) {
                 formatToolbar.classList.remove('hidden');
+                formatToolbar.classList.add('flex');
             } else {
                 formatToolbar.classList.add('hidden');
+                formatToolbar.classList.remove('flex');
             }
         }
 
         function toggleEditMode(forceState) {
+            if (!isAdmin) return;
             isEditMode = (typeof forceState !== 'undefined') ? forceState : !isEditMode;
-            
             if(isSplitView) return; 
-
             if (isEditMode) {
                 previewArea.classList.add('hidden');
                 markdownEditor.classList.remove('hidden');
                 markdownEditor.focus();
-                
                 toggleIcon.classList.replace('ph-pencil-simple', 'ph-eye');
                 viewToggleBtn.classList.add('bg-blue-50', 'text-blue-600', 'dark:bg-blue-900/30', 'dark:text-blue-400');
             } else {
                 markdownEditor.classList.add('hidden');
                 previewArea.classList.remove('hidden');
-                
                 toggleIcon.classList.replace('ph-eye', 'ph-pencil-simple');
                 viewToggleBtn.classList.remove('bg-blue-50', 'text-blue-600', 'dark:bg-blue-900/30', 'dark:text-blue-400');
             }
             updateUIForFormat(docFormatSelect.value);
         }
 
-        // --- NEW: COMBINED COLOR LOGIC (MERGE STYLES) ---
+        // --- IMPORT LOGIC ---
+        function handleFileUpload(input) {
+            if (!isAdmin) return;
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                const title = file.name.replace(/\.[^/.]+$/, "");
+                let format = 'text';
+                if(file.name.endsWith('.md')) format = 'markdown';
+                if(file.name.endsWith('.html')) format = 'html';
+                const newDoc = {
+                    id: crypto.randomUUID(),
+                    title: title,
+                    content: content,
+                    format: format,
+                    updatedAt: Date.now()
+                };
+                saveDocToFirebase(newDoc);
+                docs.unshift(newDoc);
+                renderDocList();
+                selectDoc(newDoc.id);
+                showToast(`Fichier "${file.name}" importé`);
+                input.value = '';
+            };
+            reader.readAsText(file);
+        }
+
+        // --- COLOR LOGIC ---
         function applyColor(type, value) {
-            if (!currentDocId) return;
+            if (!currentDocId || !isAdmin) return;
             const textarea = markdownEditor;
             const start = textarea.selectionStart;
             const end = textarea.selectionEnd;
             let sel = textarea.value.substring(start, end) || 'texte';
-            
-            // 1. Detect existing span with style
             const spanRegex = /^<span style="([^"]*)">(.*?)<\/span>$/i;
             let existingStyle = "";
             let innerText = sel;
-
             if (spanRegex.test(sel)) {
                 const match = sel.match(spanRegex);
-                existingStyle = match[1]; // e.g., "color:red;"
-                innerText = match[2];     // e.g., "Texte"
+                existingStyle = match[1];
+                innerText = match[2];
             }
-
-            // 2. Parse existing styles into object
             const styleObj = {};
             existingStyle.split(';').forEach(style => {
                 const [prop, val] = style.split(':');
                 if (prop && val) styleObj[prop.trim().toLowerCase()] = val.trim();
             });
-
-            // 3. Update style object
             if (type === 'text') styleObj['color'] = value;
             if (type === 'bg') styleObj['background-color'] = value;
-
-            // 4. Reconstruct style string
-            const newStyleString = Object.entries(styleObj)
-                .map(([k, v]) => `${k}:${v}`)
-                .join('; ');
-
-            // 5. Apply
+            const newStyleString = Object.entries(styleObj).map(([k, v]) => `${k}:${v}`).join('; ');
             const newHTML = `<span style="${newStyleString}">${innerText}</span>`;
-            
             textarea.setRangeText(newHTML, start, end, 'select');
             updateCurrentContent();
             textarea.focus();
         }
 
-        // --- ADAPTIVE FORMAT LOGIC ---
+        // --- FORMAT LOGIC ---
         function applyFormat(type) {
-            if (!currentDocId) return;
+            if (!currentDocId || !isAdmin) return;
             const doc = docs.find(d => d.id === currentDocId);
             const format = doc.format || 'markdown';
-            
             const textarea = markdownEditor;
             const fullText = textarea.value;
             let start = textarea.selectionStart;
             let end = textarea.selectionEnd;
             let sel = fullText.substring(start, end);
 
-            // --- HELPER MARKDOWN ---
             const toggleInlineMD = (marker) => {
                 const len = marker.length;
                 const before = fullText.substring(start - len, start);
                 const after = fullText.substring(end, end + len);
-                
                 if (sel.startsWith(marker) && sel.endsWith(marker) && sel.length >= 2*len) {
                     textarea.setRangeText(sel.substring(len, sel.length - len), start, end, 'select');
                 } else if (before === marker && after === marker) {
@@ -782,106 +798,56 @@
                     textarea.setRangeText(`${marker}${sel || 'texte'}${marker}`, start, end, 'select');
                 }
             };
-            
             const toggleBlockMD = (prefix) => {
                 let lineStart = fullText.lastIndexOf('\n', start - 1) + 1;
                 let lineEnd = fullText.indexOf('\n', end);
                 if (lineEnd === -1) lineEnd = fullText.length;
-                
-                const block = fullText.substring(lineStart, lineEnd);
-                const lines = block.split('\n');
-                const allHave = lines.every(l => l.startsWith(prefix) || l.trim() === '');
-                
-                const newBlock = lines.map(line => {
-                    if (line.trim() === '') return line;
-                    if (allHave) return line.substring(prefix.length);
-                    return line.startsWith(prefix) ? line : prefix + line;
+                const newBlock = fullText.substring(lineStart, lineEnd).split('\n').map(line => {
+                    return line.startsWith(prefix) ? line.substring(prefix.length) : prefix + line;
                 }).join('\n');
-                
                 textarea.setRangeText(newBlock, lineStart, lineEnd, 'select');
             };
-
-            // Fixed Checkbox Logic for MD
             const toggleCheckboxMD = () => {
                 let lineStart = fullText.lastIndexOf('\n', start - 1) + 1;
                 let lineEnd = fullText.indexOf('\n', end);
                 if (lineEnd === -1) lineEnd = fullText.length;
-                
                 const line = fullText.substring(lineStart, lineEnd);
-                // Toggle cycle: - [ ] -> - [x] -> [empty] -> - [ ]
-                if (line.includes('- [ ] ')) {
-                    textarea.setRangeText(line.replace('- [ ] ', '- [x] '), lineStart, lineEnd, 'select');
-                } else if (line.includes('- [x] ')) {
-                    textarea.setRangeText(line.replace('- [x] ', ''), lineStart, lineEnd, 'select'); // Remove
-                } else {
-                    textarea.setRangeText(`- [ ] ${line}`, lineStart, lineEnd, 'select');
-                }
+                if (line.includes('- [ ] ')) textarea.setRangeText(line.replace('- [ ] ', '- [x] '), lineStart, lineEnd, 'select');
+                else if (line.includes('- [x] ')) textarea.setRangeText(line.replace('- [x] ', ''), lineStart, lineEnd, 'select');
+                else textarea.setRangeText(`- [ ] ${line}`, lineStart, lineEnd, 'select');
             };
-
-            // --- HTML CHECKBOX LOGIC (Cycle 3 états) ---
             const toggleCheckboxHTML = () => {
                 let lineStart = fullText.lastIndexOf('\n', start - 1) + 1;
                 let lineEnd = fullText.indexOf('\n', end);
                 if (lineEnd === -1) lineEnd = fullText.length;
-                
-                const line = fullText.substring(lineStart, lineEnd);
+                let line = fullText.substring(lineStart, lineEnd);
                 const unchecked = '<input type="checkbox">';
                 const checked = '<input type="checkbox" checked>';
-                
-                // Cycle: Rien -> Unchecked -> Checked -> Rien
-                
-                if (line.includes(checked)) {
-                    // Remove checked, return to nothing (or just remove the box)
-                    textarea.setRangeText(line.replace(checked, '').trim(), lineStart, lineEnd, 'select');
-                } else if (line.includes(unchecked)) {
-                    // Switch to checked
-                    textarea.setRangeText(line.replace(unchecked, checked), lineStart, lineEnd, 'select');
-                } else {
-                    // Add unchecked
-                    textarea.setRangeText(`${unchecked} ${line}`, lineStart, lineEnd, 'select');
+                if (line.includes(checked)) textarea.setRangeText(line.replace(checked, '').trim(), lineStart, lineEnd, 'select');
+                else if (line.includes(unchecked)) textarea.setRangeText(line.replace(unchecked, checked), lineStart, lineEnd, 'select');
+                else {
+                    const liRegex = /^(\s*<li>)(.*)/i;
+                    textarea.setRangeText(liRegex.test(line) ? line.replace(liRegex, '$1<input type="checkbox"> $2') : '<input type="checkbox"> ' + line, lineStart, lineEnd, 'select');
                 }
             };
-
-            // --- HELPER HTML (Regex based) ---
             const toggleHTML = (tag) => {
-                const openRegex = new RegExp(`^<${tag}(\\s[^>]*)?>`, 'i');
-                const closeRegex = new RegExp(`</${tag}>$`, 'i');
-                
+                const openRegex = new RegExp(`^<${tag}(\\s[^>]*)?>`, 'i'), closeRegex = new RegExp(`</${tag}>$`, 'i');
                 if (openRegex.test(sel) && closeRegex.test(sel)) {
                     const match = sel.match(openRegex);
-                    const inner = sel.substring(match[0].length, sel.length - (tag.length + 3));
-                    textarea.setRangeText(inner, start, end, 'select');
-                } else {
-                    textarea.setRangeText(`<${tag}>${sel || 'texte'}</${tag}>`, start, end, 'select');
-                }
+                    textarea.setRangeText(sel.substring(match[0].length, sel.length - (tag.length + 3)), start, end, 'select');
+                } else textarea.setRangeText(`<${tag}>${sel || 'texte'}</${tag}>`, start, end, 'select');
             };
-            
             const wrapListHTML = (type) => { 
-                const openRegex = new RegExp(`^<${type}(\\s[^>]*)?>`, 'i');
-                const closeRegex = new RegExp(`</${type}>$`, 'i');
-                
-                // Si la sélection entière est déjà une liste, on l'enlève (unwrap)
+                const openRegex = new RegExp(`^<${type}(\\s[^>]*)?>`, 'i'), closeRegex = new RegExp(`</${type}>$`, 'i');
                 if (openRegex.test(sel.trim()) && closeRegex.test(sel.trim())) {
-                    let content = sel.trim().replace(openRegex, '').replace(closeRegex, '').trim();
-                    content = content.replace(/<li>/gi, '').replace(/<\/li>/gi, '');
-                    content = content.split('\n').map(l => l.trim()).join('\n');
+                    let content = sel.trim().replace(openRegex, '').replace(closeRegex, '').trim().replace(/<li>/gi, '').replace(/<\/li>/gi, '').split('\n').map(l=>l.trim()).join('\n');
                     textarea.setRangeText(content, start, end, 'select');
                 } else {
-                    // Sinon, on wrap
-                    const lines = sel ? sel.split('\n') : ['texte'];
-                    
-                    // On vérifie si les lignes sont déjà des <li> pour éviter le double wrap
-                    const inner = lines.map(l => {
-                        const trimmed = l.trim();
-                        if (trimmed.startsWith('<li>') && trimmed.endsWith('</li>')) return `  ${trimmed}`;
-                        return trimmed ? `  <li>${trimmed}</li>` : '';
-                    }).join('\n');
-                    
+                    const inner = (sel ? sel.split('\n') : ['texte']).map(l => (l.trim().startsWith('<li>') ? l.trim() : (l.trim() ? `  <li>${l.trim()}</li>` : ''))).join('\n');
                     textarea.setRangeText(`<${type}>\n${inner}\n</${type}>`, start, end, 'select');
                 }
             };
 
-            // Switch Logic based on Format
             if (format === 'html') {
                 switch (type) {
                     case 'bold': toggleHTML('strong'); break;
@@ -891,14 +857,13 @@
                     case 'heading': toggleHTML('h3'); break;
                     case 'list-ul': wrapListHTML('ul'); break; 
                     case 'list-ol': wrapListHTML('ol'); break;
-                    case 'check': toggleCheckboxHTML(); break; // Cycle 3 états
+                    case 'check': toggleCheckboxHTML(); break;
                     case 'quote': toggleHTML('blockquote'); break;
                     case 'link': textarea.setRangeText(`<a href="url">${sel || 'lien'}</a>`, start, end, 'select'); break;
                     case 'image': textarea.setRangeText(`<img src="url" alt="${sel || 'image'}">`, start, end, 'select'); break;
                     case 'hr': textarea.setRangeText(`\n<hr>\n`, start, end, 'select'); break;
                 }
             } else {
-                // Default to Markdown behavior
                 switch (type) {
                     case 'bold': toggleInlineMD('**'); break;
                     case 'italic': toggleInlineMD('*'); break;
@@ -907,14 +872,13 @@
                     case 'heading': toggleBlockMD('### '); break;
                     case 'list-ul': toggleBlockMD('- '); break;
                     case 'list-ol': toggleBlockMD('1. '); break;
-                    case 'check': toggleCheckboxMD(); break; // Smart toggle
+                    case 'check': toggleCheckboxMD(); break;
                     case 'quote': toggleBlockMD('> '); break;
                     case 'link': textarea.setRangeText(`[${sel || 'titre'}](url)`, start, end, 'select'); break;
                     case 'image': textarea.setRangeText(`![${sel || 'alt'}](url_image)`, start, end, 'select'); break;
                     case 'hr': textarea.setRangeText(`\n---\n`, start, end, 'select'); break;
                 }
             }
-
             updateCurrentContent();
             updateStats();
             textarea.focus();
@@ -934,13 +898,13 @@
             clearTimeout(saveTimeout);
             saveStatus.innerText = "Sauvegarde...";
             saveTimeout = setTimeout(() => {
-                saveStatus.innerText = "Sauvegardé";
+                saveStatus.innerText = "Synchronisé";
                 setTimeout(() => { saveStatus.style.opacity = '0'; }, 1000);
             }, 800);
         }
 
         function showDeleteConfirm() {
-            if(!currentDocId) return;
+            if(!currentDocId || !isAdmin) return;
             const doc = docs.find(d => d.id === currentDocId);
             deleteDocTitle.innerText = doc.title;
             deleteModal.classList.remove('hidden');
