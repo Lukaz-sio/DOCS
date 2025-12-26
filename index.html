@@ -38,7 +38,12 @@
         .markdown-preview ul { display: block; list-style-type: disc !important; padding-left: 2.5em !important; margin-bottom: 1em; }
         .markdown-preview ol { display: block; list-style-type: decimal !important; padding-left: 2.5em !important; margin-bottom: 1em; }
         .markdown-preview li { display: list-item; margin-bottom: 0.25em; }
-        .markdown-preview em, .markdown-preview i { font-style: italic; color: #8b5cf6; font-family: serif; letter-spacing: 0.05em; }
+        
+        /* Italique standard */
+        .markdown-preview em, .markdown-preview i { 
+            font-style: italic; 
+        }
+
         .markdown-preview li:has(> input[type="checkbox"]) { list-style-type: none !important; padding-left: 0 !important; display: flex; align-items: flex-start; gap: 0.5em; margin-left: -1em; }
         .markdown-preview input[type="checkbox"] { margin-top: 0.4em; cursor: pointer; flex-shrink: 0; width: 1.1em; height: 1.1em; }
         .markdown-preview code { background-color: rgba(0,0,0,0.05); padding: 0.2em 0.4em; border-radius: 0.25em; font-family: 'Menlo', monospace; font-size: 0.9em; color: #db2777; }
@@ -431,8 +436,7 @@
         }
 
         function toggleDarkMode() { setDarkMode(!isDarkMode); }
-        
-        // ... (Le reste des fonctions de thème reste identique) ...
+
         function setDarkMode(enable) {
             isDarkMode = enable;
             if (isDarkMode) {
