@@ -86,6 +86,10 @@
         .split-active .preview-pane { display: block !important; width: 50%; }
         
         .tool-btn:active { transform: scale(0.95); }
+        
+        /* Color picker custom style hack */
+        .color-picker-wrapper { position: relative; display: inline-block; }
+        .color-input-hidden { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
     </style>
 </head>
 <body class="h-screen flex flex-col md:flex-row overflow-hidden bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-200">
@@ -191,22 +195,45 @@
                 </div>
             </header>
 
-            <!-- Markdown Toolbar -->
-            <div id="markdownToolbar" class="h-10 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 flex items-center px-2 gap-1 overflow-x-auto hidden flex-shrink-0 transition-colors">
-                <button onclick="insertMD('bold')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Gras"><i class="ph ph-text-b text-lg"></i></button>
-                <button onclick="insertMD('italic')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Italique"><i class="ph ph-text-i text-lg"></i></button>
-                <button onclick="insertMD('strike')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Barré"><i class="ph ph-text-strikethrough text-lg"></i></button>
-                <button onclick="insertMD('heading')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Titre"><i class="ph ph-text-h text-lg"></i></button>
+            <!-- Adaptive Toolbar -->
+            <div id="formatToolbar" class="h-10 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 flex items-center px-2 gap-1 overflow-x-auto hidden flex-shrink-0 transition-colors">
+                
+                <!-- Formatage Standard -->
+                <button onclick="applyFormat('bold')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Gras"><i class="ph ph-text-b text-lg"></i></button>
+                <button onclick="applyFormat('italic')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Italique"><i class="ph ph-text-i text-lg"></i></button>
+                <button onclick="applyFormat('strike')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Barré"><i class="ph ph-text-strikethrough text-lg"></i></button>
+                
                 <div class="w-px h-4 bg-gray-300 dark:bg-gray-600 mx-1"></div>
-                <button onclick="insertMD('list-ul')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Liste à puces"><i class="ph ph-list-bullets text-lg"></i></button>
-                <button onclick="insertMD('list-ol')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Liste numérotée"><i class="ph ph-list-numbers text-lg"></i></button>
-                <button onclick="insertMD('check')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Tâche"><i class="ph ph-check-square text-lg"></i></button>
-                <button onclick="insertMD('code')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Code"><i class="ph ph-code text-lg"></i></button>
-                <button onclick="insertMD('quote')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Citation"><i class="ph ph-quotes text-lg"></i></button>
+
+                <!-- COULEURS (Nouveau) -->
+                <div class="color-picker-wrapper tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 relative" title="Couleur du texte">
+                    <i class="ph ph-text-a text-lg"></i>
+                    <div class="absolute bottom-0.5 right-0.5 w-full h-1 bg-red-500 rounded-full opacity-50" id="textColorIndicator"></div>
+                    <input type="color" id="textColorPicker" class="color-input-hidden" oninput="applyColor('text', this.value)" value="#ef4444">
+                </div>
+
+                <div class="color-picker-wrapper tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 relative" title="Surligner">
+                    <i class="ph ph-highlighter text-lg"></i>
+                    <div class="absolute bottom-0.5 right-0.5 w-full h-1 bg-yellow-300 rounded-full opacity-50" id="bgColorIndicator"></div>
+                    <input type="color" id="bgColorPicker" class="color-input-hidden" oninput="applyColor('bg', this.value)" value="#fde047">
+                </div>
+
                 <div class="w-px h-4 bg-gray-300 dark:bg-gray-600 mx-1"></div>
-                <button onclick="insertMD('link')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Lien"><i class="ph ph-link text-lg"></i></button>
-                <button onclick="insertMD('image')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Image"><i class="ph ph-image text-lg"></i></button>
-                <button onclick="insertMD('hr')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Ligne horizontale"><i class="ph ph-minus text-lg"></i></button>
+                
+                <!-- Structure -->
+                <button onclick="applyFormat('heading')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Titre"><i class="ph ph-text-h text-lg"></i></button>
+                <button onclick="applyFormat('list-ul')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Liste à puces"><i class="ph ph-list-bullets text-lg"></i></button>
+                <button onclick="applyFormat('list-ol')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Liste numérotée"><i class="ph ph-list-numbers text-lg"></i></button>
+                <button onclick="applyFormat('check')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Tâche"><i class="ph ph-check-square text-lg"></i></button>
+                
+                <div class="w-px h-4 bg-gray-300 dark:bg-gray-600 mx-1"></div>
+                
+                <!-- Insertions -->
+                <button onclick="applyFormat('code')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Code"><i class="ph ph-code text-lg"></i></button>
+                <button onclick="applyFormat('quote')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Citation"><i class="ph ph-quotes text-lg"></i></button>
+                <button onclick="applyFormat('link')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Lien"><i class="ph ph-link text-lg"></i></button>
+                <button onclick="applyFormat('image')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Image"><i class="ph ph-image text-lg"></i></button>
+                <button onclick="applyFormat('hr')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Ligne horizontale"><i class="ph ph-minus text-lg"></i></button>
             </div>
 
             <!-- Content Area (Split Container) -->
@@ -286,7 +313,7 @@
         const docFormatSelect = document.getElementById('docFormatSelect');
         const markdownEditor = document.getElementById('markdownEditor');
         const previewArea = document.getElementById('previewArea');
-        const markdownToolbar = document.getElementById('markdownToolbar');
+        const formatToolbar = document.getElementById('formatToolbar');
         const viewToggleBtn = document.getElementById('viewToggleBtn');
         const toggleIcon = document.getElementById('toggleIcon');
         const saveStatus = document.getElementById('saveStatus');
@@ -300,6 +327,8 @@
         const contentContainer = document.getElementById('contentContainer');
         const splitIcon = document.getElementById('splitIcon');
         const themeIcon = document.getElementById('themeIcon');
+        const textColorIndicator = document.getElementById('textColorIndicator');
+        const bgColorIndicator = document.getElementById('bgColorIndicator');
 
         // --- INIT ---
         document.addEventListener('DOMContentLoaded', () => {
@@ -307,7 +336,6 @@
             loadDocs();
             renderDocList();
             
-            // Setup Marked options (Highlight.js)
             marked.setOptions({
                 highlight: function(code, lang) {
                     const language = highlight.getLanguage(lang) ? lang : 'plaintext';
@@ -324,14 +352,16 @@
                 triggerSaveStatus();
             });
 
-            // Keyboard Shortcuts
             document.addEventListener('keydown', (e) => {
-                // Ctrl+S: Save
                 if ((e.ctrlKey || e.metaKey) && e.key === 's') {
                     e.preventDefault();
                     triggerSaveStatus();
                 }
             });
+
+            // Update color indicators visually
+            document.getElementById('textColorPicker').addEventListener('input', (e) => textColorIndicator.style.backgroundColor = e.target.value);
+            document.getElementById('bgColorPicker').addEventListener('input', (e) => bgColorIndicator.style.backgroundColor = e.target.value);
         });
 
         // --- THEME & VIEW LOGIC ---
@@ -343,9 +373,7 @@
             }
         }
 
-        function toggleDarkMode() {
-            setDarkMode(!isDarkMode);
-        }
+        function toggleDarkMode() { setDarkMode(!isDarkMode); }
 
         function setDarkMode(enable) {
             isDarkMode = enable;
@@ -371,15 +399,11 @@
                 contentContainer.classList.add('split-active');
                 splitIcon.classList.replace('ph-columns', 'ph-sidebar');
                 splitIcon.parentElement.classList.add('bg-blue-50', 'text-blue-600', 'dark:bg-blue-900/30', 'dark:text-blue-400');
-                
-                // Ensure edit toolbar is visible if Markdown
-                const doc = docs.find(d => d.id === currentDocId);
-                if(doc && doc.format === 'markdown') markdownToolbar.classList.remove('hidden');
+                formatToolbar.classList.remove('hidden');
             } else {
                 contentContainer.classList.remove('split-active');
                 splitIcon.classList.replace('ph-sidebar', 'ph-columns');
                 splitIcon.parentElement.classList.remove('bg-blue-50', 'text-blue-600', 'dark:bg-blue-900/30', 'dark:text-blue-400');
-                // Revert to toggle state logic
                 toggleEditMode(isEditMode); 
             }
         }
@@ -392,7 +416,7 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 const content = e.target.result;
-                const title = file.name.replace(/\.[^/.]+$/, ""); // Remove extension
+                const title = file.name.replace(/\.[^/.]+$/, "");
                 
                 let format = 'text';
                 if(file.name.endsWith('.md')) format = 'markdown';
@@ -411,7 +435,7 @@
                 renderDocList();
                 selectDoc(newDoc.id);
                 showToast(`Fichier "${file.name}" importé`);
-                input.value = ''; // Reset
+                input.value = '';
             };
             reader.readAsText(file);
         }
@@ -440,16 +464,14 @@
             docs = [{
                 id: 'demo-1',
                 title: 'Guide de Démarrage',
-                content: '# Bienvenue sur WikiDocs Ultimate\n\nVoici les nouveautés :\n- **Mode Sombre** 🌙\n- **Import de fichiers**\n- **Coloration du code**\n\n```javascript\n// Exemple de code\nfunction hello() {\n  console.log("Hello Wiki!");\n}\n```\n\n- [ ] Tâche à faire\n- [x] Tâche faite',
+                content: '# Bienvenue sur WikiDocs Ultimate\n\nVoici les nouveautés :\n- **Mode Sombre** 🌙\n- **Barre d\'outils intelligente** (HTML/MD)\n- <span style="color:#ff0000">**Couleurs**</span> et <span style="background-color:#fde047">Surlignage</span>\n\n```javascript\n// Code highlight\nfunction hello() {\n  console.log("Hello Wiki!");\n}\n```',
                 format: 'markdown',
                 updatedAt: Date.now()
             }];
             saveToStorage();
         }
 
-        function saveToStorage() {
-            localStorage.setItem('wiki_docs_v2', JSON.stringify(docs));
-        }
+        function saveToStorage() { localStorage.setItem('wiki_docs_v2', JSON.stringify(docs)); }
 
         function createNewDoc() {
             const newDoc = {
@@ -598,7 +620,6 @@
 
             if (format === 'markdown' || !format) {
                 previewArea.className = "preview-pane markdown-preview w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors";
-                // Marked is configured to use highlight.js
                 previewArea.innerHTML = DOMPurify.sanitize(marked.parse(content));
             } else if (format === 'html') {
                 previewArea.className = "preview-pane w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors";
@@ -612,21 +633,19 @@
         function updateUIForFormat(format) {
             formatDisplay.innerText = format;
             
-            // Show Toolbar only for Markdown & if visible editor
-            const showToolbar = format === 'markdown' && (isEditMode || isSplitView);
+            const showToolbar = (isEditMode || isSplitView);
             
             if (showToolbar) {
-                markdownToolbar.classList.remove('hidden');
+                formatToolbar.classList.remove('hidden');
             } else {
-                markdownToolbar.classList.add('hidden');
+                formatToolbar.classList.add('hidden');
             }
         }
 
         function toggleEditMode(forceState) {
-            // If called with arg, set specific state, else toggle
             isEditMode = (typeof forceState !== 'undefined') ? forceState : !isEditMode;
             
-            if(isSplitView) return; // Ignore toggles in split mode
+            if(isSplitView) return; 
 
             if (isEditMode) {
                 previewArea.classList.add('hidden');
@@ -642,76 +661,100 @@
                 toggleIcon.classList.replace('ph-eye', 'ph-pencil-simple');
                 viewToggleBtn.classList.remove('bg-blue-50', 'text-blue-600', 'dark:bg-blue-900/30', 'dark:text-blue-400');
             }
-            // Update toolbar visibility
             updateUIForFormat(docFormatSelect.value);
         }
 
-        function insertMD(type) {
+        // --- NEW: COLOR LOGIC ---
+        function applyColor(type, value) {
             if (!currentDocId) return;
             const textarea = markdownEditor;
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const sel = textarea.value.substring(start, end) || 'texte';
+            
+            let tagStart = '', tagEnd = '</span>';
+            if (type === 'text') tagStart = `<span style="color:${value}">`;
+            if (type === 'bg') tagStart = `<span style="background-color:${value}">`;
+            
+            textarea.setRangeText(`${tagStart}${sel}${tagEnd}`, start, end, 'select');
+            updateCurrentContent();
+            textarea.focus();
+        }
+
+        // --- NEW: ADAPTIVE FORMAT LOGIC ---
+        function applyFormat(type) {
+            if (!currentDocId) return;
+            const doc = docs.find(d => d.id === currentDocId);
+            const format = doc.format || 'markdown';
+            
+            const textarea = markdownEditor;
+            const fullText = textarea.value;
             let start = textarea.selectionStart;
             let end = textarea.selectionEnd;
-            let sel = textarea.value.substring(start, end);
-            const fullText = textarea.value;
-            
-            // Fonction intelligente pour basculer le style (Ajouter/Enlever)
-            const toggleInline = (marker) => {
+            let sel = fullText.substring(start, end);
+
+            // Helpers pour MD
+            const toggleInlineMD = (marker) => {
                 const len = marker.length;
-                
-                // Cas 1: La sélection contient déjà les marqueurs (ex: sélectionne "**texte**")
-                if (sel.startsWith(marker) && sel.endsWith(marker) && sel.length >= 2 * len) {
-                    const cleanText = sel.substring(len, sel.length - len);
-                    textarea.setRangeText(cleanText, start, end, 'select');
-                    return;
-                }
-                
-                // Cas 2: Les marqueurs sont juste autour de la sélection (ex: sélectionne "texte" dans "**texte**")
                 const before = fullText.substring(start - len, start);
                 const after = fullText.substring(end, end + len);
-                
-                if (before === marker && after === marker) {
-                    // On remplace la zone incluant les marqueurs par le texte seul
+                if (sel.startsWith(marker) && sel.endsWith(marker) && sel.length >= 2*len) {
+                    textarea.setRangeText(sel.substring(len, sel.length - len), start, end, 'select');
+                } else if (before === marker && after === marker) {
                     textarea.setRangeText(sel, start - len, end + len, 'select');
-                    return;
+                } else {
+                    textarea.setRangeText(`${marker}${sel || 'texte'}${marker}`, start, end, 'select');
                 }
-                
-                // Cas 3: On ajoute les marqueurs
-                const newText = `${marker}${sel || 'texte'}${marker}`;
-                textarea.setRangeText(newText, start, end, 'select');
+            };
+            const toggleBlockMD = (prefix) => {
+                let lineStart = fullText.lastIndexOf('\n', start - 1) + 1;
+                let lineEnd = fullText.indexOf('\n', end);
+                if (lineEnd === -1) lineEnd = fullText.length;
+                const lineContent = fullText.substring(lineStart, lineEnd);
+                if (lineContent.startsWith(prefix)) {
+                    textarea.setRangeText(lineContent.substring(prefix.length), lineStart, lineEnd, 'select');
+                } else {
+                    textarea.setRangeText(prefix + lineContent, lineStart, lineEnd, 'select');
+                }
             };
 
-            // Logique spécifique par type
-            switch (type) {
-                case 'bold': toggleInline('**'); break;
-                case 'italic': toggleInline('*'); break;
-                case 'strike': toggleInline('~~'); break;
-                case 'code': toggleInline('`'); break;
-                
-                // Pour les blocs, on insère simplement (pas de toggle complexe nécessaire ici)
-                case 'heading': 
-                    textarea.setRangeText(`\n### ${sel || 'Titre'}\n`, start, end, 'select'); 
-                    break;
-                case 'list-ul': 
-                    textarea.setRangeText(`\n- ${sel || 'élément'}`, start, end, 'select'); 
-                    break;
-                case 'list-ol': 
-                    textarea.setRangeText(`\n1. ${sel || 'élément'}`, start, end, 'select'); 
-                    break;
-                case 'check': 
-                    textarea.setRangeText(`\n- [ ] ${sel || 'tâche'}`, start, end, 'select'); 
-                    break;
-                case 'quote': 
-                    textarea.setRangeText(`\n> ${sel || 'citation'}`, start, end, 'select'); 
-                    break;
-                case 'link': 
-                    textarea.setRangeText(`[${sel || 'titre'}](url)`, start, end, 'select'); 
-                    break;
-                case 'image': 
-                    textarea.setRangeText(`![${sel || 'alt'}](url_image)`, start, end, 'select'); 
-                    break;
-                case 'hr': 
-                    textarea.setRangeText(`\n---\n`, start, end, 'select'); 
-                    break;
+            // Helpers pour HTML
+            const wrapHTML = (tag) => {
+                textarea.setRangeText(`<${tag}>${sel || 'texte'}</${tag}>`, start, end, 'select');
+            };
+
+            // Switch Logic based on Format
+            if (format === 'html') {
+                switch (type) {
+                    case 'bold': wrapHTML('strong'); break;
+                    case 'italic': wrapHTML('em'); break;
+                    case 'strike': wrapHTML('s'); break;
+                    case 'code': wrapHTML('code'); break;
+                    case 'heading': wrapHTML('h3'); break;
+                    case 'list-ul': wrapHTML('li'); break; // Simplifié
+                    case 'list-ol': wrapHTML('li'); break;
+                    case 'check': textarea.setRangeText(`<input type="checkbox"> ${sel}`, start, end, 'select'); break;
+                    case 'quote': wrapHTML('blockquote'); break;
+                    case 'link': textarea.setRangeText(`<a href="url">${sel || 'lien'}</a>`, start, end, 'select'); break;
+                    case 'image': textarea.setRangeText(`<img src="url" alt="${sel || 'image'}">`, start, end, 'select'); break;
+                    case 'hr': textarea.setRangeText(`\n<hr>\n`, start, end, 'select'); break;
+                }
+            } else {
+                // Default to Markdown behavior (works for Text too)
+                switch (type) {
+                    case 'bold': toggleInlineMD('**'); break;
+                    case 'italic': toggleInlineMD('*'); break;
+                    case 'strike': toggleInlineMD('~~'); break;
+                    case 'code': toggleInlineMD('`'); break;
+                    case 'heading': toggleBlockMD('### '); break;
+                    case 'list-ul': toggleBlockMD('- '); break;
+                    case 'list-ol': toggleBlockMD('1. '); break;
+                    case 'check': toggleBlockMD('- [ ] '); break;
+                    case 'quote': toggleBlockMD('> '); break;
+                    case 'link': textarea.setRangeText(`[${sel || 'titre'}](url)`, start, end, 'select'); break;
+                    case 'image': textarea.setRangeText(`![${sel || 'alt'}](url_image)`, start, end, 'select'); break;
+                    case 'hr': textarea.setRangeText(`\n---\n`, start, end, 'select'); break;
+                }
             }
 
             updateCurrentContent();
@@ -723,8 +766,6 @@
             const text = markdownEditor.value || '';
             const words = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
             wordCountEl.innerText = `${words} mots`;
-            
-            // Estim. lecture: 200 mots/min
             const minutes = Math.ceil(words / 200);
             readTimeEl.innerText = minutes < 1 ? '< 1 min' : `${minutes} min`;
         }
@@ -733,9 +774,11 @@
         function triggerSaveStatus() {
             saveStatus.style.opacity = '1';
             clearTimeout(saveTimeout);
+            saveStatus.innerText = "Sauvegarde...";
             saveTimeout = setTimeout(() => {
-                saveStatus.style.opacity = '0';
-            }, 2000);
+                saveStatus.innerText = "Sauvegardé";
+                setTimeout(() => { saveStatus.style.opacity = '0'; }, 1000);
+            }, 800);
         }
 
         function showDeleteConfirm() {
