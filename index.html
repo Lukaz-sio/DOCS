@@ -109,6 +109,13 @@
         .remove-tag-btn { opacity: 0.6; transition: opacity 0.2s; margin-left: 4px; cursor: pointer; }
         .remove-tag-btn:hover { opacity: 1; color: #ef4444; }
 
+        /* Visibility Badge */
+        .visibility-badge { cursor: pointer; display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.5rem; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 500; transition: all 0.2s; user-select: none; }
+        .visibility-public { background-color: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+        .dark .visibility-public { background-color: rgba(5, 150, 105, 0.2); color: #34d399; border-color: rgba(5, 150, 105, 0.3); }
+        .visibility-private { background-color: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+        .dark .visibility-private { background-color: rgba(220, 38, 38, 0.2); color: #f87171; border-color: rgba(220, 38, 38, 0.3); }
+
         /* TOC Panel */
         #tocPanel { width: 260px; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 30; }
         #tocPanel.open { transform: translateX(0); }
@@ -134,7 +141,7 @@
         <div class="p-4 border-b border-gray-800 flex justify-between items-center bg-gray-950">
             <h1 class="text-xl font-bold flex items-center gap-2 text-blue-400 cursor-pointer" onclick="window.location.hash=''">
                 <i class="ph ph-books text-2xl"></i>
-                WikiDocs <span class="text-xs bg-purple-600 text-white px-1.5 py-0.5 rounded ml-1">v5.7</span>
+                WikiDocs <span class="text-xs bg-purple-600 text-white px-1.5 py-0.5 rounded ml-1">v5.8</span>
             </h1>
             <div class="flex items-center gap-2">
                 <!-- Settings Button (Admin Only) -->
@@ -255,12 +262,12 @@
                             <i class="ph ph-trash text-xl"></i>
                         </button>
 
-                        <!-- Export Menu (FIXED) -->
+                        <!-- Export Menu -->
                         <div class="relative">
                             <button onclick="toggleExportMenu()" id="exportBtn" class="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-blue-600 rounded-lg transition-colors" title="Exporter">
                                 <i class="ph ph-export text-xl"></i>
                             </button>
-                            <!-- Dropdown with ID for JS toggling -->
+                            <!-- Dropdown -->
                             <div id="exportMenu" class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 hidden z-50">
                                 <button onclick="exportDoc('source')" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex items-center gap-2 text-gray-700 dark:text-gray-200">
                                     <i class="ph ph-file-code"></i> Source (MD/HTML)
@@ -275,11 +282,17 @@
 
                 <!-- Metadata Row (Category & Tags & Format) -->
                 <div class="flex flex-wrap items-center gap-3 text-sm">
-                    <!-- Category Select -->
-                    <div class="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded-md border border-gray-200 dark:border-gray-700">
+                    
+                    <!-- Visibility Toggle (NEW) -->
+                    <button id="docVisibilityBtn" onclick="toggleVisibility()" class="visibility-badge visibility-public" title="Changer la visibilité">
+                        <i class="ph ph-globe"></i> Public
+                    </button>
+
+                    <!-- Category Select (FIXED COLORS) -->
+                    <div class="flex items-center gap-2 bg-white dark:bg-gray-800 px-2 py-1 rounded-md border border-gray-200 dark:border-gray-700">
                         <i class="ph ph-folder text-gray-400"></i>
                         <select id="docCategorySelect" onchange="updateCurrentCategory()" disabled
-                                class="bg-transparent border-none text-gray-700 dark:text-gray-300 text-xs font-medium focus:ring-0 cursor-pointer disabled:cursor-default disabled:opacity-70">
+                                class="bg-white dark:bg-gray-800 border-none text-gray-700 dark:text-gray-200 text-xs font-medium focus:ring-0 cursor-pointer disabled:cursor-default disabled:opacity-70">
                             <option value="">Aucune catégorie</option>
                             <!-- populated by js -->
                         </select>
@@ -293,16 +306,16 @@
                         </button>
                     </div>
 
-                    <!-- Improved Format Selector (Visible for Admin) -->
+                    <!-- Improved Format Selector (FIXED COLORS) -->
                     <div class="ml-auto auth-only hidden md:block">
                         <div class="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg px-2 py-1 border border-gray-200 dark:border-gray-700 relative group">
                             <span class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase mr-2 tracking-wider">Format</span>
                             <div class="relative">
                                 <select id="docFormatSelect" onchange="updateCurrentFormat()" 
                                         class="appearance-none bg-transparent font-medium text-gray-700 dark:text-gray-200 text-xs focus:outline-none cursor-pointer pr-6">
-                                    <option value="markdown">Markdown</option>
-                                    <option value="html">HTML</option>
-                                    <option value="text">Texte</option>
+                                    <option value="markdown" class="bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200">Markdown</option>
+                                    <option value="html" class="bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200">HTML</option>
+                                    <option value="text" class="bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200">Texte</option>
                                 </select>
                                 <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center text-gray-500">
                                     <i class="ph ph-caret-down text-[10px]"></i>
@@ -522,12 +535,12 @@
         let docs = [];
         let currentDocId = null;
         
-        // Settings State (Strictly Empty by Default)
+        // Settings State
         let globalCategories = [];
         let globalTags = [];
         
         // Edit State for Settings
-        let editingItemType = null; // 'category' or 'tag'
+        let editingItemType = null;
         let editingItemOldValue = null;
 
         // Filter State
@@ -553,6 +566,7 @@
         const docCategorySelect = document.getElementById('docCategorySelect');
         const docTagsContainer = document.getElementById('docTagsContainer');
         const addTagBtn = document.getElementById('addTagBtn');
+        const docVisibilityBtn = document.getElementById('docVisibilityBtn'); // NEW
         
         const docFormatSelect = document.getElementById('docFormatSelect');
         const markdownEditor = document.getElementById('markdownEditor');
@@ -595,7 +609,7 @@
 
         // --- INIT ---
         window.addEventListener('DOMContentLoaded', async () => {
-            // Expose functions globally
+            // Functions global expose
             window.createNewDoc = createNewDoc;
             window.selectDoc = selectDoc;
             window.updateCurrentTitle = updateCurrentTitle;
@@ -620,9 +634,9 @@
             window.syncScroll = syncScroll; 
             window.filterByTag = filterByTag;
             window.toggleTOC = toggleTOC;
-            window.renderDocList = renderDocList; 
+            window.renderDocList = renderDocList;
             
-            // Settings Functions
+            // Settings
             window.openSettingsModal = openSettingsModal;
             window.closeSettingsModal = closeSettingsModal;
             window.addGlobalCategory = addGlobalCategory;
@@ -634,11 +648,14 @@
             window.cancelEdit = cancelEdit;
             window.confirmUpdate = confirmUpdate;
 
-            // Tag Selection Functions
+            // Tags
             window.openTagSelectionModal = openTagSelectionModal;
             window.closeTagSelectionModal = closeTagSelectionModal;
             window.toggleDocTag = toggleDocTag;
-            window.removeDocTag = removeDocTag; 
+            window.removeDocTag = removeDocTag;
+            
+            // Visibility
+            window.toggleVisibility = toggleVisibility;
 
             initTheme();
             
@@ -721,6 +738,8 @@
                     // IMPROVED: Enable metadata editing for Admin always
                     docCategorySelect.disabled = false;
                     addTagBtn.classList.remove('hidden');
+                    docVisibilityBtn.style.pointerEvents = 'auto'; // Enable btn
+                    docVisibilityBtn.style.opacity = '1';
                     
                     dbStatusIndicator.className = "w-2 h-2 rounded-full bg-green-500";
                     dbStatusText.innerText = user.email;
@@ -736,20 +755,16 @@
                     // Disable for visitors
                     docCategorySelect.disabled = true;
                     addTagBtn.classList.add('hidden');
+                    docVisibilityBtn.style.pointerEvents = 'none'; // Disable btn
+                    docVisibilityBtn.style.opacity = '0.7';
 
                     dbStatusIndicator.className = "w-2 h-2 rounded-full bg-blue-400";
                     dbStatusText.innerText = "Mode Lecture Publique";
                 }
-                if (currentDocId) {
-                    const doc = docs.find(d => d.id === currentDocId);
-                    if(doc) {
-                        updateUIForFormat(doc.format);
-                        renderDocMeta(doc);
-                    }
-                }
+                // Always subscribe to data (filtering happens in render)
+                subscribeToSettings();
+                subscribeToDocs();
             });
-            subscribeToSettings();
-            subscribeToDocs();
         }
 
         // --- SETTINGS (CATEGORIES & TAGS) ---
@@ -788,7 +803,7 @@
             }
         }
 
-        // --- SETTINGS UI FUNCTIONS (ADD/EDIT/DELETE) ---
+        // --- SETTINGS UI FUNCTIONS ---
         function openSettingsModal() { 
             cancelEdit(); 
             settingsModal.classList.remove('hidden'); 
@@ -882,7 +897,7 @@
             `;
         }
 
-        // --- UPDATE LOGIC (BATCH UPDATE DOCS) ---
+        // --- UPDATE LOGIC (BATCH UPDATE) ---
         async function confirmUpdate(type) {
             const input = type === 'category' ? newCategoryInput : newTagInput;
             const newVal = input.value.trim();
@@ -992,11 +1007,16 @@
             docListEl.innerHTML = '';
             activeCategoryFilter = categoryFilterEl.value;
 
+            // FILTER: Also check for Visibility based on Auth
             const filtered = docs.filter(d => {
                 const matchesSearch = d.title.toLowerCase().includes(filter.toLowerCase());
                 const matchesTag = activeTagFilter ? (d.tags && d.tags.includes(activeTagFilter)) : true;
                 const matchesCat = activeCategoryFilter ? (d.category === activeCategoryFilter) : true;
-                return matchesSearch && matchesTag && matchesCat;
+                
+                // Visibility Logic
+                const isVisible = isAdmin || (d.visibility !== 'private'); // Visitors see public only
+
+                return matchesSearch && matchesTag && matchesCat && isVisible;
             });
 
             if (filtered.length === 0) {
@@ -1022,6 +1042,9 @@
                 }
                 
                 const catLabel = doc.category ? `<span class="text-[10px] bg-gray-700 text-gray-400 px-1 rounded ml-auto">${doc.category}</span>` : '';
+                
+                // Private Indicator for Admin
+                const privateIcon = (doc.visibility === 'private') ? `<i class="ph-fill ph-lock-key text-yellow-500 text-xs ml-1" title="Privé"></i>` : '';
 
                 div.innerHTML = `
                     <div class="flex items-start gap-3">
@@ -1030,7 +1053,9 @@
                         </div>
                         <div class="overflow-hidden flex-1">
                             <div class="flex justify-between items-start">
-                                <div class="font-medium text-sm truncate ${isActive ? 'text-white' : 'text-gray-300 group-hover:text-white'}">${doc.title}</div>
+                                <div class="font-medium text-sm truncate ${isActive ? 'text-white' : 'text-gray-300 group-hover:text-white'} flex items-center">
+                                    ${doc.title} ${privateIcon}
+                                </div>
                                 ${catLabel}
                             </div>
                             <div class="text-[10px] ${isActive ? 'text-blue-300' : 'text-gray-600 dark:text-gray-500'} mt-0.5">
@@ -1047,6 +1072,16 @@
         // --- DOCUMENT SELECTION & METADATA ---
         function selectDoc(id, updateHash = true) {
             const doc = docs.find(d => d.id === id);
+            
+            // Security check: if user is visitor and tries to access private doc via hash
+            if (doc && doc.visibility === 'private' && !isAdmin) {
+                showToast("Accès restreint", "delete");
+                currentDocId = null;
+                emptyState.classList.remove('hidden');
+                editorWrapper.classList.add('hidden');
+                return;
+            }
+
             if (!doc && docs.length > 0) return; 
 
             currentDocId = id;
@@ -1066,7 +1101,6 @@
             renderDocList(searchInput.value, false);
         }
 
-        // *** RESTORED TRIGGER SAVE STATUS & UPDATE STATS ***
         let saveTimeout;
         function triggerSaveStatus() {
             saveStatus.style.opacity = '1';
@@ -1087,7 +1121,7 @@
         }
 
         function renderDocMeta(doc) {
-            let catHtml = '<option value="">Aucune catégorie</option>';
+            let catHtml = '<option value="" class="bg-white dark:bg-gray-800">Aucune catégorie</option>';
             const currentCat = doc.category || '';
             const allCats = [...globalCategories];
             
@@ -1098,7 +1132,7 @@
 
             allCats.forEach(cat => {
                 const selected = currentCat === cat ? 'selected' : '';
-                catHtml += `<option value="${cat}" ${selected}>${cat}</option>`;
+                catHtml += `<option value="${cat}" ${selected} class="bg-white dark:bg-gray-800">${cat}</option>`;
             });
             
             docCategorySelect.innerHTML = catHtml;
@@ -1117,8 +1151,37 @@
                     docTagsContainer.insertBefore(chip, addTagBtn);
                 });
             }
+            
+            updateUIForVisibility(doc.visibility || 'public');
         }
 
+        // --- VISIBILITY LOGIC (NEW) ---
+        function updateUIForVisibility(visibility) {
+            if (visibility === 'private') {
+                docVisibilityBtn.className = "visibility-badge visibility-private";
+                docVisibilityBtn.innerHTML = `<i class="ph-fill ph-lock-key"></i> Privé`;
+            } else {
+                docVisibilityBtn.className = "visibility-badge visibility-public";
+                docVisibilityBtn.innerHTML = `<i class="ph ph-globe"></i> Public`;
+            }
+        }
+
+        function toggleVisibility() {
+            if (!currentDocId || !isAdmin) return;
+            const doc = docs.find(d => d.id === currentDocId);
+            const newVis = doc.visibility === 'private' ? 'public' : 'private';
+            
+            doc.visibility = newVis;
+            doc.updatedAt = Date.now();
+            
+            saveDocToFirebase(doc);
+            updateUIForVisibility(newVis);
+            renderDocList(searchInput.value, false);
+            
+            showToast(newVis === 'private' ? "Document rendu privé" : "Document rendu public");
+        }
+
+        // --- UPDATE FUNCTIONS ---
         function updateCurrentTitle() {
             if (!currentDocId || !isAdmin) return;
             const doc = docs.find(d => d.id === currentDocId);
@@ -1415,6 +1478,7 @@
                 format: 'markdown',
                 tags: [],
                 category: '',
+                visibility: 'public', // Default public
                 updatedAt: Date.now()
             };
             saveDocToFirebase(newDoc);
