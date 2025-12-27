@@ -96,6 +96,9 @@
         .color-picker-wrapper { position: relative; display: inline-block; }
         .color-input-hidden { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
         
+        .tag-chip { font-size: 0.7rem; padding: 0.1rem 0.4rem; border-radius: 9999px; background-color: rgba(59, 130, 246, 0.1); color: #3b82f6; display: inline-block; margin-right: 0.25rem; }
+        .dark .tag-chip { background-color: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+        
         /* Auth UI */
         .auth-only { display: none !important; }
         .is-admin .auth-only { display: flex !important; }
@@ -107,9 +110,9 @@
     <!-- Sidebar -->
     <aside class="w-full md:w-72 bg-gray-900 text-gray-100 flex flex-col border-r border-gray-800 flex-shrink-0 z-20 shadow-xl">
         <div class="p-4 border-b border-gray-800 flex justify-between items-center bg-gray-950">
-            <h1 class="text-xl font-bold flex items-center gap-2 text-blue-400">
+            <h1 class="text-xl font-bold flex items-center gap-2 text-blue-400 cursor-pointer" onclick="window.location.hash=''">
                 <i class="ph ph-books text-2xl"></i>
-                WikiDocs <span class="text-xs bg-purple-600 text-white px-1.5 py-0.5 rounded ml-1">Cloud</span>
+                WikiDocs <span class="text-xs bg-purple-600 text-white px-1.5 py-0.5 rounded ml-1">v3</span>
             </h1>
             <div class="flex items-center gap-2">
                 <button onclick="toggleDarkMode()" class="text-gray-400 hover:text-yellow-400 transition-colors p-1" title="Mode Sombre/Clair">
@@ -118,11 +121,16 @@
             </div>
         </div>
         
-        <div class="p-3 bg-gray-900">
+        <div class="p-3 bg-gray-900 flex flex-col gap-2">
             <div class="relative">
                 <i class="ph ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
                 <input type="text" id="searchInput" placeholder="Rechercher..." 
                        class="w-full bg-gray-800 text-sm text-white rounded-lg pl-9 pr-3 py-2 border border-gray-700 focus:outline-none focus:border-blue-500 transition-colors placeholder-gray-500">
+            </div>
+            
+            <!-- Tags Filter Container -->
+            <div id="tagFilterList" class="flex flex-wrap gap-1.5 px-1 max-h-20 overflow-y-auto">
+                <!-- Tags will be injected here -->
             </div>
         </div>
 
@@ -180,12 +188,20 @@
         <div id="editorWrapper" class="hidden flex flex-col h-full w-full z-10 bg-white dark:bg-gray-900">
             
             <!-- Top Bar -->
-            <header class="h-16 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-4 md:px-6 bg-white dark:bg-gray-900 flex-shrink-0 gap-4 transition-colors">
-                <div class="flex-1 min-w-0">
+            <header class="h-auto md:h-20 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-4 py-2 md:px-6 bg-white dark:bg-gray-900 flex-shrink-0 gap-4 transition-colors">
+                <div class="flex-1 min-w-0 flex flex-col justify-center">
                     <!-- Title Input -->
                     <input type="text" id="docTitleInput" placeholder="Titre du document" readonly
-                           class="w-full text-lg md:text-xl font-bold text-gray-800 dark:text-gray-100 placeholder-gray-300 dark:placeholder-gray-600 border-none focus:ring-0 focus:outline-none bg-transparent truncate cursor-default auth-cursor-text"
+                           class="w-full text-lg md:text-xl font-bold text-gray-800 dark:text-gray-100 placeholder-gray-300 dark:placeholder-gray-600 border-none focus:ring-0 focus:outline-none bg-transparent truncate cursor-default auth-cursor-text mb-1"
                            oninput="updateCurrentTitle()">
+                    
+                    <!-- Tags Input (Only visible in edit mode/admin or displays static tags) -->
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-tag text-gray-400 text-sm"></i>
+                        <input type="text" id="docTagsInput" placeholder="Tags (séparés par virgule)..." readonly
+                               class="w-full text-xs text-blue-600 dark:text-blue-400 placeholder-gray-400 bg-transparent border-none focus:ring-0 focus:outline-none p-0 cursor-default auth-cursor-text"
+                               oninput="updateCurrentTags()">
+                    </div>
                 </div>
                 
                 <div class="flex items-center gap-2 md:gap-3 flex-shrink-0 auth-only">
@@ -270,7 +286,7 @@
                 <!-- Zone de texte (Mode Édition) -->
                 <textarea id="markdownEditor" 
                           class="editor-pane w-full h-full p-6 md:p-8 resize-none focus:outline-none font-mono text-sm leading-relaxed text-gray-800 bg-gray-50 dark:bg-gray-850 dark:text-gray-200 hidden border-r-0"
-                          placeholder="Commencez à écrire ici..." spellcheck="false"
+                          placeholder="Commencez à écrire ici... (Glissez des images ou collez-les avec Ctrl+V)" spellcheck="false"
                           onscroll="syncScroll('editor')"></textarea>
                 
                 <!-- Zone de prévisualisation (Mode Lecture) -->
@@ -371,17 +387,20 @@
         // --- DATA STATE ---
         let docs = [];
         let currentDocId = null;
+        let activeTagFilter = null; // New: Tag filter state
         let isEditMode = false;
         let isSplitView = false;
         let isDarkMode = false;
-        let isScrolling = false; // For scroll sync
+        let isScrolling = false; 
 
         // --- DOM REFS ---
         const docListEl = document.getElementById('docList');
         const searchInput = document.getElementById('searchInput');
+        const tagFilterListEl = document.getElementById('tagFilterList'); // New
         const emptyState = document.getElementById('emptyState');
         const editorWrapper = document.getElementById('editorWrapper');
         const docTitleInput = document.getElementById('docTitleInput');
+        const docTagsInput = document.getElementById('docTagsInput'); // New
         const docFormatSelect = document.getElementById('docFormatSelect');
         const markdownEditor = document.getElementById('markdownEditor');
         const previewArea = document.getElementById('previewArea');
@@ -410,6 +429,7 @@
             window.createNewDoc = createNewDoc;
             window.selectDoc = selectDoc;
             window.updateCurrentTitle = updateCurrentTitle;
+            window.updateCurrentTags = updateCurrentTags; // New
             window.updateCurrentFormat = updateCurrentFormat;
             window.toggleEditMode = toggleEditMode;
             window.toggleSplitView = toggleSplitView;
@@ -426,7 +446,8 @@
             window.checkLogin = checkLogin;
             window.logoutAdmin = logoutAdmin;
             window.handleLoginKey = handleLoginKey;
-            window.syncScroll = syncScroll; // Scroll Sync
+            window.syncScroll = syncScroll; 
+            window.filterByTag = filterByTag; // New
 
             initTheme();
             
@@ -451,6 +472,12 @@
                 updateStats();
                 triggerSaveStatus();
             });
+            
+            // Paste & Drop Listeners for Images
+            markdownEditor.addEventListener('paste', handleImagePaste);
+            markdownEditor.addEventListener('dragover', (e) => { e.preventDefault(); e.stopPropagation(); });
+            markdownEditor.addEventListener('drop', handleImageDrop);
+
             document.addEventListener('keydown', (e) => {
                 if ((e.ctrlKey || e.metaKey) && e.key === 's') {
                     e.preventDefault();
@@ -514,7 +541,7 @@
         // --- SCROLL SYNC LOGIC ---
         function syncScroll(source) {
             if (!isSplitView) return;
-            if (isScrolling) return; // Prevent loop
+            if (isScrolling) return; 
 
             isScrolling = true;
             
@@ -529,7 +556,7 @@
                 editor.scrollTop = percentage * (editor.scrollHeight - editor.clientHeight);
             }
 
-            setTimeout(() => isScrolling = false, 50); // Debounce
+            setTimeout(() => isScrolling = false, 50); 
         }
 
         // --- FIREBASE AUTH & FIRESTORE ---
@@ -547,6 +574,9 @@
                     document.getElementById('docTitleInput').readOnly = false;
                     document.getElementById('docTitleInput').classList.remove('cursor-default');
                     
+                    document.getElementById('docTagsInput').readOnly = false;
+                    document.getElementById('docTagsInput').classList.remove('cursor-default');
+                    
                     dbStatusIndicator.className = "w-2 h-2 rounded-full bg-green-500";
                     dbStatusText.innerText = user.email;
                     
@@ -561,6 +591,9 @@
                     
                     document.getElementById('docTitleInput').readOnly = true;
                     document.getElementById('docTitleInput').classList.add('cursor-default');
+
+                    document.getElementById('docTagsInput').readOnly = true;
+                    document.getElementById('docTagsInput').classList.add('cursor-default');
 
                     dbStatusIndicator.className = "w-2 h-2 rounded-full bg-blue-400";
                     dbStatusText.innerText = "Mode Lecture Publique";
@@ -586,6 +619,7 @@
                 // Tri par date de modification
                 docs.sort((a, b) => b.updatedAt - a.updatedAt);
                 
+                renderTagFilters(); // Update side tags
                 renderDocList(searchInput.value);
                 
                 // Handle Routing (First Load)
@@ -595,15 +629,12 @@
                 if (currentDocId) {
                     const currentDoc = docs.find(d => d.id === currentDocId);
                     if (!currentDoc) {
-                        // Deleted remotely
                         currentDocId = null;
                         emptyState.classList.remove('hidden');
                         editorWrapper.classList.add('hidden');
-                        window.location.hash = ''; // Clear hash
+                        window.location.hash = ''; 
                     } else if (!isEditMode && markdownEditor.value !== currentDoc.content) {
-                        // Only update content if not editing to avoid conflicts
                         renderPreview(currentDoc.content, currentDoc.format);
-                        // Don't update editor value violently if user is admin
                         if(!isAdmin) markdownEditor.value = currentDoc.content; 
                     }
                 }
@@ -619,14 +650,124 @@
             });
         }
 
+        // --- IMAGE HANDLING (DRAG/DROP/PASTE) ---
+
+        async function handleImagePaste(e) {
+            if (!isAdmin) return;
+            const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf("image") !== -1) {
+                    e.preventDefault();
+                    const blob = items[i].getAsFile();
+                    await processAndInsertImage(blob);
+                }
+            }
+        }
+
+        async function handleImageDrop(e) {
+            if (!isAdmin) return;
+            e.preventDefault();
+            e.stopPropagation();
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files && files[0] && files[0].type.startsWith('image/')) {
+                await processAndInsertImage(files[0]);
+            }
+        }
+
+        function processAndInsertImage(file) {
+            showToast("Traitement de l'image...", "info");
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    // Resize logic to prevent massive base64 strings
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    const MAX_WIDTH = 800; // Limit width
+
+                    if (width > MAX_WIDTH) {
+                        height *= MAX_WIDTH / width;
+                        width = MAX_WIDTH;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7); // Compress JPEG 70%
+                    insertAtCursor(`\n![Image](${dataUrl})\n`);
+                    showToast("Image insérée !");
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function insertAtCursor(text) {
+            const textarea = markdownEditor;
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            textarea.setRangeText(text, start, end, 'select');
+            updateCurrentContent();
+        }
+
+        // --- TAGS LOGIC ---
+        
+        function renderTagFilters() {
+            const allTags = new Set();
+            docs.forEach(doc => {
+                if (doc.tags && Array.isArray(doc.tags)) {
+                    doc.tags.forEach(tag => allTags.add(tag.trim()));
+                }
+            });
+
+            if (allTags.size === 0) {
+                tagFilterListEl.classList.add('hidden');
+                return;
+            }
+            tagFilterListEl.classList.remove('hidden');
+
+            const sortedTags = Array.from(allTags).sort();
+            
+            let html = `<button onclick="filterByTag(null)" class="text-[10px] px-2 py-0.5 rounded-full border transition-colors ${!activeTagFilter ? 'bg-blue-600 text-white border-blue-600' : 'bg-transparent text-gray-500 border-gray-600 hover:border-gray-400'}">Tout</button>`;
+            
+            sortedTags.forEach(tag => {
+                if(!tag) return;
+                const isActive = activeTagFilter === tag;
+                html += `<button onclick="filterByTag('${tag}')" class="text-[10px] px-2 py-0.5 rounded-full border transition-colors ${isActive ? 'bg-blue-600 text-white border-blue-600' : 'bg-transparent text-gray-500 border-gray-600 hover:border-gray-400'}">${tag}</button>`;
+            });
+            
+            tagFilterListEl.innerHTML = html;
+        }
+
+        function filterByTag(tag) {
+            activeTagFilter = tag;
+            renderTagFilters(); // Re-render to update active state UI
+            renderDocList(searchInput.value);
+        }
+
+        function updateCurrentTags() {
+            if (!currentDocId || !isAdmin) return;
+            const doc = docs.find(d => d.id === currentDocId);
+            const val = docTagsInput.value;
+            // Split by comma, trim, remove empty
+            doc.tags = val.split(',').map(t => t.trim()).filter(t => t.length > 0);
+            doc.updatedAt = Date.now();
+            saveDocToFirebase(doc);
+            renderTagFilters(); // Update sidebar tags live
+        }
+
         // --- ROUTING LOGIC ---
         function handleHashChange() {
-            const hash = window.location.hash.substring(1); // Remove '#'
+            const hash = window.location.hash.substring(1); 
             if (hash && hash !== currentDocId) {
-                // If the hash exists and is different, load that doc
-                selectDoc(hash, false); // false = don't set hash again
+                selectDoc(hash, false); 
             } else if (!hash && currentDocId) {
-                // Hash removed, close doc
                 currentDocId = null;
                 emptyState.classList.remove('hidden');
                 editorWrapper.classList.add('hidden');
@@ -713,6 +854,7 @@
                 title: 'Nouveau Document',
                 content: '# Titre\n\nCommencez ici...',
                 format: 'markdown',
+                tags: [],
                 updatedAt: Date.now()
             };
             // Optimistic UI update
@@ -729,7 +871,6 @@
         function selectDoc(id, updateHash = true) {
             const doc = docs.find(d => d.id === id);
             
-            // If doc not found (maybe loaded from invalid hash), do nothing or reset
             if (!doc && docs.length > 0) return; 
 
             currentDocId = id;
@@ -739,6 +880,7 @@
             editorWrapper.classList.remove('hidden');
             
             docTitleInput.value = doc.title;
+            docTagsInput.value = doc.tags ? doc.tags.join(', ') : '';
             markdownEditor.value = doc.content;
             docFormatSelect.value = doc.format || 'markdown';
             
@@ -786,10 +928,9 @@
             const idToDelete = currentDocId;
             deleteDocFromFirebase(idToDelete);
             
-            // UI cleanup handled by onSnapshot, but we can do optimistic cleanup
             docs = docs.filter(d => d.id !== idToDelete);
             currentDocId = null;
-            window.location.hash = ''; // Clear Hash
+            window.location.hash = ''; 
             renderDocList();
             emptyState.classList.remove('hidden');
             editorWrapper.classList.add('hidden');
@@ -802,7 +943,6 @@
             const doc = docs.find(d => d.id === currentDocId);
             
             if (type === 'pdf') {
-                // PDF Export using html2pdf
                 const element = document.getElementById('previewArea');
                 const opt = {
                     margin:       1,
@@ -814,7 +954,6 @@
                 html2pdf().set(opt).from(element).save();
                 showToast('Génération du PDF...');
             } else {
-                // Source Export
                 let extension = 'txt';
                 let mimeType = 'text/plain';
                 if (doc.format === 'markdown') { extension = 'md'; mimeType = 'text/markdown'; }
@@ -837,7 +976,13 @@
 
         function renderDocList(filter = '', resetScroll = true) {
             docListEl.innerHTML = '';
-            const filtered = docs.filter(d => d.title.toLowerCase().includes(filter.toLowerCase()));
+            
+            // Filter by search AND tag
+            const filtered = docs.filter(d => {
+                const matchesSearch = d.title.toLowerCase().includes(filter.toLowerCase());
+                const matchesTag = activeTagFilter ? (d.tags && d.tags.includes(activeTagFilter)) : true;
+                return matchesSearch && matchesTag;
+            });
 
             if (filtered.length === 0) {
                 docListEl.innerHTML = `<div class="text-gray-500 text-center text-sm mt-8 opacity-50">Aucun document</div>`;
@@ -848,23 +993,32 @@
                 const isActive = doc.id === currentDocId;
                 const div = document.createElement('div');
                 div.className = `p-3 rounded-lg cursor-pointer transition-all mb-1 border border-transparent group ${isActive ? 'bg-gray-800 border-blue-500/50 shadow-md' : 'hover:bg-gray-800 hover:border-gray-700'}`;
-                // Using href for hash routing interaction, but onClick for immediate feel
                 div.onclick = () => selectDoc(doc.id);
                 
                 let icon = 'ph-file-text';
                 if(doc.format === 'markdown') icon = 'ph-markdown-logo';
                 if(doc.format === 'html') icon = 'ph-code';
                 
+                // Generate tag chips for the list item
+                let tagsHtml = '';
+                if(doc.tags && doc.tags.length > 0) {
+                    tagsHtml = `<div class="mt-1 flex flex-wrap gap-1">
+                        ${doc.tags.slice(0, 3).map(t => `<span class="text-[9px] px-1.5 py-0.5 rounded bg-gray-700 text-gray-300 border border-gray-600">${t}</span>`).join('')}
+                        ${doc.tags.length > 3 ? `<span class="text-[9px] text-gray-500">+${doc.tags.length - 3}</span>` : ''}
+                    </div>`;
+                }
+
                 div.innerHTML = `
-                    <div class="flex items-center gap-3">
-                        <div class="${isActive ? 'text-blue-400' : 'text-gray-600 dark:text-gray-500 group-hover:text-gray-400'}">
+                    <div class="flex items-start gap-3">
+                        <div class="mt-0.5 ${isActive ? 'text-blue-400' : 'text-gray-600 dark:text-gray-500 group-hover:text-gray-400'}">
                             <i class="ph ${icon} text-xl"></i>
                         </div>
-                        <div class="overflow-hidden">
+                        <div class="overflow-hidden flex-1">
                             <div class="font-medium text-sm truncate ${isActive ? 'text-white' : 'text-gray-300 group-hover:text-white'}">${doc.title}</div>
                             <div class="text-[10px] ${isActive ? 'text-blue-300' : 'text-gray-600 dark:text-gray-500'} mt-0.5">
-                                ${new Date(doc.updatedAt).toLocaleDateString()} • ${doc.format ? doc.format.toUpperCase() : 'MD'}
+                                ${new Date(doc.updatedAt).toLocaleDateString()}
                             </div>
+                            ${tagsHtml}
                         </div>
                     </div>
                 `;
@@ -884,8 +1038,7 @@
                 previewArea.innerHTML = DOMPurify.sanitize(marked.parse(content));
             } else if (format === 'html') {
                 previewArea.className = "preview-pane w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors";
-                // Simple formatting preservation for HTML preview
-                let htmlContent = content; // Can add .replace(/\n/g, '<br>') if needed
+                let htmlContent = content;
                 previewArea.innerHTML = DOMPurify.sanitize(htmlContent);
             } else {
                 previewArea.className = "preview-pane preview-text w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors text-gray-700";
@@ -896,7 +1049,6 @@
         function updateUIForFormat(format) {
             formatDisplay.innerText = format;
             
-            // Logic: Toolbar visible ONLY if isAdmin AND (EditMode OR SplitView)
             const showToolbar = isAdmin && (isEditMode || isSplitView);
             
             if (showToolbar) {
@@ -909,7 +1061,7 @@
         }
 
         function toggleEditMode(forceState) {
-            if (!isAdmin) return; // Prevent unauthorized editing toggles
+            if (!isAdmin) return; 
             
             isEditMode = (typeof forceState !== 'undefined') ? forceState : !isEditMode;
             
@@ -952,13 +1104,12 @@
                     title: title,
                     content: content,
                     format: format,
+                    tags: [],
                     updatedAt: Date.now()
                 };
                 
-                // Save directly to cloud
                 saveDocToFirebase(newDoc);
                 
-                // Optimistic UI
                 docs.unshift(newDoc);
                 renderDocList();
                 selectDoc(newDoc.id);
@@ -1014,7 +1165,6 @@
             let end = textarea.selectionEnd;
             let sel = fullText.substring(start, end);
 
-            // Helpers from previous robust version...
             const toggleInlineMD = (marker) => {
                 const len = marker.length;
                 const before = fullText.substring(start - len, start);
