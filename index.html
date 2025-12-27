@@ -103,8 +103,8 @@
         .color-picker-wrapper { position: relative; display: inline-block; }
         .color-input-hidden { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
         
-        .tag-chip { font-size: 0.7rem; padding: 0.1rem 0.4rem; border-radius: 9999px; background-color: rgba(59, 130, 246, 0.1); color: #3b82f6; display: inline-block; margin-right: 0.25rem; }
-        .dark .tag-chip { background-color: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+        .tag-chip { font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 9999px; background-color: rgba(59, 130, 246, 0.1); color: #3b82f6; display: inline-flex; align-items: center; margin-right: 0.25rem; border: 1px solid rgba(59, 130, 246, 0.2); }
+        .dark .tag-chip { background-color: rgba(59, 130, 246, 0.2); color: #60a5fa; border-color: rgba(96, 165, 250, 0.3); }
 
         /* TOC Panel */
         #tocPanel { width: 260px; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 30; }
@@ -131,9 +131,13 @@
         <div class="p-4 border-b border-gray-800 flex justify-between items-center bg-gray-950">
             <h1 class="text-xl font-bold flex items-center gap-2 text-blue-400 cursor-pointer" onclick="window.location.hash=''">
                 <i class="ph ph-books text-2xl"></i>
-                WikiDocs <span class="text-xs bg-purple-600 text-white px-1.5 py-0.5 rounded ml-1">v4</span>
+                WikiDocs <span class="text-xs bg-purple-600 text-white px-1.5 py-0.5 rounded ml-1">v5.1</span>
             </h1>
             <div class="flex items-center gap-2">
+                <!-- Settings Button (Admin Only) -->
+                <button onclick="openSettingsModal()" class="auth-only text-gray-400 hover:text-white transition-colors p-1" title="Paramètres Catégories/Tags">
+                    <i class="ph ph-gear text-xl"></i>
+                </button>
                 <button onclick="toggleDarkMode()" class="text-gray-400 hover:text-yellow-400 transition-colors p-1" title="Mode Sombre/Clair">
                     <i id="themeIcon" class="ph ph-moon text-xl"></i>
                 </button>
@@ -147,8 +151,15 @@
                        class="w-full bg-gray-800 text-sm text-white rounded-lg pl-9 pr-3 py-2 border border-gray-700 focus:outline-none focus:border-blue-500 transition-colors placeholder-gray-500">
             </div>
             
+            <!-- Category Filter -->
+            <select id="categoryFilter" onchange="renderDocList(searchInput.value)" 
+                    class="w-full bg-gray-800 text-xs text-gray-300 rounded-lg px-3 py-2 border border-gray-700 focus:outline-none focus:border-blue-500 cursor-pointer">
+                <option value="">Toutes les catégories</option>
+                <!-- populated by js -->
+            </select>
+
             <!-- Tags Filter Container -->
-            <div id="tagFilterList" class="flex flex-wrap gap-1.5 px-1 max-h-20 overflow-y-auto">
+            <div id="tagFilterList" class="flex flex-wrap gap-1.5 px-1 max-h-24 overflow-y-auto">
                 <!-- Tags will be injected here -->
             </div>
         </div>
@@ -207,77 +218,89 @@
         <div id="editorWrapper" class="hidden flex flex-col h-full w-full z-10 bg-white dark:bg-gray-900 relative overflow-hidden">
             
             <!-- Top Bar -->
-            <header class="h-auto md:h-20 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-4 py-2 md:px-6 bg-white dark:bg-gray-900 flex-shrink-0 gap-4 transition-colors z-20 relative">
-                <div class="flex-1 min-w-0 flex flex-col justify-center">
-                    <!-- Title Input -->
-                    <input type="text" id="docTitleInput" placeholder="Titre du document" readonly
-                           class="w-full text-lg md:text-xl font-bold text-gray-800 dark:text-gray-100 placeholder-gray-300 dark:placeholder-gray-600 border-none focus:ring-0 focus:outline-none bg-transparent truncate cursor-default auth-cursor-text mb-1"
-                           oninput="updateCurrentTitle()">
-                    
-                    <!-- Tags Input (Only visible in edit mode/admin or displays static tags) -->
-                    <div class="flex items-center gap-2">
-                        <i class="ph ph-tag text-gray-400 text-sm"></i>
-                        <input type="text" id="docTagsInput" placeholder="Tags (séparés par virgule)..." readonly
-                               class="w-full text-xs text-blue-600 dark:text-blue-400 placeholder-gray-400 bg-transparent border-none focus:ring-0 focus:outline-none p-0 cursor-default auth-cursor-text"
-                               oninput="updateCurrentTags()">
+            <header class="h-auto border-b border-gray-200 dark:border-gray-800 flex flex-col bg-white dark:bg-gray-900 flex-shrink-0 transition-colors z-20 relative p-4 gap-3">
+                
+                <div class="flex items-start justify-between gap-4">
+                    <div class="flex-1 min-w-0">
+                         <!-- Title Input -->
+                        <input type="text" id="docTitleInput" placeholder="Titre du document" readonly
+                               class="w-full text-lg md:text-2xl font-bold text-gray-800 dark:text-gray-100 placeholder-gray-300 dark:placeholder-gray-600 border-none focus:ring-0 focus:outline-none bg-transparent truncate cursor-default auth-cursor-text mb-1"
+                               oninput="updateCurrentTitle()">
+                    </div>
+
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                         <!-- TOC Toggle -->
+                        <button onclick="toggleTOC()" id="tocToggleBtn" class="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors border border-transparent" title="Table des matières">
+                            <i class="ph ph-list text-xl"></i>
+                        </button>
+                        
+                        <div class="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-1 hidden md:block auth-only"></div>
+
+                        <button onclick="toggleSplitView()" class="hidden md:flex p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors auth-only" title="Vue Partagée">
+                            <i id="splitIcon" class="ph ph-columns text-xl"></i>
+                        </button>
+
+                        <button onclick="toggleEditMode()" id="viewToggleBtn" 
+                                class="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg flex items-center gap-2 transition-colors border border-transparent auth-only"
+                                title="Éditer">
+                            <i class="ph ph-pencil-simple text-xl" id="toggleIcon"></i>
+                        </button>
+
+                        <button onclick="showDeleteConfirm()" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors auth-only" title="Supprimer">
+                            <i class="ph ph-trash text-xl"></i>
+                        </button>
+
+                        <!-- Export Menu -->
+                        <div class="relative group">
+                            <button class="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-blue-600 rounded-lg transition-colors" title="Exporter">
+                                <i class="ph ph-export text-xl"></i>
+                            </button>
+                            <!-- Dropdown -->
+                            <div class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 hidden group-hover:block z-50">
+                                <button onclick="exportDoc('source')" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex items-center gap-2">
+                                    <i class="ph ph-file-code"></i> Source (MD/HTML)
+                                </button>
+                                <button onclick="exportDoc('pdf')" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex items-center gap-2">
+                                    <i class="ph ph-file-pdf"></i> PDF (Imprimable)
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                
-                <div class="flex items-center gap-2 md:gap-3 flex-shrink-0">
-                    <!-- Format Selector (Admin only originally, but kept here for layout) -->
-                    <div class="relative group hidden md:block auth-only">
-                        <select id="docFormatSelect" onchange="updateCurrentFormat()" 
-                                class="appearance-none bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded-md py-1.5 pl-3 pr-8 leading-tight focus:outline-none focus:border-blue-500 cursor-pointer">
-                            <option value="markdown">Markdown</option>
-                            <option value="html">HTML</option>
-                            <option value="text">Texte Brut</option>
+
+                <!-- Metadata Row (Category & Tags) -->
+                <div class="flex flex-wrap items-center gap-3 text-sm">
+                    <!-- Category Select -->
+                    <div class="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded-md border border-gray-200 dark:border-gray-700">
+                        <i class="ph ph-folder text-gray-400"></i>
+                        <select id="docCategorySelect" onchange="updateCurrentCategory()" disabled
+                                class="bg-transparent border-none text-gray-700 dark:text-gray-300 text-xs font-medium focus:ring-0 cursor-pointer disabled:cursor-default disabled:opacity-70">
+                            <option value="">Aucune catégorie</option>
+                            <!-- populated by js -->
                         </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
-                            <i class="ph ph-caret-down text-xs"></i>
-                        </div>
                     </div>
 
-                    <!-- TOC Toggle (Visible for everyone) -->
-                    <button onclick="toggleTOC()" id="tocToggleBtn" class="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors border border-transparent" title="Table des matières">
-                        <i class="ph ph-list text-xl"></i>
-                    </button>
-
-                    <div class="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-1 hidden md:block auth-only"></div>
-                    
-                    <button onclick="toggleSplitView()" class="hidden md:flex p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors auth-only" title="Vue Partagée">
-                        <i id="splitIcon" class="ph ph-columns text-xl"></i>
-                    </button>
-
-                    <button onclick="toggleEditMode()" id="viewToggleBtn" 
-                            class="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg flex items-center gap-2 transition-colors border border-transparent auth-only"
-                            title="Éditer">
-                        <i class="ph ph-pencil-simple text-xl" id="toggleIcon"></i>
-                    </button>
-
-                    <button onclick="showDeleteConfirm()" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors auth-only" title="Supprimer">
-                        <i class="ph ph-trash text-xl"></i>
-                    </button>
-                    
-                    <!-- Export Menu -->
-                    <div class="relative group">
-                        <button class="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-blue-600 rounded-lg transition-colors" title="Exporter">
-                            <i class="ph ph-export text-xl"></i>
+                    <!-- Tags Display/Edit -->
+                    <div class="flex flex-wrap items-center gap-1" id="docTagsContainer">
+                        <!-- Tags injected here -->
+                        <button onclick="openTagSelectionModal()" id="addTagBtn" class="auth-only hidden text-xs bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded-full border border-gray-200 dark:border-gray-600 transition-colors">
+                            <i class="ph ph-plus"></i> Tag
                         </button>
-                        <!-- Dropdown -->
-                        <div class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 hidden group-hover:block z-50">
-                            <button onclick="exportDoc('source')" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex items-center gap-2">
-                                <i class="ph ph-file-code"></i> Source (MD/HTML)
-                            </button>
-                            <button onclick="exportDoc('pdf')" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex items-center gap-2">
-                                <i class="ph ph-file-pdf"></i> PDF (Imprimable)
-                            </button>
-                        </div>
                     </div>
+
+                    <!-- Format (Hidden on mobile if not editing) -->
+                    <select id="docFormatSelect" onchange="updateCurrentFormat()" 
+                            class="ml-auto auth-only hidden md:block appearance-none bg-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-xs cursor-pointer border-none focus:ring-0">
+                        <option value="markdown">Markdown</option>
+                        <option value="html">HTML</option>
+                        <option value="text">Texte</option>
+                    </select>
                 </div>
             </header>
 
             <!-- Adaptive Toolbar (Auth Only) -->
             <div id="formatToolbar" class="auth-only h-10 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 items-center px-2 gap-1 overflow-x-auto hidden flex-shrink-0 transition-colors z-20 relative">
+                <!-- Toolbar buttons same as before -->
                 <button onclick="applyFormat('bold')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Gras"><i class="ph ph-text-b text-lg"></i></button>
                 <button onclick="applyFormat('italic')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Italique"><i class="ph ph-text-i text-lg"></i></button>
                 <button onclick="applyFormat('strike')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Barré"><i class="ph ph-text-strikethrough text-lg"></i></button>
@@ -364,6 +387,60 @@
         </div>
     </div>
 
+    <!-- Modal Global Settings (Admin) -->
+    <div id="settingsModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center fade-in">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-11/12 max-w-md transform scale-100 transition-transform border border-gray-100 dark:border-gray-700 h-3/4 flex flex-col">
+            <div class="flex justify-between items-center mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <i class="ph ph-gear"></i> Paramètres
+                </h3>
+                <button onclick="closeSettingsModal()" class="text-gray-500 hover:text-gray-800 dark:hover:text-white"><i class="ph ph-x text-lg"></i></button>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto space-y-6 pr-2">
+                <!-- Categories Config -->
+                <div>
+                    <h4 class="font-semibold text-gray-700 dark:text-gray-300 mb-2 text-sm uppercase tracking-wide">Catégories</h4>
+                    <div class="flex gap-2 mb-2">
+                        <input type="text" id="newCategoryInput" placeholder="Nouvelle catégorie..." class="flex-1 p-2 text-sm border rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        <button onclick="addGlobalCategory()" class="bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700"><i class="ph ph-plus"></i></button>
+                    </div>
+                    <ul id="globalCategoriesList" class="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                        <!-- Filled by JS -->
+                    </ul>
+                </div>
+
+                <!-- Tags Config -->
+                <div>
+                    <h4 class="font-semibold text-gray-700 dark:text-gray-300 mb-2 text-sm uppercase tracking-wide">Tags Disponibles</h4>
+                    <div class="flex gap-2 mb-2">
+                        <input type="text" id="newTagInput" placeholder="Nouveau tag..." class="flex-1 p-2 text-sm border rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        <button onclick="addGlobalTag()" class="bg-green-600 text-white px-3 py-2 rounded text-sm hover:bg-green-700"><i class="ph ph-plus"></i></button>
+                    </div>
+                    <div id="globalTagsList" class="flex flex-wrap gap-2">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Document Tag Selection -->
+    <div id="tagSelectionModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center fade-in">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-11/12 max-w-sm transform scale-100 transition-transform border border-gray-100 dark:border-gray-700">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white">Gérer les tags</h3>
+                <button onclick="closeTagSelectionModal()" class="text-gray-500"><i class="ph ph-x"></i></button>
+            </div>
+            <div id="docTagSelectionList" class="max-h-60 overflow-y-auto space-y-2 mb-4">
+                <!-- Checkboxes injected here -->
+            </div>
+            <div class="text-right">
+                <button onclick="closeTagSelectionModal()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">Terminé</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Delete -->
     <div id="deleteModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center fade-in">
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-11/12 max-w-sm transform scale-100 transition-transform border border-gray-100 dark:border-gray-700">
@@ -398,7 +475,7 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
         import { getAuth, signInWithCustomToken, signInAnonymously, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
-        import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+        import { getFirestore, collection, doc, setDoc, getDoc, deleteDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
         // --- FIREBASE CONFIGURATION ---
         const firebaseConfig = {
@@ -415,30 +492,45 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
         
-        // Nom de la collection à la racine de votre base de données
         const collectionName = 'wiki_documents';
+        const settingsCollection = 'wiki_settings';
+        const settingsDocId = 'global';
         
         let currentUser = null;
-        let isAdmin = false; // "Login" state for UI
+        let isAdmin = false;
 
         // --- DATA STATE ---
         let docs = [];
         let currentDocId = null;
-        let activeTagFilter = null; // New: Tag filter state
+        
+        // Settings State (Global Lists)
+        let globalCategories = ['Général'];
+        let globalTags = ['Brouillon', 'Important'];
+
+        // Filter State
+        let activeTagFilter = null;
+        let activeCategoryFilter = '';
+        
         let isEditMode = false;
         let isSplitView = false;
         let isDarkMode = false;
         let isScrolling = false; 
-        let isTOCOpen = false; // TOC State
+        let isTOCOpen = false;
 
         // --- DOM REFS ---
         const docListEl = document.getElementById('docList');
         const searchInput = document.getElementById('searchInput');
-        const tagFilterListEl = document.getElementById('tagFilterList'); // New
+        const tagFilterListEl = document.getElementById('tagFilterList');
+        const categoryFilterEl = document.getElementById('categoryFilter');
+        
         const emptyState = document.getElementById('emptyState');
         const editorWrapper = document.getElementById('editorWrapper');
+        
         const docTitleInput = document.getElementById('docTitleInput');
-        const docTagsInput = document.getElementById('docTagsInput'); // New
+        const docCategorySelect = document.getElementById('docCategorySelect');
+        const docTagsContainer = document.getElementById('docTagsContainer');
+        const addTagBtn = document.getElementById('addTagBtn');
+        
         const docFormatSelect = document.getElementById('docFormatSelect');
         const markdownEditor = document.getElementById('markdownEditor');
         const previewArea = document.getElementById('previewArea');
@@ -464,13 +556,24 @@
         const tocContent = document.getElementById('tocContent');
         const tocToggleBtn = document.getElementById('tocToggleBtn');
 
+        // Settings Modal Refs
+        const settingsModal = document.getElementById('settingsModal');
+        const globalCategoriesList = document.getElementById('globalCategoriesList');
+        const globalTagsList = document.getElementById('globalTagsList');
+        const newCategoryInput = document.getElementById('newCategoryInput');
+        const newTagInput = document.getElementById('newTagInput');
+
+        // Tag Selection Modal Refs
+        const tagSelectionModal = document.getElementById('tagSelectionModal');
+        const docTagSelectionList = document.getElementById('docTagSelectionList');
+
         // --- INIT ---
         window.addEventListener('DOMContentLoaded', async () => {
-            // FIX: Expose functions immediately before any async calls
+            // Expose functions globally
             window.createNewDoc = createNewDoc;
             window.selectDoc = selectDoc;
             window.updateCurrentTitle = updateCurrentTitle;
-            window.updateCurrentTags = updateCurrentTags; // New
+            window.updateCurrentCategory = updateCurrentCategory;
             window.updateCurrentFormat = updateCurrentFormat;
             window.toggleEditMode = toggleEditMode;
             window.toggleSplitView = toggleSplitView;
@@ -488,16 +591,28 @@
             window.logoutAdmin = logoutAdmin;
             window.handleLoginKey = handleLoginKey;
             window.syncScroll = syncScroll; 
-            window.filterByTag = filterByTag; // New
+            window.filterByTag = filterByTag;
             window.toggleTOC = toggleTOC;
+            
+            // Settings Functions
+            window.openSettingsModal = openSettingsModal;
+            window.closeSettingsModal = closeSettingsModal;
+            window.addGlobalCategory = addGlobalCategory;
+            window.deleteGlobalCategory = deleteGlobalCategory;
+            window.addGlobalTag = addGlobalTag;
+            window.deleteGlobalTag = deleteGlobalTag;
+
+            // Tag Selection Functions
+            window.openTagSelectionModal = openTagSelectionModal;
+            window.closeTagSelectionModal = closeTagSelectionModal;
+            window.toggleDocTag = toggleDocTag;
 
             initTheme();
             
-            // Set Marked options with Heading IDs enabled for TOC
             marked.setOptions({
                 breaks: true,
                 gfm: true,
-                headerIds: true, // Deprecated in new versions, but let's assume default behavior handles IDs usually
+                headerIds: true,
                 highlight: function(code, lang) {
                     const language = highlight.getLanguage(lang) ? lang : 'plaintext';
                     return highlight.highlight(code, { language }).value;
@@ -505,10 +620,8 @@
                 langPrefix: 'hljs language-'
             });
 
-            // Initialize Auth & Data
             await initAuth();
             
-            // Listeners
             searchInput.addEventListener('input', (e) => renderDocList(e.target.value));
             markdownEditor.addEventListener('input', () => {
                 updateCurrentContent();
@@ -516,7 +629,6 @@
                 triggerSaveStatus();
             });
             
-            // Paste & Drop Listeners for Images
             markdownEditor.addEventListener('paste', handleImagePaste);
             markdownEditor.addEventListener('dragover', (e) => { e.preventDefault(); e.stopPropagation(); });
             markdownEditor.addEventListener('drop', handleImageDrop);
@@ -530,21 +642,17 @@
             document.getElementById('textColorPicker').addEventListener('input', (e) => textColorIndicator.style.backgroundColor = e.target.value);
             document.getElementById('bgColorPicker').addEventListener('input', (e) => bgColorIndicator.style.backgroundColor = e.target.value);
 
-            // Hash Change Listener for Routing
             window.addEventListener('hashchange', handleHashChange);
         });
 
-        // --- THEME & VIEW LOGIC ---
-
+        // --- THEME ---
         function initTheme() {
             const savedTheme = localStorage.getItem('wiki_theme');
             if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                 setDarkMode(true);
             }
         }
-
         function toggleDarkMode() { setDarkMode(!isDarkMode); }
-
         function setDarkMode(enable) {
             isDarkMode = enable;
             if (isDarkMode) {
@@ -558,129 +666,157 @@
             }
         }
 
-        function toggleSplitView() {
-            if(window.innerWidth < 768) {
-                showToast("Vue partagée uniquement sur ordinateur", "info");
-                return;
-            }
-
-            isSplitView = !isSplitView;
-            if (isSplitView) {
-                contentContainer.classList.add('split-active');
-                splitIcon.classList.replace('ph-columns', 'ph-sidebar');
-                splitIcon.parentElement.classList.add('bg-blue-50', 'text-blue-600', 'dark:bg-blue-900/30', 'dark:text-blue-400');
-                if (isAdmin) {
-                    formatToolbar.classList.remove('hidden');
-                    formatToolbar.classList.add('flex');
-                }
-            } else {
-                contentContainer.classList.remove('split-active');
-                splitIcon.classList.replace('ph-sidebar', 'ph-columns');
-                splitIcon.parentElement.classList.remove('bg-blue-50', 'text-blue-600', 'dark:bg-blue-900/30', 'dark:text-blue-400');
-                toggleEditMode(isEditMode); 
-            }
-        }
-
-        function toggleTOC() {
-            isTOCOpen = !isTOCOpen;
-            if(isTOCOpen) {
-                tocPanel.classList.add('open');
-                tocToggleBtn.classList.add('bg-gray-100', 'dark:bg-gray-800', 'text-blue-600', 'dark:text-blue-400');
-                updateTOC();
-            } else {
-                tocPanel.classList.remove('open');
-                tocToggleBtn.classList.remove('bg-gray-100', 'dark:bg-gray-800', 'text-blue-600', 'dark:text-blue-400');
-            }
-        }
-
-        // --- SCROLL SYNC LOGIC ---
-        function syncScroll(source) {
-            if (!isSplitView) return;
-            if (isScrolling) return; 
-
-            isScrolling = true;
-            
-            const editor = markdownEditor;
-            const preview = previewArea;
-            
-            if (source === 'editor') {
-                const percentage = editor.scrollTop / (editor.scrollHeight - editor.clientHeight);
-                preview.scrollTop = percentage * (preview.scrollHeight - preview.clientHeight);
-            } else {
-                const percentage = preview.scrollTop / (preview.scrollHeight - preview.clientHeight);
-                editor.scrollTop = percentage * (editor.scrollHeight - editor.clientHeight);
-            }
-
-            setTimeout(() => isScrolling = false, 50); 
-        }
-
-        // --- FIREBASE AUTH & FIRESTORE ---
+        // --- FIREBASE INIT ---
         async function initAuth() {
             onAuthStateChanged(auth, (user) => {
                 if (user) {
                     currentUser = user;
                     isAdmin = true;
-                    console.log("Connecté en tant que :", user.email);
-                    
                     document.body.classList.add('is-admin');
                     document.getElementById('loginBtn').classList.add('hidden');
                     document.getElementById('logoutBtn').classList.remove('hidden');
-                    
                     document.getElementById('docTitleInput').readOnly = false;
                     document.getElementById('docTitleInput').classList.remove('cursor-default');
-                    
-                    document.getElementById('docTagsInput').readOnly = false;
-                    document.getElementById('docTagsInput').classList.remove('cursor-default');
+                    // Enable category select if editing
+                    if(isEditMode) docCategorySelect.disabled = false;
                     
                     dbStatusIndicator.className = "w-2 h-2 rounded-full bg-green-500";
                     dbStatusText.innerText = user.email;
-                    
                 } else {
                     currentUser = null;
                     isAdmin = false;
-                    console.log("Mode Visiteur (Non connecté)");
-
                     document.body.classList.remove('is-admin');
                     document.getElementById('loginBtn').classList.remove('hidden');
                     document.getElementById('logoutBtn').classList.add('hidden');
-                    
                     document.getElementById('docTitleInput').readOnly = true;
                     document.getElementById('docTitleInput').classList.add('cursor-default');
-
-                    document.getElementById('docTagsInput').readOnly = true;
-                    document.getElementById('docTagsInput').classList.add('cursor-default');
+                    docCategorySelect.disabled = true;
 
                     dbStatusIndicator.className = "w-2 h-2 rounded-full bg-blue-400";
                     dbStatusText.innerText = "Mode Lecture Publique";
                 }
-                
                 if (currentDocId) {
                     const doc = docs.find(d => d.id === currentDocId);
-                    updateUIForFormat(doc ? doc.format : 'markdown');
+                    if(doc) {
+                        updateUIForFormat(doc.format);
+                        renderDocMeta(doc);
+                    }
                 }
             });
             
+            // Listen to settings first
+            subscribeToSettings();
+            // Then docs
             subscribeToDocs();
         }
 
+        // --- SETTINGS (CATEGORIES & TAGS) ---
+        function subscribeToSettings() {
+            const settingsRef = doc(db, settingsCollection, settingsDocId);
+            onSnapshot(settingsRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    globalCategories = data.categories || ['Général'];
+                    globalTags = data.tags || [];
+                } else {
+                    // Initialize if missing (Admin only needs to trigger write eventually)
+                    if (isAdmin) saveSettings(); 
+                }
+                
+                // Refresh UIs dependent on global lists
+                renderGlobalSettingsUI();
+                renderCategoryFilter();
+                renderTagFilters(); // Sidebar filter
+                if (currentDocId) {
+                    const doc = docs.find(d => d.id === currentDocId);
+                    if(doc) renderDocMeta(doc); // Re-render tags in header
+                }
+            });
+        }
+
+        async function saveSettings() {
+            if (!currentUser) return;
+            const settingsRef = doc(db, settingsCollection, settingsDocId);
+            try {
+                await setDoc(settingsRef, {
+                    categories: globalCategories,
+                    tags: globalTags
+                }, { merge: true });
+            } catch (e) {
+                console.error("Error saving settings:", e);
+                showToast("Erreur sauvegarde paramètres", "delete");
+            }
+        }
+
+        // --- SETTINGS UI FUNCTIONS ---
+        function openSettingsModal() { settingsModal.classList.remove('hidden'); }
+        function closeSettingsModal() { settingsModal.classList.add('hidden'); }
+
+        function renderGlobalSettingsUI() {
+            // Categories
+            globalCategoriesList.innerHTML = globalCategories.map(cat => `
+                <li class="flex justify-between items-center bg-gray-50 dark:bg-gray-700 p-2 rounded">
+                    <span>${cat}</span>
+                    <button onclick="deleteGlobalCategory('${cat}')" class="text-red-500 hover:text-red-700"><i class="ph ph-trash"></i></button>
+                </li>
+            `).join('');
+
+            // Tags
+            globalTagsList.innerHTML = globalTags.map(tag => `
+                <div class="flex items-center gap-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-full text-xs border border-blue-100 dark:border-blue-800">
+                    <span>${tag}</span>
+                    <button onclick="deleteGlobalTag('${tag}')" class="hover:text-red-500"><i class="ph ph-x"></i></button>
+                </div>
+            `).join('');
+        }
+
+        function addGlobalCategory() {
+            const val = newCategoryInput.value.trim();
+            if (val && !globalCategories.includes(val)) {
+                globalCategories.push(val);
+                globalCategories.sort();
+                saveSettings();
+                newCategoryInput.value = '';
+            }
+        }
+
+        function deleteGlobalCategory(cat) {
+            if (confirm(`Supprimer la catégorie "${cat}" ?`)) {
+                globalCategories = globalCategories.filter(c => c !== cat);
+                saveSettings();
+            }
+        }
+
+        function addGlobalTag() {
+            const val = newTagInput.value.trim();
+            if (val && !globalTags.includes(val)) {
+                globalTags.push(val);
+                globalTags.sort();
+                saveSettings();
+                newTagInput.value = '';
+            }
+        }
+
+        function deleteGlobalTag(tag) {
+            if (confirm(`Supprimer le tag "${tag}" ?`)) {
+                globalTags = globalTags.filter(t => t !== tag);
+                saveSettings();
+            }
+        }
+
+        // --- DOCS SUBSCRIPTION ---
         function subscribeToDocs() {
             const docsRef = collection(db, collectionName);
-            
             onSnapshot(docsRef, (snapshot) => {
                 docs = [];
                 snapshot.forEach((doc) => {
                     docs.push({ id: doc.id, ...doc.data() });
                 });
-                // Tri par date de modification
                 docs.sort((a, b) => b.updatedAt - a.updatedAt);
                 
-                renderTagFilters(); // Update side tags
                 renderDocList(searchInput.value);
-                
-                // Handle Routing (First Load)
                 handleHashChange();
 
-                // Live updates for current doc
                 if (currentDocId) {
                     const currentDoc = docs.find(d => d.id === currentDocId);
                     if (!currentDoc) {
@@ -688,355 +824,59 @@
                         emptyState.classList.remove('hidden');
                         editorWrapper.classList.add('hidden');
                         window.location.hash = ''; 
-                    } else if (!isEditMode && markdownEditor.value !== currentDoc.content) {
-                        renderPreview(currentDoc.content, currentDoc.format);
-                        if(!isAdmin) markdownEditor.value = currentDoc.content; 
+                    } else {
+                        // Update UI if changed remotely
+                        if(!isEditMode && markdownEditor.value !== currentDoc.content) {
+                            renderPreview(currentDoc.content, currentDoc.format);
+                            if(!isAdmin) markdownEditor.value = currentDoc.content;
+                        }
+                        // Refresh meta (tags/category might have changed)
+                        renderDocMeta(currentDoc);
                     }
-                }
-            }, (error) => {
-                console.error("Firestore Error:", error);
-                if(error.code === 'permission-denied') {
-                    showToast("Erreur: Activez la lecture publique dans Firebase !", "delete");
-                    dbStatusText.innerText = "Accès refusé";
-                    dbStatusIndicator.className = "w-2 h-2 rounded-full bg-red-500";
-                } else {
-                    showToast("Erreur de synchronisation", "delete");
                 }
             });
         }
 
-        // --- IMAGE HANDLING (DRAG/DROP/PASTE) ---
-
-        async function handleImagePaste(e) {
-            if (!isAdmin) return;
-            const items = (e.clipboardData || e.originalEvent.clipboardData).items;
-            for (let i = 0; i < items.length; i++) {
-                if (items[i].type.indexOf("image") !== -1) {
-                    e.preventDefault();
-                    const blob = items[i].getAsFile();
-                    await processAndInsertImage(blob);
-                }
-            }
+        // --- FILTERS UI ---
+        function renderCategoryFilter() {
+            // Preserve selection
+            const currentVal = categoryFilterEl.value;
+            let html = '<option value="">Toutes les catégories</option>';
+            globalCategories.forEach(cat => {
+                html += `<option value="${cat}">${cat}</option>`;
+            });
+            categoryFilterEl.innerHTML = html;
+            categoryFilterEl.value = currentVal;
         }
 
-        async function handleImageDrop(e) {
-            if (!isAdmin) return;
-            e.preventDefault();
-            e.stopPropagation();
-            const dt = e.dataTransfer;
-            const files = dt.files;
-            
-            if (files && files[0] && files[0].type.startsWith('image/')) {
-                await processAndInsertImage(files[0]);
-            }
-        }
-
-        function processAndInsertImage(file) {
-            showToast("Traitement de l'image...", "info");
-            
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const img = new Image();
-                img.onload = function() {
-                    // Resize logic to prevent massive base64 strings
-                    const canvas = document.createElement('canvas');
-                    let width = img.width;
-                    let height = img.height;
-                    const MAX_WIDTH = 800; // Limit width
-
-                    if (width > MAX_WIDTH) {
-                        height *= MAX_WIDTH / width;
-                        width = MAX_WIDTH;
-                    }
-
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-
-                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7); // Compress JPEG 70%
-                    insertAtCursor(`\n![Image](${dataUrl})\n`);
-                    showToast("Image insérée !");
-                };
-                img.src = event.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function insertAtCursor(text) {
-            const textarea = markdownEditor;
-            const start = textarea.selectionStart;
-            const end = textarea.selectionEnd;
-            textarea.setRangeText(text, start, end, 'select');
-            updateCurrentContent();
-        }
-
-        // --- TAGS LOGIC ---
-        
         function renderTagFilters() {
-            const allTags = new Set();
-            docs.forEach(doc => {
-                if (doc.tags && Array.isArray(doc.tags)) {
-                    doc.tags.forEach(tag => allTags.add(tag.trim()));
-                }
-            });
-
-            if (allTags.size === 0) {
-                tagFilterListEl.classList.add('hidden');
-                return;
-            }
-            tagFilterListEl.classList.remove('hidden');
-
-            const sortedTags = Array.from(allTags).sort();
-            
+            // Sidebar filter chips (from global list)
             let html = `<button onclick="filterByTag(null)" class="text-[10px] px-2 py-0.5 rounded-full border transition-colors ${!activeTagFilter ? 'bg-blue-600 text-white border-blue-600' : 'bg-transparent text-gray-500 border-gray-600 hover:border-gray-400'}">Tout</button>`;
             
-            sortedTags.forEach(tag => {
-                if(!tag) return;
+            globalTags.forEach(tag => {
                 const isActive = activeTagFilter === tag;
                 html += `<button onclick="filterByTag('${tag}')" class="text-[10px] px-2 py-0.5 rounded-full border transition-colors ${isActive ? 'bg-blue-600 text-white border-blue-600' : 'bg-transparent text-gray-500 border-gray-600 hover:border-gray-400'}">${tag}</button>`;
             });
-            
             tagFilterListEl.innerHTML = html;
         }
 
         function filterByTag(tag) {
             activeTagFilter = tag;
-            renderTagFilters(); // Re-render to update active state UI
+            renderTagFilters();
             renderDocList(searchInput.value);
         }
 
-        function updateCurrentTags() {
-            if (!currentDocId || !isAdmin) return;
-            const doc = docs.find(d => d.id === currentDocId);
-            const val = docTagsInput.value;
-            // Split by comma, trim, remove empty
-            doc.tags = val.split(',').map(t => t.trim()).filter(t => t.length > 0);
-            doc.updatedAt = Date.now();
-            saveDocToFirebase(doc);
-            renderTagFilters(); // Update sidebar tags live
-        }
-
-        // --- ROUTING LOGIC ---
-        function handleHashChange() {
-            const hash = window.location.hash.substring(1); 
-            if (hash && hash !== currentDocId) {
-                selectDoc(hash, false); 
-            } else if (!hash && currentDocId) {
-                currentDocId = null;
-                emptyState.classList.remove('hidden');
-                editorWrapper.classList.add('hidden');
-            }
-        }
-
-        async function saveDocToFirebase(docData) {
-            if (!currentUser) {
-                showToast("Connectez-vous pour sauvegarder", "delete");
-                return;
-            }
-            try {
-                const docRef = doc(db, collectionName, docData.id);
-                await setDoc(docRef, docData);
-            } catch (e) {
-                console.error("Save error:", e);
-                if(e.code === 'permission-denied') showToast("Permission refusée (Écriture)", "delete");
-                else showToast("Erreur sauvegarde", "delete");
-            }
-        }
-
-        async function deleteDocFromFirebase(id) {
-            if (!currentUser) return;
-            try {
-                const docRef = doc(db, collectionName, id);
-                await deleteDoc(docRef);
-            } catch (e) {
-                console.error("Delete error:", e);
-                if(e.code === 'permission-denied') showToast("Permission refusée (Suppression)", "delete");
-            }
-        }
-
-        // --- AUTH UI LOGIC ---
-        function openLoginModal() { document.getElementById('loginModal').classList.remove('hidden'); document.getElementById('adminEmail').focus(); }
-        function closeLoginModal() { document.getElementById('loginModal').classList.add('hidden'); document.getElementById('adminPassword').value = ''; }
-        function handleLoginKey(e) { if(e.key === 'Enter') checkLogin(); }
-        
-        async function checkLogin() {
-            const email = document.getElementById('adminEmail').value;
-            const pass = document.getElementById('adminPassword').value;
-            
-            if (!email || !pass) {
-                showToast("Veuillez remplir tous les champs", "delete");
-                return;
-            }
-
-            try {
-                await signInWithEmailAndPassword(auth, email, pass);
-                closeLoginModal();
-                showToast("Connexion réussie");
-            } catch (error) {
-                console.error("Login Error:", error);
-                let msg = "Erreur de connexion";
-                if (error.code === 'auth/invalid-credential') msg = "Email ou mot de passe incorrect";
-                if (error.code === 'auth/too-many-requests') msg = "Trop de tentatives, réessayez plus tard";
-                showToast(msg, "delete");
-            }
-        }
-
-        async function logoutAdmin() {
-            try {
-                await signOut(auth);
-                
-                isEditMode = false;
-                markdownEditor.classList.add('hidden');
-                previewArea.classList.remove('hidden');
-                toggleIcon.classList.replace('ph-eye', 'ph-pencil-simple');
-                viewToggleBtn.classList.remove('bg-blue-50', 'text-blue-600', 'dark:bg-blue-900/30', 'dark:text-blue-400');
-                
-                if (isSplitView) toggleSplitView();
-                
-                showToast("Déconnecté");
-            } catch (error) {
-                console.error("Logout Error:", error);
-            }
-        }
-
-        // --- CRUD OPERATIONS ---
-
-        function createNewDoc() {
-            if (!isAdmin) return;
-            const newDoc = {
-                id: crypto.randomUUID(),
-                title: 'Nouveau Document',
-                content: '# Titre\n\nCommencez ici...',
-                format: 'markdown',
-                tags: [],
-                updatedAt: Date.now()
-            };
-            // Optimistic UI update
-            docs.unshift(newDoc);
-            renderDocList();
-            selectDoc(newDoc.id);
-            // Save to cloud
-            saveDocToFirebase(newDoc);
-            
-            if (!isEditMode && !isSplitView) toggleEditMode();
-            setTimeout(() => docTitleInput.focus(), 100);
-        }
-
-        function selectDoc(id, updateHash = true) {
-            const doc = docs.find(d => d.id === id);
-            
-            if (!doc && docs.length > 0) return; 
-
-            currentDocId = id;
-            if (updateHash) window.location.hash = id;
-
-            emptyState.classList.add('hidden');
-            editorWrapper.classList.remove('hidden');
-            
-            docTitleInput.value = doc.title;
-            docTagsInput.value = doc.tags ? doc.tags.join(', ') : '';
-            markdownEditor.value = doc.content;
-            docFormatSelect.value = doc.format || 'markdown';
-            
-            updateUIForFormat(doc.format);
-            renderPreview(doc.content, doc.format);
-            updateStats();
-            renderDocList(searchInput.value, false);
-        }
-
-        function updateCurrentTitle() {
-            if (!currentDocId || !isAdmin) return;
-            const doc = docs.find(d => d.id === currentDocId);
-            doc.title = docTitleInput.value || 'Sans titre';
-            doc.updatedAt = Date.now();
-            saveDocToFirebase(doc);
-            renderDocList(searchInput.value, false);
-        }
-
-        function updateCurrentFormat() {
-            if (!currentDocId || !isAdmin) return;
-            const doc = docs.find(d => d.id === currentDocId);
-            const newFormat = docFormatSelect.value;
-            
-            if (doc.format !== newFormat) {
-                doc.format = newFormat;
-                doc.updatedAt = Date.now();
-                saveDocToFirebase(doc);
-                updateUIForFormat(newFormat);
-                renderPreview(doc.content, newFormat);
-                showToast(`Format changé en ${newFormat.toUpperCase()}`);
-            }
-        }
-
-        function updateCurrentContent() {
-            if (!currentDocId || !isAdmin) return;
-            const doc = docs.find(d => d.id === currentDocId);
-            doc.content = markdownEditor.value;
-            doc.updatedAt = Date.now();
-            saveDocToFirebase(doc); // Auto-save to cloud
-            renderPreview(doc.content, doc.format);
-        }
-
-        function confirmDelete() {
-            if (!currentDocId || !isAdmin) return;
-            const idToDelete = currentDocId;
-            deleteDocFromFirebase(idToDelete);
-            
-            docs = docs.filter(d => d.id !== idToDelete);
-            currentDocId = null;
-            window.location.hash = ''; 
-            renderDocList();
-            emptyState.classList.remove('hidden');
-            editorWrapper.classList.add('hidden');
-            closeDeleteModal();
-            showToast('Document supprimé', 'delete');
-        }
-
-        function exportDoc(type) {
-            if (!currentDocId) return;
-            const doc = docs.find(d => d.id === currentDocId);
-            
-            if (type === 'pdf') {
-                const element = document.getElementById('previewArea');
-                const opt = {
-                    margin:       1,
-                    filename:     `${doc.title.replace(/[^a-z0-9]/gi, '_')}.pdf`,
-                    image:        { type: 'jpeg', quality: 0.98 },
-                    html2canvas:  { scale: 2 },
-                    jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
-                };
-                html2pdf().set(opt).from(element).save();
-                showToast('Génération du PDF...');
-            } else {
-                let extension = 'txt';
-                let mimeType = 'text/plain';
-                if (doc.format === 'markdown') { extension = 'md'; mimeType = 'text/markdown'; }
-                else if (doc.format === 'html') { extension = 'html'; mimeType = 'text/html'; }
-                
-                const blob = new Blob([doc.content], { type: mimeType });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `${doc.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.${extension}`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                showToast('Téléchargement source lancé');
-            }
-        }
-
-        // --- UI & RENDERING ---
-
-        function renderDocList(filter = '', resetScroll = true) {
+        // --- DOC LIST RENDERING ---
+        function renderDocList(filter = '') {
             docListEl.innerHTML = '';
             
-            // Filter by search AND tag
+            activeCategoryFilter = categoryFilterEl.value;
+
             const filtered = docs.filter(d => {
                 const matchesSearch = d.title.toLowerCase().includes(filter.toLowerCase());
                 const matchesTag = activeTagFilter ? (d.tags && d.tags.includes(activeTagFilter)) : true;
-                return matchesSearch && matchesTag;
+                const matchesCat = activeCategoryFilter ? (d.category === activeCategoryFilter) : true;
+                return matchesSearch && matchesTag && matchesCat;
             });
 
             if (filtered.length === 0) {
@@ -1052,9 +892,8 @@
                 
                 let icon = 'ph-file-text';
                 if(doc.format === 'markdown') icon = 'ph-markdown-logo';
-                if(doc.format === 'html') icon = 'ph-code';
                 
-                // Generate tag chips for the list item
+                // Chips for list
                 let tagsHtml = '';
                 if(doc.tags && doc.tags.length > 0) {
                     tagsHtml = `<div class="mt-1 flex flex-wrap gap-1">
@@ -1062,6 +901,8 @@
                         ${doc.tags.length > 3 ? `<span class="text-[9px] text-gray-500">+${doc.tags.length - 3}</span>` : ''}
                     </div>`;
                 }
+                
+                const catLabel = doc.category ? `<span class="text-[10px] bg-gray-700 text-gray-400 px-1 rounded ml-auto">${doc.category}</span>` : '';
 
                 div.innerHTML = `
                     <div class="flex items-start gap-3">
@@ -1069,7 +910,10 @@
                             <i class="ph ${icon} text-xl"></i>
                         </div>
                         <div class="overflow-hidden flex-1">
-                            <div class="font-medium text-sm truncate ${isActive ? 'text-white' : 'text-gray-300 group-hover:text-white'}">${doc.title}</div>
+                            <div class="flex justify-between items-start">
+                                <div class="font-medium text-sm truncate ${isActive ? 'text-white' : 'text-gray-300 group-hover:text-white'}">${doc.title}</div>
+                                ${catLabel}
+                            </div>
                             <div class="text-[10px] ${isActive ? 'text-blue-300' : 'text-gray-600 dark:text-gray-500'} mt-0.5">
                                 ${new Date(doc.updatedAt).toLocaleDateString()}
                             </div>
@@ -1081,161 +925,114 @@
             });
         }
 
-        // --- WIKI LINKS PROCESSING ---
-        function processWikiLinks(content) {
-            // Regex matches [[Page Title]]
-            return content.replace(/\[\[(.*?)\]\]/g, (match, text) => {
-                const title = text.trim();
-                // Find doc by title (case insensitive)
-                const doc = docs.find(d => d.title.toLowerCase() === title.toLowerCase());
-                
-                if (doc) {
-                    // Return a markdown link to the hash
-                    return `<a href="#${doc.id}" class="wiki-link" onclick="selectDoc('${doc.id}')">${title}</a>`;
-                } else {
-                    // Return a broken link style
-                    return `<span class="wiki-link wiki-link-broken" title="Document non trouvé">${title}</span>`;
-                }
-            });
-        }
+        // --- DOCUMENT SELECTION & METADATA ---
+        function selectDoc(id, updateHash = true) {
+            const doc = docs.find(d => d.id === id);
+            if (!doc && docs.length > 0) return; 
 
-        // --- TOC GENERATION ---
-        function updateTOC() {
-            if (!isTOCOpen) return;
+            currentDocId = id;
+            if (updateHash) window.location.hash = id;
+
+            emptyState.classList.add('hidden');
+            editorWrapper.classList.remove('hidden');
             
-            // Get headings from preview area
-            const headings = previewArea.querySelectorAll('h1, h2, h3');
-            tocContent.innerHTML = '';
-
-            if (headings.length === 0) {
-                tocContent.innerHTML = '<div class="text-sm text-gray-400 italic text-center mt-4">Aucun titre trouvé</div>';
-                return;
-            }
-
-            headings.forEach((heading, index) => {
-                const id = heading.id || `heading-${index}`;
-                heading.id = id; // Ensure ID exists for anchor
-
-                const link = document.createElement('a');
-                link.href = `#`;
-                link.textContent = heading.textContent;
-                link.className = `toc-link toc-${heading.tagName.toLowerCase()}`;
-                
-                link.onclick = (e) => {
-                    e.preventDefault();
-                    heading.scrollIntoView({ behavior: 'smooth' });
-                };
-
-                tocContent.appendChild(link);
-            });
+            docTitleInput.value = doc.title;
+            markdownEditor.value = doc.content;
+            docFormatSelect.value = doc.format || 'markdown';
+            
+            renderDocMeta(doc);
+            updateUIForFormat(doc.format);
+            renderPreview(doc.content, doc.format);
+            updateStats();
+            renderDocList(searchInput.value, false);
         }
 
-        function renderPreview(content, format) {
-            if (!content) {
-                previewArea.innerHTML = '<div class="text-gray-300 dark:text-gray-600 italic">Vide...</div>';
-                updateTOC();
-                return;
-            }
+        function renderDocMeta(doc) {
+            // 1. Populate Category Dropdown from Global List
+            let catHtml = '<option value="">Aucune catégorie</option>';
+            globalCategories.forEach(cat => {
+                const selected = doc.category === cat ? 'selected' : '';
+                catHtml += `<option value="${cat}" ${selected}>${cat}</option>`;
+            });
+            docCategorySelect.innerHTML = catHtml;
+            docCategorySelect.value = doc.category || '';
 
-            if (format === 'markdown' || !format) {
-                previewArea.className = "preview-pane markdown-preview w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors";
-                
-                // 1. Process Wiki Links first (returns HTML strings embedded in text)
-                const linkedContent = processWikiLinks(content);
-                
-                // 2. Parse Markdown (Sanitize AFTER to allow our custom <a> tags from wiki links)
-                // We trust DOMPurify to clean up bad stuff, but we need to configure it to allow our classes
-                const rawHtml = marked.parse(linkedContent);
-                
-                const cleanHtml = DOMPurify.sanitize(rawHtml, {
-                    ADD_ATTR: ['target', 'onclick', 'class'] // Allow class for styling and onclick for routing
+            // 2. Render Tags Chips
+            // Clear current tags except the Add Button
+            const children = Array.from(docTagsContainer.children);
+            children.forEach(child => {
+                if (child.id !== 'addTagBtn') child.remove();
+            });
+
+            if (doc.tags) {
+                doc.tags.forEach(tag => {
+                    const chip = document.createElement('span');
+                    chip.className = 'tag-chip text-xs';
+                    chip.innerHTML = `<i class="ph ph-tag mr-1"></i> ${tag}`;
+                    docTagsContainer.insertBefore(chip, addTagBtn);
                 });
-                
-                previewArea.innerHTML = cleanHtml;
-                
-            } else if (format === 'html') {
-                previewArea.className = "preview-pane w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors";
-                previewArea.innerHTML = DOMPurify.sanitize(content);
-            } else {
-                previewArea.className = "preview-pane preview-text w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors text-gray-700";
-                previewArea.innerText = content;
-            }
-            
-            // Update TOC after render
-            updateTOC();
-        }
-
-        function updateUIForFormat(format) {
-            formatDisplay.innerText = format;
-            
-            const showToolbar = isAdmin && (isEditMode || isSplitView);
-            
-            if (showToolbar) {
-                formatToolbar.classList.remove('hidden');
-                formatToolbar.classList.add('flex');
-            } else {
-                formatToolbar.classList.add('hidden');
-                formatToolbar.classList.remove('flex');
             }
         }
 
-        function toggleEditMode(forceState) {
-            if (!isAdmin) return; 
-            
-            isEditMode = (typeof forceState !== 'undefined') ? forceState : !isEditMode;
-            
-            if(isSplitView) return; 
-
-            if (isEditMode) {
-                previewArea.classList.add('hidden');
-                markdownEditor.classList.remove('hidden');
-                markdownEditor.focus();
-                
-                toggleIcon.classList.replace('ph-pencil-simple', 'ph-eye');
-                viewToggleBtn.classList.add('bg-blue-50', 'text-blue-600', 'dark:bg-blue-900/30', 'dark:text-blue-400');
-            } else {
-                markdownEditor.classList.add('hidden');
-                previewArea.classList.remove('hidden');
-                
-                toggleIcon.classList.replace('ph-eye', 'ph-pencil-simple');
-                viewToggleBtn.classList.remove('bg-blue-50', 'text-blue-600', 'dark:bg-blue-900/30', 'dark:text-blue-400');
-            }
-            updateUIForFormat(docFormatSelect.value);
+        function updateCurrentTitle() {
+            if (!currentDocId || !isAdmin) return;
+            const doc = docs.find(d => d.id === currentDocId);
+            doc.title = docTitleInput.value || 'Sans titre';
+            doc.updatedAt = Date.now();
+            saveDocToFirebase(doc);
+            renderDocList(searchInput.value, false);
         }
 
-        // --- IMPORT LOGIC ---
-        function handleFileUpload(input) {
-            if (!isAdmin) return;
-            const file = input.files[0];
-            if (!file) return;
+        function updateCurrentCategory() {
+            if (!currentDocId || !isAdmin) return;
+            const doc = docs.find(d => d.id === currentDocId);
+            doc.category = docCategorySelect.value;
+            doc.updatedAt = Date.now();
+            saveDocToFirebase(doc);
+            renderDocList(searchInput.value, false);
+        }
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const content = e.target.result;
-                const title = file.name.replace(/\.[^/.]+$/, "");
-                
-                let format = 'text';
-                if(file.name.endsWith('.md')) format = 'markdown';
-                if(file.name.endsWith('.html')) format = 'html';
+        // --- TAG SELECTION MODAL ---
+        function openTagSelectionModal() {
+            if (!currentDocId || !isAdmin) return;
+            const doc = docs.find(d => d.id === currentDocId);
+            const docTags = doc.tags || [];
 
-                const newDoc = {
-                    id: crypto.randomUUID(),
-                    title: title,
-                    content: content,
-                    format: format,
-                    tags: [],
-                    updatedAt: Date.now()
-                };
-                
-                saveDocToFirebase(newDoc);
-                
-                docs.unshift(newDoc);
-                renderDocList();
-                selectDoc(newDoc.id);
-                showToast(`Fichier "${file.name}" importé`);
-                input.value = '';
-            };
-            reader.readAsText(file);
+            docTagSelectionList.innerHTML = globalTags.map(tag => {
+                const isChecked = docTags.includes(tag) ? 'checked' : '';
+                return `
+                    <label class="flex items-center gap-2 p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+                        <input type="checkbox" onchange="toggleDocTag('${tag}')" ${isChecked} class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
+                        <span class="text-sm text-gray-700 dark:text-gray-200">${tag}</span>
+                    </label>
+                `;
+            }).join('');
+            
+            if(globalTags.length === 0) {
+                docTagSelectionList.innerHTML = '<p class="text-sm text-gray-500 italic">Aucun tag défini dans les paramètres.</p>';
+            }
+
+            tagSelectionModal.classList.remove('hidden');
+        }
+
+        function closeTagSelectionModal() {
+            tagSelectionModal.classList.add('hidden');
+        }
+
+        function toggleDocTag(tag) {
+            if (!currentDocId || !isAdmin) return;
+            const doc = docs.find(d => d.id === currentDocId);
+            if (!doc.tags) doc.tags = [];
+
+            if (doc.tags.includes(tag)) {
+                doc.tags = doc.tags.filter(t => t !== tag);
+            } else {
+                doc.tags.push(tag);
+            }
+            doc.updatedAt = Date.now();
+            saveDocToFirebase(doc);
+            renderDocMeta(doc);
+            renderDocList(searchInput.value, false);
         }
 
         // --- COLOR LOGIC ---
@@ -1273,7 +1070,7 @@
             textarea.focus();
         }
 
-        // --- FORMAT LOGIC ---
+        // --- FORMAT LOGIC (Re-added) ---
         function applyFormat(type) {
             if (!currentDocId || !isAdmin) return;
             const doc = docs.find(d => d.id === currentDocId);
@@ -1382,39 +1179,266 @@
             textarea.focus();
         }
 
-        function updateStats() {
-            const text = markdownEditor.value || '';
-            const words = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
-            wordCountEl.innerText = `${words} mots`;
-            const minutes = Math.ceil(words / 200);
-            readTimeEl.innerText = minutes < 1 ? '< 1 min' : `${minutes} min`;
-        }
-
-        let saveTimeout;
-        function triggerSaveStatus() {
-            saveStatus.style.opacity = '1';
-            clearTimeout(saveTimeout);
-            saveStatus.innerText = "Sauvegarde...";
-            saveTimeout = setTimeout(() => {
-                saveStatus.innerText = "Synchronisé";
-                setTimeout(() => { saveStatus.style.opacity = '0'; }, 1000);
-            }, 800);
-        }
-
-        function showDeleteConfirm() {
-            if(!currentDocId || !isAdmin) return;
+        // --- OTHER UTILS (Format, Content, etc.) ---
+        function updateCurrentFormat() {
+            if (!currentDocId || !isAdmin) return;
             const doc = docs.find(d => d.id === currentDocId);
-            deleteDocTitle.innerText = doc.title;
-            deleteModal.classList.remove('hidden');
+            doc.format = docFormatSelect.value;
+            doc.updatedAt = Date.now();
+            saveDocToFirebase(doc);
+            updateUIForFormat(doc.format);
+            renderPreview(doc.content, doc.format);
         }
-        function closeDeleteModal() { deleteModal.classList.add('hidden'); }
 
-        function showToast(message, type = 'success') {
-            toastMsg.innerText = message;
-            toastIcon.className = type === 'delete' ? 'ph-fill ph-trash text-red-400 text-xl' : 'ph-fill ph-check-circle text-green-400 text-xl';
-            toast.classList.remove('translate-y-32');
-            setTimeout(() => toast.classList.add('translate-y-32'), 3000);
+        function updateCurrentContent() {
+            if (!currentDocId || !isAdmin) return;
+            const doc = docs.find(d => d.id === currentDocId);
+            doc.content = markdownEditor.value;
+            doc.updatedAt = Date.now();
+            saveDocToFirebase(doc);
+            renderPreview(doc.content, doc.format);
         }
+
+        function toggleEditMode(forceState) {
+            if (!isAdmin) return;
+            isEditMode = (typeof forceState !== 'undefined') ? forceState : !isEditMode;
+            if(isSplitView) return; 
+
+            if (isEditMode) {
+                previewArea.classList.add('hidden');
+                markdownEditor.classList.remove('hidden');
+                markdownEditor.focus();
+                docCategorySelect.disabled = false;
+                addTagBtn.classList.remove('hidden');
+                toggleIcon.classList.replace('ph-pencil-simple', 'ph-eye');
+                viewToggleBtn.classList.add('bg-blue-50', 'text-blue-600', 'dark:bg-blue-900/30', 'dark:text-blue-400');
+            } else {
+                markdownEditor.classList.add('hidden');
+                previewArea.classList.remove('hidden');
+                docCategorySelect.disabled = true;
+                addTagBtn.classList.add('hidden');
+                toggleIcon.classList.replace('ph-eye', 'ph-pencil-simple');
+                viewToggleBtn.classList.remove('bg-blue-50', 'text-blue-600', 'dark:bg-blue-900/30', 'dark:text-blue-400');
+            }
+            updateUIForFormat(docFormatSelect.value);
+        }
+
+        // --- HELPERS (Paste, Scroll, Router, Login...) ---
+        // (Kept from v4 essentially unchanged but hooked correctly)
+        
+        function handleHashChange() {
+            const hash = window.location.hash.substring(1); 
+            if (hash && hash !== currentDocId) selectDoc(hash, false); 
+            else if (!hash && currentDocId) {
+                currentDocId = null;
+                emptyState.classList.remove('hidden');
+                editorWrapper.classList.add('hidden');
+            }
+        }
+        
+        async function saveDocToFirebase(docData) {
+            if (!currentUser) { showToast("Connectez-vous !", "delete"); return; }
+            try { await setDoc(doc(db, collectionName, docData.id), docData); } 
+            catch (e) { console.error(e); showToast("Erreur sauvegarde", "delete"); }
+        }
+        
+        async function deleteDocFromFirebase(id) {
+            if (!currentUser) return;
+            try { await deleteDoc(doc(db, collectionName, id)); } catch(e){ console.error(e); }
+        }
+
+        function createNewDoc() {
+            if (!isAdmin) return;
+            const newDoc = {
+                id: crypto.randomUUID(),
+                title: 'Nouveau Document',
+                content: '# Titre\n\nCommencez ici...',
+                format: 'markdown',
+                tags: [],
+                category: '',
+                updatedAt: Date.now()
+            };
+            saveDocToFirebase(newDoc);
+            docs.unshift(newDoc);
+            renderDocList();
+            selectDoc(newDoc.id);
+            if (!isEditMode && !isSplitView) toggleEditMode();
+            setTimeout(() => docTitleInput.focus(), 100);
+        }
+
+        function confirmDelete() {
+            if (!currentDocId || !isAdmin) return;
+            deleteDocFromFirebase(currentDocId);
+            docs = docs.filter(d => d.id !== currentDocId);
+            currentDocId = null;
+            window.location.hash = ''; 
+            renderDocList();
+            emptyState.classList.remove('hidden');
+            editorWrapper.classList.add('hidden');
+            closeDeleteModal();
+            showToast('Document supprimé', 'delete');
+        }
+
+        // ... Keeping image handling, login/logout, exports, scroll sync identical to v4 ...
+        
+        // --- IMAGE HANDLING ---
+        async function handleImagePaste(e) {
+            if (!isAdmin) return;
+            const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf("image") !== -1) {
+                    e.preventDefault();
+                    await processAndInsertImage(items[i].getAsFile());
+                }
+            }
+        }
+        async function handleImageDrop(e) {
+            if (!isAdmin) return;
+            e.preventDefault(); e.stopPropagation();
+            const files = e.dataTransfer.files;
+            if (files && files[0] && files[0].type.startsWith('image/')) await processAndInsertImage(files[0]);
+        }
+        function processAndInsertImage(file) {
+            showToast("Traitement image...", "info");
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width, height = img.height;
+                    const MAX_WIDTH = 800;
+                    if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                    canvas.width = width; canvas.height = height;
+                    canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                    const textarea = markdownEditor;
+                    textarea.setRangeText(`\n![Image](${dataUrl})\n`, textarea.selectionStart, textarea.selectionEnd, 'select');
+                    updateCurrentContent();
+                    showToast("Image insérée !");
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // --- AUTH UI ---
+        function openLoginModal() { document.getElementById('loginModal').classList.remove('hidden'); document.getElementById('adminEmail').focus(); }
+        function closeLoginModal() { document.getElementById('loginModal').classList.add('hidden'); document.getElementById('adminPassword').value = ''; }
+        function handleLoginKey(e) { if(e.key === 'Enter') checkLogin(); }
+        async function checkLogin() {
+            const email = document.getElementById('adminEmail').value;
+            const pass = document.getElementById('adminPassword').value;
+            if (!email || !pass) { showToast("Champs manquants", "delete"); return; }
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+                closeLoginModal();
+                showToast("Connexion réussie");
+            } catch (error) { showToast("Erreur de connexion", "delete"); }
+        }
+        async function logoutAdmin() {
+            try {
+                await signOut(auth);
+                isEditMode = false;
+                markdownEditor.classList.add('hidden');
+                previewArea.classList.remove('hidden');
+                toggleIcon.classList.replace('ph-eye', 'ph-pencil-simple');
+                viewToggleBtn.classList.remove('bg-blue-50', 'text-blue-600', 'dark:bg-blue-900/30', 'dark:text-blue-400');
+                if (isSplitView) toggleSplitView();
+                showToast("Déconnecté");
+            } catch (error) { console.error(error); }
+        }
+
+        // ... Exports, Scroll Sync, Toggle TOC same as V4 ...
+        function exportDoc(type) {
+            if (!currentDocId) return;
+            const doc = docs.find(d => d.id === currentDocId);
+            if (type === 'pdf') {
+                const opt = { margin: 1, filename: `${doc.title.replace(/[^a-z0-9]/gi, '_')}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } };
+                html2pdf().set(opt).from(previewArea).save();
+                showToast('PDF en cours...');
+            } else {
+                const blob = new Blob([doc.content], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${doc.title}.md`;
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                showToast('Export lancé');
+            }
+        }
+        function toggleSplitView() {
+            if(window.innerWidth < 768) { showToast("PC uniquement", "info"); return; }
+            isSplitView = !isSplitView;
+            if (isSplitView) { contentContainer.classList.add('split-active'); splitIcon.classList.replace('ph-columns', 'ph-sidebar'); if (isAdmin) formatToolbar.classList.remove('hidden'); formatToolbar.classList.add('flex'); }
+            else { contentContainer.classList.remove('split-active'); splitIcon.classList.replace('ph-sidebar', 'ph-columns'); toggleEditMode(isEditMode); }
+        }
+        function syncScroll(source) {
+            if (!isSplitView || isScrolling) return;
+            isScrolling = true;
+            const editor = markdownEditor, preview = previewArea;
+            if (source === 'editor') preview.scrollTop = (editor.scrollTop / (editor.scrollHeight - editor.clientHeight)) * (preview.scrollHeight - preview.clientHeight);
+            else editor.scrollTop = (preview.scrollTop / (preview.scrollHeight - preview.clientHeight)) * (editor.scrollHeight - editor.clientHeight);
+            setTimeout(() => isScrolling = false, 50);
+        }
+        function toggleTOC() {
+            isTOCOpen = !isTOCOpen;
+            if(isTOCOpen) { tocPanel.classList.add('open'); tocToggleBtn.classList.add('bg-gray-100', 'dark:bg-gray-800', 'text-blue-600', 'dark:text-blue-400'); updateTOC(); }
+            else { tocPanel.classList.remove('open'); tocToggleBtn.classList.remove('bg-gray-100', 'dark:bg-gray-800', 'text-blue-600', 'dark:text-blue-400'); }
+        }
+        // Simplified TOC update for v5 context (same logic)
+        function updateTOC() {
+            if (!isTOCOpen) return;
+            const headings = previewArea.querySelectorAll('h1, h2, h3');
+            tocContent.innerHTML = '';
+            headings.forEach((heading, i) => {
+                const link = document.createElement('a');
+                link.href = '#'; link.textContent = heading.textContent;
+                link.className = `toc-link toc-${heading.tagName.toLowerCase()}`;
+                link.onclick = (e) => { e.preventDefault(); heading.scrollIntoView({ behavior: 'smooth' }); };
+                tocContent.appendChild(link);
+            });
+        }
+        // ... Render Preview, UI update, Helpers same ...
+        function processWikiLinks(content) {
+            return content.replace(/\[\[(.*?)\]\]/g, (match, text) => {
+                const title = text.trim();
+                const doc = docs.find(d => d.title.toLowerCase() === title.toLowerCase());
+                return doc ? `<a href="#${doc.id}" class="wiki-link" onclick="selectDoc('${doc.id}')">${title}</a>` : `<span class="wiki-link wiki-link-broken" title="Document non trouvé">${title}</span>`;
+            });
+        }
+        function renderPreview(content, format) {
+            if (!content) { previewArea.innerHTML = '<div class="text-gray-300 dark:text-gray-600 italic">Vide...</div>'; updateTOC(); return; }
+            if (format === 'markdown' || !format) {
+                previewArea.className = "preview-pane markdown-preview w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors";
+                const cleanHtml = DOMPurify.sanitize(marked.parse(processWikiLinks(content)), { ADD_ATTR: ['target', 'onclick', 'class'] });
+                previewArea.innerHTML = cleanHtml;
+            } else if (format === 'html') {
+                previewArea.className = "preview-pane w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors";
+                previewArea.innerHTML = DOMPurify.sanitize(content);
+            } else {
+                previewArea.className = "preview-pane preview-text w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors text-gray-700";
+                previewArea.innerText = content;
+            }
+            updateTOC();
+        }
+        function updateUIForFormat(format) {
+            formatDisplay.innerText = format;
+            if (isAdmin && (isEditMode || isSplitView)) { formatToolbar.classList.remove('hidden'); formatToolbar.classList.add('flex'); }
+            else { formatToolbar.classList.add('hidden'); formatToolbar.classList.remove('flex'); }
+        }
+        function handleFileUpload(input) {
+            if (!isAdmin) return;
+            const file = input.files[0]; if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const newDoc = { id: crypto.randomUUID(), title: file.name.replace(/\.[^/.]+$/, ""), content: e.target.result, format: file.name.endsWith('.md')?'markdown':'text', tags: [], category: '', updatedAt: Date.now() };
+                saveDocToFirebase(newDoc); docs.unshift(newDoc); renderDocList(); selectDoc(newDoc.id); input.value = '';
+            }; reader.readAsText(file);
+        }
+        function showDeleteConfirm() { if(!currentDocId || !isAdmin) return; deleteDocTitle.innerText = docs.find(d => d.id === currentDocId).title; deleteModal.classList.remove('hidden'); }
+        function closeDeleteModal() { deleteModal.classList.add('hidden'); }
+        function showToast(m, t='success') { toastMsg.innerText=m; toastIcon.className=t==='delete'?'ph-fill ph-trash text-red-400 text-xl':'ph-fill ph-check-circle text-green-400 text-xl'; toast.classList.remove('translate-y-32'); setTimeout(()=>toast.classList.add('translate-y-32'),3000); }
+
     </script>
 </body>
 </html>
