@@ -1428,8 +1428,9 @@
     textarea.setRangeText(result, start, end, 'select');
     saveHistory(textarea.value);
     updateCurrentContent();
+    updateStats();
+    textarea.focus();
 }
-
 
         function applyFormat(type) {
             if (!currentDocId) return;
