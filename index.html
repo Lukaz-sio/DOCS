@@ -27,57 +27,76 @@
     <!-- Highlight.js -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <!-- HTML2PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
         body { font-family: 'Inter', sans-serif; }
+        /* Scrollbar élégante */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark ::-webkit-scrollbar-thumb { background: #4b5563; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Styles Markdown Preview */
         .markdown-preview { line-height: 1.7; word-wrap: break-word; }
-        .markdown-preview h1 { font-size: 2.25em; font-weight: 800; margin-bottom: 0.5em; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.3em; }
-        .markdown-preview h2 { font-size: 1.75em; font-weight: 700; margin-top: 1.5em; margin-bottom: 0.5em; }
+        .markdown-preview h1 { font-size: 2.25em; font-weight: 800; margin-bottom: 0.5em; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.3em; color: #1e293b; }
+        .dark .markdown-preview h1 { color: #f3f4f6; border-color: #374151; }
+        .markdown-preview h2 { font-size: 1.75em; font-weight: 700; margin-top: 1.5em; margin-bottom: 0.5em; color: #334155; }
+        .dark .markdown-preview h2 { color: #e2e8f0; }
         .markdown-preview h3 { font-size: 1.5em; font-weight: 600; margin-top: 1.25em; margin-bottom: 0.5em; }
         .markdown-preview p { margin-bottom: 1em; }
         .markdown-preview ul { display: block; list-style-type: disc !important; padding-left: 2.5em !important; margin-bottom: 1em; }
         .markdown-preview ol { display: block; list-style-type: decimal !important; padding-left: 2.5em !important; margin-bottom: 1em; }
         .markdown-preview li { display: list-item; margin-bottom: 0.25em; }
         
-        /* Italique standard */
-        .markdown-preview em, .markdown-preview i { 
-            font-style: italic; 
-        }
+        .markdown-preview em, .markdown-preview i { font-style: italic; }
+        .markdown-preview strong, .markdown-preview b { font-weight: 700; }
 
+        /* Task Lists */
         .markdown-preview li:has(> input[type="checkbox"]) { list-style-type: none !important; padding-left: 0 !important; display: flex; align-items: flex-start; gap: 0.5em; margin-left: -1em; }
-        .markdown-preview input[type="checkbox"] { margin-top: 0.4em; cursor: pointer; flex-shrink: 0; width: 1.1em; height: 1.1em; }
+        .markdown-preview input[type="checkbox"] { margin-top: 0.4em; cursor: pointer; accent-color: #2563eb; }
+
+        /* Code Blocks */
         .markdown-preview code { background-color: rgba(0,0,0,0.05); padding: 0.2em 0.4em; border-radius: 0.25em; font-family: 'Menlo', monospace; font-size: 0.9em; color: #db2777; }
         .dark .markdown-preview code { background-color: rgba(255,255,255,0.1); color: #f472b6; }
         .markdown-preview pre { background-color: #1f2937; color: #f9fafb; padding: 1em; border-radius: 0.5em; overflow-x: auto; margin-bottom: 1em; }
         .markdown-preview pre code { background-color: transparent; color: inherit; padding: 0; }
+
+        /* Blockquotes */
         .markdown-preview blockquote { border-left: 4px solid #3b82f6; padding-left: 1em; font-style: italic; background-color: rgba(59, 130, 246, 0.1); padding: 0.5em; border-radius: 0 0.5em 0.5em 0; margin-bottom: 1em;}
-        .markdown-preview a { color: #2563eb; text-decoration: underline; }
+
+        /* Links & Images */
+        .markdown-preview a { color: #2563eb; text-decoration: underline; text-underline-offset: 2px; }
         .dark .markdown-preview a { color: #60a5fa; }
-        .markdown-preview img { max-width: 100%; border-radius: 0.5em; margin: 1em 0; border: 1px solid #e5e7eb; }
+        .markdown-preview img { max-width: 100%; border-radius: 0.5em; margin: 1em 0; border: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
         .dark .markdown-preview img { border-color: #374151; }
+
+        /* Tables */
         .markdown-preview table { width: 100%; border-collapse: collapse; margin-bottom: 1em; }
         .markdown-preview th, .markdown-preview td { border: 1px solid #e5e7eb; padding: 0.5em; text-align: left; }
         .dark .markdown-preview th, .dark .markdown-preview td { border-color: #374151; }
         .markdown-preview th { background-color: rgba(0,0,0,0.02); font-weight: 600; }
         .dark .markdown-preview th { background-color: rgba(255,255,255,0.05); }
+
         .markdown-preview hr { border: 0; border-top: 2px solid #e5e7eb; margin: 2em 0; }
         .dark .markdown-preview hr { border-color: #374151; }
+
+        /* Animation & Layout */
         .preview-text { white-space: pre-wrap; font-family: 'Courier New', monospace; }
         .fade-in { animation: fadeIn 0.2s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .dark ::-webkit-scrollbar-thumb { background: #4b5563; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
         .split-active .editor-pane { display: block !important; width: 50%; border-right: 1px solid #e5e7eb; }
         .dark .split-active .editor-pane { border-right: 1px solid #374151; }
         .split-active .preview-pane { display: block !important; width: 50%; }
+
         .tool-btn:active { transform: scale(0.95); }
         .color-picker-wrapper { position: relative; display: inline-block; }
         .color-input-hidden { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
         
-        /* UI States based on Auth */
+        /* Auth UI */
         .auth-only { display: none !important; }
         .is-admin .auth-only { display: flex !important; }
         .is-admin .auth-only-block { display: block !important; }
@@ -163,7 +182,7 @@
             <!-- Top Bar -->
             <header class="h-16 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-4 md:px-6 bg-white dark:bg-gray-900 flex-shrink-0 gap-4 transition-colors">
                 <div class="flex-1 min-w-0">
-                    <!-- Title Input (Editable only if admin) -->
+                    <!-- Title Input -->
                     <input type="text" id="docTitleInput" placeholder="Titre du document" readonly
                            class="w-full text-lg md:text-xl font-bold text-gray-800 dark:text-gray-100 placeholder-gray-300 dark:placeholder-gray-600 border-none focus:ring-0 focus:outline-none bg-transparent truncate cursor-default auth-cursor-text"
                            oninput="updateCurrentTitle()">
@@ -200,10 +219,21 @@
                     </button>
                 </div>
                 
-                <!-- Export is available for everyone -->
-                <button onclick="exportDoc()" class="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-blue-600 rounded-lg transition-colors" title="Télécharger">
-                    <i class="ph ph-download-simple text-xl"></i>
-                </button>
+                <!-- Export Menu -->
+                <div class="relative group">
+                    <button class="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-blue-600 rounded-lg transition-colors" title="Exporter">
+                        <i class="ph ph-export text-xl"></i>
+                    </button>
+                    <!-- Dropdown -->
+                    <div class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 hidden group-hover:block z-50">
+                        <button onclick="exportDoc('source')" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex items-center gap-2">
+                            <i class="ph ph-file-code"></i> Source (MD/HTML)
+                        </button>
+                        <button onclick="exportDoc('pdf')" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex items-center gap-2">
+                            <i class="ph ph-file-pdf"></i> PDF (Imprimable)
+                        </button>
+                    </div>
+                </div>
             </header>
 
             <!-- Adaptive Toolbar (Auth Only) -->
@@ -240,10 +270,13 @@
                 <!-- Zone de texte (Mode Édition) -->
                 <textarea id="markdownEditor" 
                           class="editor-pane w-full h-full p-6 md:p-8 resize-none focus:outline-none font-mono text-sm leading-relaxed text-gray-800 bg-gray-50 dark:bg-gray-850 dark:text-gray-200 hidden border-r-0"
-                          placeholder="Commencez à écrire ici..." spellcheck="false"></textarea>
+                          placeholder="Commencez à écrire ici..." spellcheck="false"
+                          onscroll="syncScroll('editor')"></textarea>
                 
                 <!-- Zone de prévisualisation (Mode Lecture) -->
-                <div id="previewArea" class="preview-pane markdown-preview w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors">
+                <div id="previewArea" 
+                     class="preview-pane markdown-preview w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors"
+                     onscroll="syncScroll('preview')">
                     <!-- Rendu ici -->
                 </div>
             </div>
@@ -341,6 +374,7 @@
         let isEditMode = false;
         let isSplitView = false;
         let isDarkMode = false;
+        let isScrolling = false; // For scroll sync
 
         // --- DOM REFS ---
         const docListEl = document.getElementById('docList');
@@ -392,6 +426,7 @@
             window.checkLogin = checkLogin;
             window.logoutAdmin = logoutAdmin;
             window.handleLoginKey = handleLoginKey;
+            window.syncScroll = syncScroll; // Scroll Sync
 
             initTheme();
             
@@ -424,6 +459,9 @@
             });
             document.getElementById('textColorPicker').addEventListener('input', (e) => textColorIndicator.style.backgroundColor = e.target.value);
             document.getElementById('bgColorPicker').addEventListener('input', (e) => bgColorIndicator.style.backgroundColor = e.target.value);
+
+            // Hash Change Listener for Routing
+            window.addEventListener('hashchange', handleHashChange);
         });
 
         // --- THEME & VIEW LOGIC ---
@@ -473,12 +511,31 @@
             }
         }
 
+        // --- SCROLL SYNC LOGIC ---
+        function syncScroll(source) {
+            if (!isSplitView) return;
+            if (isScrolling) return; // Prevent loop
+
+            isScrolling = true;
+            
+            const editor = markdownEditor;
+            const preview = previewArea;
+            
+            if (source === 'editor') {
+                const percentage = editor.scrollTop / (editor.scrollHeight - editor.clientHeight);
+                preview.scrollTop = percentage * (preview.scrollHeight - preview.clientHeight);
+            } else {
+                const percentage = preview.scrollTop / (preview.scrollHeight - preview.clientHeight);
+                editor.scrollTop = percentage * (editor.scrollHeight - editor.clientHeight);
+            }
+
+            setTimeout(() => isScrolling = false, 50); // Debounce
+        }
+
         // --- FIREBASE AUTH & FIRESTORE ---
         async function initAuth() {
-            // Surveille l'état de connexion (Admin ou rien du tout)
             onAuthStateChanged(auth, (user) => {
                 if (user) {
-                    // UTILISATEUR CONNECTÉ (Admin)
                     currentUser = user;
                     isAdmin = true;
                     console.log("Connecté en tant que :", user.email);
@@ -487,15 +544,13 @@
                     document.getElementById('loginBtn').classList.add('hidden');
                     document.getElementById('logoutBtn').classList.remove('hidden');
                     
-                    // Activer l'édition du titre
                     document.getElementById('docTitleInput').readOnly = false;
                     document.getElementById('docTitleInput').classList.remove('cursor-default');
                     
                     dbStatusIndicator.className = "w-2 h-2 rounded-full bg-green-500";
-                    dbStatusText.innerText = user.email; // Affiche l'email
+                    dbStatusText.innerText = user.email;
                     
                 } else {
-                    // UTILISATEUR DÉCONNECTÉ (Visiteur / Lecture seule)
                     currentUser = null;
                     isAdmin = false;
                     console.log("Mode Visiteur (Non connecté)");
@@ -504,7 +559,6 @@
                     document.getElementById('loginBtn').classList.remove('hidden');
                     document.getElementById('logoutBtn').classList.add('hidden');
                     
-                    // Désactiver l'édition du titre
                     document.getElementById('docTitleInput').readOnly = true;
                     document.getElementById('docTitleInput').classList.add('cursor-default');
 
@@ -512,14 +566,12 @@
                     dbStatusText.innerText = "Mode Lecture Publique";
                 }
                 
-                // Mettre à jour l'interface si un doc est ouvert
                 if (currentDocId) {
                     const doc = docs.find(d => d.id === currentDocId);
                     updateUIForFormat(doc ? doc.format : 'markdown');
                 }
             });
             
-            // On lance l'écoute des données immédiatement (Lecture publique)
             subscribeToDocs();
         }
 
@@ -536,16 +588,23 @@
                 
                 renderDocList(searchInput.value);
                 
-                // Si le document en cours est supprimé par quelqu'un d'autre
+                // Handle Routing (First Load)
+                handleHashChange();
+
+                // Live updates for current doc
                 if (currentDocId) {
                     const currentDoc = docs.find(d => d.id === currentDocId);
                     if (!currentDoc) {
+                        // Deleted remotely
                         currentDocId = null;
                         emptyState.classList.remove('hidden');
                         editorWrapper.classList.add('hidden');
+                        window.location.hash = ''; // Clear hash
                     } else if (!isEditMode && markdownEditor.value !== currentDoc.content) {
-                        // Mise à jour live si on n'édite pas
-                        // (On évite d'écraser ce que l'admin tape s'il est en train d'écrire)
+                        // Only update content if not editing to avoid conflicts
+                        renderPreview(currentDoc.content, currentDoc.format);
+                        // Don't update editor value violently if user is admin
+                        if(!isAdmin) markdownEditor.value = currentDoc.content; 
                     }
                 }
             }, (error) => {
@@ -558,6 +617,20 @@
                     showToast("Erreur de synchronisation", "delete");
                 }
             });
+        }
+
+        // --- ROUTING LOGIC ---
+        function handleHashChange() {
+            const hash = window.location.hash.substring(1); // Remove '#'
+            if (hash && hash !== currentDocId) {
+                // If the hash exists and is different, load that doc
+                selectDoc(hash, false); // false = don't set hash again
+            } else if (!hash && currentDocId) {
+                // Hash removed, close doc
+                currentDocId = null;
+                emptyState.classList.remove('hidden');
+                editorWrapper.classList.add('hidden');
+            }
         }
 
         async function saveDocToFirebase(docData) {
@@ -602,7 +675,6 @@
 
             try {
                 await signInWithEmailAndPassword(auth, email, pass);
-                // onAuthStateChanged s'occupera de mettre à jour l'interface
                 closeLoginModal();
                 showToast("Connexion réussie");
             } catch (error) {
@@ -618,7 +690,6 @@
             try {
                 await signOut(auth);
                 
-                // On quitte le mode édition proprement
                 isEditMode = false;
                 markdownEditor.classList.add('hidden');
                 previewArea.classList.remove('hidden');
@@ -655,10 +726,14 @@
             setTimeout(() => docTitleInput.focus(), 100);
         }
 
-        function selectDoc(id) {
-            currentDocId = id;
+        function selectDoc(id, updateHash = true) {
             const doc = docs.find(d => d.id === id);
-            if (!doc) return;
+            
+            // If doc not found (maybe loaded from invalid hash), do nothing or reset
+            if (!doc && docs.length > 0) return; 
+
+            currentDocId = id;
+            if (updateHash) window.location.hash = id;
 
             emptyState.classList.add('hidden');
             editorWrapper.classList.remove('hidden');
@@ -714,6 +789,7 @@
             // UI cleanup handled by onSnapshot, but we can do optimistic cleanup
             docs = docs.filter(d => d.id !== idToDelete);
             currentDocId = null;
+            window.location.hash = ''; // Clear Hash
             renderDocList();
             emptyState.classList.remove('hidden');
             editorWrapper.classList.add('hidden');
@@ -721,24 +797,40 @@
             showToast('Document supprimé', 'delete');
         }
 
-        function exportDoc() {
+        function exportDoc(type) {
             if (!currentDocId) return;
             const doc = docs.find(d => d.id === currentDocId);
-            let extension = 'txt';
-            let mimeType = 'text/plain';
-            if (doc.format === 'markdown') { extension = 'md'; mimeType = 'text/markdown'; }
-            else if (doc.format === 'html') { extension = 'html'; mimeType = 'text/html'; }
             
-            const blob = new Blob([doc.content], { type: mimeType });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${doc.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.${extension}`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            showToast('Téléchargement lancé');
+            if (type === 'pdf') {
+                // PDF Export using html2pdf
+                const element = document.getElementById('previewArea');
+                const opt = {
+                    margin:       1,
+                    filename:     `${doc.title.replace(/[^a-z0-9]/gi, '_')}.pdf`,
+                    image:        { type: 'jpeg', quality: 0.98 },
+                    html2canvas:  { scale: 2 },
+                    jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+                };
+                html2pdf().set(opt).from(element).save();
+                showToast('Génération du PDF...');
+            } else {
+                // Source Export
+                let extension = 'txt';
+                let mimeType = 'text/plain';
+                if (doc.format === 'markdown') { extension = 'md'; mimeType = 'text/markdown'; }
+                else if (doc.format === 'html') { extension = 'html'; mimeType = 'text/html'; }
+                
+                const blob = new Blob([doc.content], { type: mimeType });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${doc.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.${extension}`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showToast('Téléchargement source lancé');
+            }
         }
 
         // --- UI & RENDERING ---
@@ -756,6 +848,7 @@
                 const isActive = doc.id === currentDocId;
                 const div = document.createElement('div');
                 div.className = `p-3 rounded-lg cursor-pointer transition-all mb-1 border border-transparent group ${isActive ? 'bg-gray-800 border-blue-500/50 shadow-md' : 'hover:bg-gray-800 hover:border-gray-700'}`;
+                // Using href for hash routing interaction, but onClick for immediate feel
                 div.onclick = () => selectDoc(doc.id);
                 
                 let icon = 'ph-file-text';
@@ -966,7 +1059,7 @@
                     textarea.setRangeText(liRegex.test(line) ? line.replace(liRegex, '$1<input type="checkbox"> $2') : '<input type="checkbox"> ' + line, lineStart, lineEnd, 'select');
                 }
             };
-            const toggleHTML = (tag) => {
+            const toggleHTML = (tag) => { 
                 const openRegex = new RegExp(`^<${tag}(\\s[^>]*)?>`, 'i'), closeRegex = new RegExp(`</${tag}>$`, 'i');
                 if (openRegex.test(sel) && closeRegex.test(sel)) {
                     const match = sel.match(openRegex);
