@@ -1391,42 +1391,45 @@
         }
 
         function applyColor(type, value) {
-            if (!currentDocId) return;
-            const doc = docs.find(d => d.id === currentDocId);
-            if (!canEditDoc(doc)) return;
+    if (!currentDocId) return;
+    const doc = docs.find(d => d.id === currentDocId);
+    if (!canEditDoc(doc)) return;
 
-            const textarea = markdownEditor;
-            const start = textarea.selectionStart;
-            const end = textarea.selectionEnd;
-            let sel = textarea.value.substring(start, end) || 'texte';
-            
-            const spanRegex = /^<span style="([^"]*)">(.*?)<\/span>$/i;
-            let existingStyle = "";
-            let innerText = sel;
+    const textarea = markdownEditor;
+    let start = textarea.selectionStart;
+    let end = textarea.selectionEnd;
+    if (start === end) return;
 
-            if (spanRegex.test(sel)) {
-                const match = sel.match(spanRegex);
-                existingStyle = match[1];
-                innerText = match[2];
-            }
+    const text = textarea.value.substring(start, end);
 
-            const styleObj = {};
-            existingStyle.split(';').forEach(style => {
-                const [prop, val] = style.split(':');
-                if (prop && val) styleObj[prop.trim().toLowerCase()] = val.trim();
-            });
+    const spanRegex = /^<span\s+style="([^"]*)">([\s\S]*?)<\/span>$/i;
+    let styles = {};
+    let innerText = text;
 
-            if (type === 'text') styleObj['color'] = value;
-            if (type === 'bg') styleObj['background-color'] = value;
+    if (spanRegex.test(text)) {
+        const match = text.match(spanRegex);
+        innerText = match[2];
 
-            const newStyleString = Object.entries(styleObj).map(([k, v]) => `${k}:${v}`).join('; ');
-            const newHTML = `<span style="${newStyleString}">${innerText}</span>`;
-            
-            saveHistory(textarea.value); // Save history before modifying
-            textarea.setRangeText(newHTML, start, end, 'select');
-            updateCurrentContent();
-            textarea.focus();
-        }
+        match[1].split(';').forEach(rule => {
+            const [k, v] = rule.split(':');
+            if (k && v) styles[k.trim()] = v.trim();
+        });
+    }
+
+    if (type === 'text') styles.color = value;
+    if (type === 'bg') styles['background-color'] = value;
+
+    const styleString = Object.entries(styles)
+        .map(([k, v]) => `${k}: ${v}`)
+        .join('; ');
+
+    const result = `<span style="${styleString}">${innerText}</span>`;
+
+    textarea.setRangeText(result, start, end, 'select');
+    saveHistory(textarea.value);
+    updateCurrentContent();
+}
+
 
         function applyFormat(type) {
             if (!currentDocId) return;
