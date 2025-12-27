@@ -40,8 +40,8 @@
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
         /* Styles Markdown Preview */
-        .markdown-preview { line-height: 1.7; word-wrap: break-word; }
-        .markdown-preview h1 { font-size: 2.25em; font-weight: 800; margin-bottom: 0.5em; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.3em; color: #1e293b; }
+        .markdown-preview { line-height: 1.7; word-wrap: break-word; scroll-behavior: smooth; }
+        .markdown-preview h1 { font-size: 2.25em; font-weight: 800; margin-bottom: 0.5em; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.3em; color: #1e293b; margin-top: 1em; }
         .dark .markdown-preview h1 { color: #f3f4f6; border-color: #374151; }
         .markdown-preview h2 { font-size: 1.75em; font-weight: 700; margin-top: 1.5em; margin-bottom: 0.5em; color: #334155; }
         .dark .markdown-preview h2 { color: #e2e8f0; }
@@ -73,6 +73,13 @@
         .markdown-preview img { max-width: 100%; border-radius: 0.5em; margin: 1em 0; border: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
         .dark .markdown-preview img { border-color: #374151; }
 
+        /* Wiki Links specific styles */
+        .wiki-link { background-color: rgba(37, 99, 235, 0.1); padding: 0 2px; border-radius: 3px; font-weight: 500; text-decoration: none !important; border-bottom: 1px solid rgba(37, 99, 235, 0.3); transition: all 0.2s; }
+        .wiki-link:hover { background-color: rgba(37, 99, 235, 0.2); border-bottom-color: #2563eb; }
+        .dark .wiki-link { background-color: rgba(96, 165, 250, 0.15); color: #93c5fd; }
+        .wiki-link-broken { color: #ef4444 !important; background-color: rgba(239, 68, 68, 0.1); border-bottom: 1px dashed #ef4444; opacity: 0.8; }
+        .dark .wiki-link-broken { color: #f87171 !important; }
+
         /* Tables */
         .markdown-preview table { width: 100%; border-collapse: collapse; margin-bottom: 1em; }
         .markdown-preview th, .markdown-preview td { border: 1px solid #e5e7eb; padding: 0.5em; text-align: left; }
@@ -98,6 +105,18 @@
         
         .tag-chip { font-size: 0.7rem; padding: 0.1rem 0.4rem; border-radius: 9999px; background-color: rgba(59, 130, 246, 0.1); color: #3b82f6; display: inline-block; margin-right: 0.25rem; }
         .dark .tag-chip { background-color: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+
+        /* TOC Panel */
+        #tocPanel { width: 260px; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 30; }
+        #tocPanel.open { transform: translateX(0); }
+        .toc-link { display: block; padding: 4px 8px; font-size: 0.85rem; color: #64748b; text-decoration: none; border-left: 2px solid transparent; transition: all 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .dark .toc-link { color: #9ca3af; }
+        .toc-link:hover { color: #2563eb; background-color: rgba(37, 99, 235, 0.05); border-left-color: #2563eb; }
+        .dark .toc-link:hover { color: #60a5fa; background-color: rgba(96, 165, 250, 0.1); }
+        .toc-h1 { margin-left: 0; font-weight: 600; color: #334155; }
+        .dark .toc-h1 { color: #e2e8f0; }
+        .toc-h2 { margin-left: 12px; }
+        .toc-h3 { margin-left: 24px; font-size: 0.8rem; }
         
         /* Auth UI */
         .auth-only { display: none !important; }
@@ -112,7 +131,7 @@
         <div class="p-4 border-b border-gray-800 flex justify-between items-center bg-gray-950">
             <h1 class="text-xl font-bold flex items-center gap-2 text-blue-400 cursor-pointer" onclick="window.location.hash=''">
                 <i class="ph ph-books text-2xl"></i>
-                WikiDocs <span class="text-xs bg-purple-600 text-white px-1.5 py-0.5 rounded ml-1">v3</span>
+                WikiDocs <span class="text-xs bg-purple-600 text-white px-1.5 py-0.5 rounded ml-1">v4</span>
             </h1>
             <div class="flex items-center gap-2">
                 <button onclick="toggleDarkMode()" class="text-gray-400 hover:text-yellow-400 transition-colors p-1" title="Mode Sombre/Clair">
@@ -185,10 +204,10 @@
         </div>
 
         <!-- Editor Wrapper -->
-        <div id="editorWrapper" class="hidden flex flex-col h-full w-full z-10 bg-white dark:bg-gray-900">
+        <div id="editorWrapper" class="hidden flex flex-col h-full w-full z-10 bg-white dark:bg-gray-900 relative overflow-hidden">
             
             <!-- Top Bar -->
-            <header class="h-auto md:h-20 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-4 py-2 md:px-6 bg-white dark:bg-gray-900 flex-shrink-0 gap-4 transition-colors">
+            <header class="h-auto md:h-20 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-4 py-2 md:px-6 bg-white dark:bg-gray-900 flex-shrink-0 gap-4 transition-colors z-20 relative">
                 <div class="flex-1 min-w-0 flex flex-col justify-center">
                     <!-- Title Input -->
                     <input type="text" id="docTitleInput" placeholder="Titre du document" readonly
@@ -204,9 +223,9 @@
                     </div>
                 </div>
                 
-                <div class="flex items-center gap-2 md:gap-3 flex-shrink-0 auth-only">
-                    <!-- Format Selector -->
-                    <div class="relative group hidden md:block">
+                <div class="flex items-center gap-2 md:gap-3 flex-shrink-0">
+                    <!-- Format Selector (Admin only originally, but kept here for layout) -->
+                    <div class="relative group hidden md:block auth-only">
                         <select id="docFormatSelect" onchange="updateCurrentFormat()" 
                                 class="appearance-none bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded-md py-1.5 pl-3 pr-8 leading-tight focus:outline-none focus:border-blue-500 cursor-pointer">
                             <option value="markdown">Markdown</option>
@@ -218,42 +237,47 @@
                         </div>
                     </div>
 
-                    <div class="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-1 hidden md:block"></div>
+                    <!-- TOC Toggle (Visible for everyone) -->
+                    <button onclick="toggleTOC()" id="tocToggleBtn" class="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors border border-transparent" title="Table des matières">
+                        <i class="ph ph-list text-xl"></i>
+                    </button>
+
+                    <div class="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-1 hidden md:block auth-only"></div>
                     
-                    <button onclick="toggleSplitView()" class="hidden md:flex p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors" title="Vue Partagée">
+                    <button onclick="toggleSplitView()" class="hidden md:flex p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors auth-only" title="Vue Partagée">
                         <i id="splitIcon" class="ph ph-columns text-xl"></i>
                     </button>
 
                     <button onclick="toggleEditMode()" id="viewToggleBtn" 
-                            class="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg flex items-center gap-2 transition-colors border border-transparent"
+                            class="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg flex items-center gap-2 transition-colors border border-transparent auth-only"
                             title="Éditer">
                         <i class="ph ph-pencil-simple text-xl" id="toggleIcon"></i>
                     </button>
 
-                    <button onclick="showDeleteConfirm()" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" title="Supprimer">
+                    <button onclick="showDeleteConfirm()" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors auth-only" title="Supprimer">
                         <i class="ph ph-trash text-xl"></i>
                     </button>
-                </div>
-                
-                <!-- Export Menu -->
-                <div class="relative group">
-                    <button class="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-blue-600 rounded-lg transition-colors" title="Exporter">
-                        <i class="ph ph-export text-xl"></i>
-                    </button>
-                    <!-- Dropdown -->
-                    <div class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 hidden group-hover:block z-50">
-                        <button onclick="exportDoc('source')" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex items-center gap-2">
-                            <i class="ph ph-file-code"></i> Source (MD/HTML)
+                    
+                    <!-- Export Menu -->
+                    <div class="relative group">
+                        <button class="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-blue-600 rounded-lg transition-colors" title="Exporter">
+                            <i class="ph ph-export text-xl"></i>
                         </button>
-                        <button onclick="exportDoc('pdf')" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex items-center gap-2">
-                            <i class="ph ph-file-pdf"></i> PDF (Imprimable)
-                        </button>
+                        <!-- Dropdown -->
+                        <div class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 hidden group-hover:block z-50">
+                            <button onclick="exportDoc('source')" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex items-center gap-2">
+                                <i class="ph ph-file-code"></i> Source (MD/HTML)
+                            </button>
+                            <button onclick="exportDoc('pdf')" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex items-center gap-2">
+                                <i class="ph ph-file-pdf"></i> PDF (Imprimable)
+                            </button>
+                        </div>
                     </div>
                 </div>
             </header>
 
             <!-- Adaptive Toolbar (Auth Only) -->
-            <div id="formatToolbar" class="auth-only h-10 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 items-center px-2 gap-1 overflow-x-auto hidden flex-shrink-0 transition-colors">
+            <div id="formatToolbar" class="auth-only h-10 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 items-center px-2 gap-1 overflow-x-auto hidden flex-shrink-0 transition-colors z-20 relative">
                 <button onclick="applyFormat('bold')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Gras"><i class="ph ph-text-b text-lg"></i></button>
                 <button onclick="applyFormat('italic')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Italique"><i class="ph ph-text-i text-lg"></i></button>
                 <button onclick="applyFormat('strike')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Barré"><i class="ph ph-text-strikethrough text-lg"></i></button>
@@ -281,7 +305,7 @@
                 <button onclick="applyFormat('hr')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Ligne horizontale"><i class="ph ph-minus text-lg"></i></button>
             </div>
 
-            <!-- Content Area -->
+            <!-- Content Area + TOC -->
             <div id="contentContainer" class="flex-1 overflow-hidden relative group flex flex-row">
                 <!-- Zone de texte (Mode Édition) -->
                 <textarea id="markdownEditor" 
@@ -295,10 +319,23 @@
                      onscroll="syncScroll('preview')">
                     <!-- Rendu ici -->
                 </div>
+                
+                <!-- Table of Contents Panel (Floating/Sliding) -->
+                <div id="tocPanel" class="absolute top-0 right-0 h-full bg-gray-50 dark:bg-gray-850 border-l border-gray-200 dark:border-gray-700 shadow-xl flex flex-col">
+                    <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-100 dark:bg-gray-800">
+                        <h3 class="font-semibold text-sm text-gray-700 dark:text-gray-200 uppercase tracking-wide">Sommaire</h3>
+                        <button onclick="toggleTOC()" class="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white">
+                            <i class="ph ph-x"></i>
+                        </button>
+                    </div>
+                    <div id="tocContent" class="flex-1 overflow-y-auto p-4 space-y-1">
+                        <!-- TOC Links injected here -->
+                    </div>
+                </div>
             </div>
             
             <!-- Footer Info -->
-            <div class="h-8 border-t border-gray-200 dark:border-gray-800 flex items-center px-4 text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-900 justify-between flex-shrink-0 transition-colors">
+            <div class="h-8 border-t border-gray-200 dark:border-gray-800 flex items-center px-4 text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-900 justify-between flex-shrink-0 transition-colors z-20 relative">
                 <div class="flex items-center gap-3">
                     <span id="saveStatus" class="flex items-center gap-1 text-green-600 dark:text-green-400 font-medium opacity-0 transition-opacity duration-500">
                         <i class="ph-fill ph-check-circle"></i> Synchro
@@ -392,6 +429,7 @@
         let isSplitView = false;
         let isDarkMode = false;
         let isScrolling = false; 
+        let isTOCOpen = false; // TOC State
 
         // --- DOM REFS ---
         const docListEl = document.getElementById('docList');
@@ -422,6 +460,9 @@
         const bgColorIndicator = document.getElementById('bgColorIndicator');
         const dbStatusIndicator = document.getElementById('dbStatusIndicator');
         const dbStatusText = document.getElementById('dbStatusText');
+        const tocPanel = document.getElementById('tocPanel');
+        const tocContent = document.getElementById('tocContent');
+        const tocToggleBtn = document.getElementById('tocToggleBtn');
 
         // --- INIT ---
         window.addEventListener('DOMContentLoaded', async () => {
@@ -448,13 +489,15 @@
             window.handleLoginKey = handleLoginKey;
             window.syncScroll = syncScroll; 
             window.filterByTag = filterByTag; // New
+            window.toggleTOC = toggleTOC;
 
             initTheme();
             
-            // Set Marked options
+            // Set Marked options with Heading IDs enabled for TOC
             marked.setOptions({
                 breaks: true,
                 gfm: true,
+                headerIds: true, // Deprecated in new versions, but let's assume default behavior handles IDs usually
                 highlight: function(code, lang) {
                     const language = highlight.getLanguage(lang) ? lang : 'plaintext';
                     return highlight.highlight(code, { language }).value;
@@ -535,6 +578,18 @@
                 splitIcon.classList.replace('ph-sidebar', 'ph-columns');
                 splitIcon.parentElement.classList.remove('bg-blue-50', 'text-blue-600', 'dark:bg-blue-900/30', 'dark:text-blue-400');
                 toggleEditMode(isEditMode); 
+            }
+        }
+
+        function toggleTOC() {
+            isTOCOpen = !isTOCOpen;
+            if(isTOCOpen) {
+                tocPanel.classList.add('open');
+                tocToggleBtn.classList.add('bg-gray-100', 'dark:bg-gray-800', 'text-blue-600', 'dark:text-blue-400');
+                updateTOC();
+            } else {
+                tocPanel.classList.remove('open');
+                tocToggleBtn.classList.remove('bg-gray-100', 'dark:bg-gray-800', 'text-blue-600', 'dark:text-blue-400');
             }
         }
 
@@ -1026,24 +1081,88 @@
             });
         }
 
+        // --- WIKI LINKS PROCESSING ---
+        function processWikiLinks(content) {
+            // Regex matches [[Page Title]]
+            return content.replace(/\[\[(.*?)\]\]/g, (match, text) => {
+                const title = text.trim();
+                // Find doc by title (case insensitive)
+                const doc = docs.find(d => d.title.toLowerCase() === title.toLowerCase());
+                
+                if (doc) {
+                    // Return a markdown link to the hash
+                    return `<a href="#${doc.id}" class="wiki-link" onclick="selectDoc('${doc.id}')">${title}</a>`;
+                } else {
+                    // Return a broken link style
+                    return `<span class="wiki-link wiki-link-broken" title="Document non trouvé">${title}</span>`;
+                }
+            });
+        }
+
+        // --- TOC GENERATION ---
+        function updateTOC() {
+            if (!isTOCOpen) return;
+            
+            // Get headings from preview area
+            const headings = previewArea.querySelectorAll('h1, h2, h3');
+            tocContent.innerHTML = '';
+
+            if (headings.length === 0) {
+                tocContent.innerHTML = '<div class="text-sm text-gray-400 italic text-center mt-4">Aucun titre trouvé</div>';
+                return;
+            }
+
+            headings.forEach((heading, index) => {
+                const id = heading.id || `heading-${index}`;
+                heading.id = id; // Ensure ID exists for anchor
+
+                const link = document.createElement('a');
+                link.href = `#`;
+                link.textContent = heading.textContent;
+                link.className = `toc-link toc-${heading.tagName.toLowerCase()}`;
+                
+                link.onclick = (e) => {
+                    e.preventDefault();
+                    heading.scrollIntoView({ behavior: 'smooth' });
+                };
+
+                tocContent.appendChild(link);
+            });
+        }
+
         function renderPreview(content, format) {
             if (!content) {
                 previewArea.innerHTML = '<div class="text-gray-300 dark:text-gray-600 italic">Vide...</div>';
+                updateTOC();
                 return;
             }
 
             if (format === 'markdown' || !format) {
                 previewArea.className = "preview-pane markdown-preview w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors";
-                // Marked is configured with breaks: true for line breaks
-                previewArea.innerHTML = DOMPurify.sanitize(marked.parse(content));
+                
+                // 1. Process Wiki Links first (returns HTML strings embedded in text)
+                const linkedContent = processWikiLinks(content);
+                
+                // 2. Parse Markdown (Sanitize AFTER to allow our custom <a> tags from wiki links)
+                // We trust DOMPurify to clean up bad stuff, but we need to configure it to allow our classes
+                const rawHtml = marked.parse(linkedContent);
+                
+                const cleanHtml = DOMPurify.sanitize(rawHtml, {
+                    ADD_ATTR: ['target', 'onclick', 'class'] // Allow class for styling and onclick for routing
+                });
+                
+                previewArea.innerHTML = cleanHtml;
+                
             } else if (format === 'html') {
                 previewArea.className = "preview-pane w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors";
-                let htmlContent = content;
-                previewArea.innerHTML = DOMPurify.sanitize(htmlContent);
+                previewArea.innerHTML = DOMPurify.sanitize(content);
             } else {
                 previewArea.className = "preview-pane preview-text w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors text-gray-700";
                 previewArea.innerText = content;
             }
+            
+            // Update TOC after render
+            updateTOC();
         }
 
         function updateUIForFormat(format) {
