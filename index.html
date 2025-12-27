@@ -105,6 +105,9 @@
         
         .tag-chip { font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 9999px; background-color: rgba(59, 130, 246, 0.1); color: #3b82f6; display: inline-flex; align-items: center; margin-right: 0.25rem; border: 1px solid rgba(59, 130, 246, 0.2); }
         .dark .tag-chip { background-color: rgba(59, 130, 246, 0.2); color: #60a5fa; border-color: rgba(96, 165, 250, 0.3); }
+        
+        .remove-tag-btn { opacity: 0.6; transition: opacity 0.2s; margin-left: 4px; cursor: pointer; }
+        .remove-tag-btn:hover { opacity: 1; color: #ef4444; }
 
         /* TOC Panel */
         #tocPanel { width: 260px; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 30; }
@@ -131,7 +134,7 @@
         <div class="p-4 border-b border-gray-800 flex justify-between items-center bg-gray-950">
             <h1 class="text-xl font-bold flex items-center gap-2 text-blue-400 cursor-pointer" onclick="window.location.hash=''">
                 <i class="ph ph-books text-2xl"></i>
-                WikiDocs <span class="text-xs bg-purple-600 text-white px-1.5 py-0.5 rounded ml-1">v5.1</span>
+                WikiDocs <span class="text-xs bg-purple-600 text-white px-1.5 py-0.5 rounded ml-1">v5.7</span>
             </h1>
             <div class="flex items-center gap-2">
                 <!-- Settings Button (Admin Only) -->
@@ -229,9 +232,11 @@
                     </div>
 
                     <div class="flex items-center gap-2 flex-shrink-0">
-                         <!-- TOC Toggle -->
-                        <button onclick="toggleTOC()" id="tocToggleBtn" class="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors border border-transparent" title="Table des matières">
-                            <i class="ph ph-list text-xl"></i>
+                         <!-- TOC Toggle (IMPROVED STYLES) -->
+                        <button onclick="toggleTOC()" id="tocToggleBtn" 
+                                class="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors shadow-sm" title="Table des matières">
+                            <i class="ph ph-list-dashes text-lg"></i>
+                            <span class="hidden md:inline text-sm font-medium">Sommaire</span>
                         </button>
                         
                         <div class="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-1 hidden md:block auth-only"></div>
@@ -250,17 +255,17 @@
                             <i class="ph ph-trash text-xl"></i>
                         </button>
 
-                        <!-- Export Menu -->
-                        <div class="relative group">
-                            <button class="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-blue-600 rounded-lg transition-colors" title="Exporter">
+                        <!-- Export Menu (FIXED) -->
+                        <div class="relative">
+                            <button onclick="toggleExportMenu()" id="exportBtn" class="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-blue-600 rounded-lg transition-colors" title="Exporter">
                                 <i class="ph ph-export text-xl"></i>
                             </button>
-                            <!-- Dropdown -->
-                            <div class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 hidden group-hover:block z-50">
-                                <button onclick="exportDoc('source')" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex items-center gap-2">
+                            <!-- Dropdown with ID for JS toggling -->
+                            <div id="exportMenu" class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 hidden z-50">
+                                <button onclick="exportDoc('source')" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex items-center gap-2 text-gray-700 dark:text-gray-200">
                                     <i class="ph ph-file-code"></i> Source (MD/HTML)
                                 </button>
-                                <button onclick="exportDoc('pdf')" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex items-center gap-2">
+                                <button onclick="exportDoc('pdf')" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex items-center gap-2 text-gray-700 dark:text-gray-200">
                                     <i class="ph ph-file-pdf"></i> PDF (Imprimable)
                                 </button>
                             </div>
@@ -268,7 +273,7 @@
                     </div>
                 </div>
 
-                <!-- Metadata Row (Category & Tags) -->
+                <!-- Metadata Row (Category & Tags & Format) -->
                 <div class="flex flex-wrap items-center gap-3 text-sm">
                     <!-- Category Select -->
                     <div class="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded-md border border-gray-200 dark:border-gray-700">
@@ -288,13 +293,23 @@
                         </button>
                     </div>
 
-                    <!-- Format (Hidden on mobile if not editing) -->
-                    <select id="docFormatSelect" onchange="updateCurrentFormat()" 
-                            class="ml-auto auth-only hidden md:block appearance-none bg-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-xs cursor-pointer border-none focus:ring-0">
-                        <option value="markdown">Markdown</option>
-                        <option value="html">HTML</option>
-                        <option value="text">Texte</option>
-                    </select>
+                    <!-- Improved Format Selector (Visible for Admin) -->
+                    <div class="ml-auto auth-only hidden md:block">
+                        <div class="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg px-2 py-1 border border-gray-200 dark:border-gray-700 relative group">
+                            <span class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase mr-2 tracking-wider">Format</span>
+                            <div class="relative">
+                                <select id="docFormatSelect" onchange="updateCurrentFormat()" 
+                                        class="appearance-none bg-transparent font-medium text-gray-700 dark:text-gray-200 text-xs focus:outline-none cursor-pointer pr-6">
+                                    <option value="markdown">Markdown</option>
+                                    <option value="html">HTML</option>
+                                    <option value="text">Texte</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center text-gray-500">
+                                    <i class="ph ph-caret-down text-[10px]"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </header>
 
@@ -402,8 +417,10 @@
                 <div>
                     <h4 class="font-semibold text-gray-700 dark:text-gray-300 mb-2 text-sm uppercase tracking-wide">Catégories</h4>
                     <div class="flex gap-2 mb-2">
-                        <input type="text" id="newCategoryInput" placeholder="Nouvelle catégorie..." class="flex-1 p-2 text-sm border rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                        <button onclick="addGlobalCategory()" class="bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700"><i class="ph ph-plus"></i></button>
+                        <input type="text" id="newCategoryInput" placeholder="Ajouter/Modifier..." class="flex-1 p-2 text-sm border rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        <div class="flex gap-1" id="catBtnContainer">
+                            <button onclick="addGlobalCategory()" class="bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700"><i class="ph ph-plus"></i></button>
+                        </div>
                     </div>
                     <ul id="globalCategoriesList" class="space-y-1 text-sm text-gray-600 dark:text-gray-400">
                         <!-- Filled by JS -->
@@ -414,8 +431,10 @@
                 <div>
                     <h4 class="font-semibold text-gray-700 dark:text-gray-300 mb-2 text-sm uppercase tracking-wide">Tags Disponibles</h4>
                     <div class="flex gap-2 mb-2">
-                        <input type="text" id="newTagInput" placeholder="Nouveau tag..." class="flex-1 p-2 text-sm border rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                        <button onclick="addGlobalTag()" class="bg-green-600 text-white px-3 py-2 rounded text-sm hover:bg-green-700"><i class="ph ph-plus"></i></button>
+                        <input type="text" id="newTagInput" placeholder="Ajouter/Modifier..." class="flex-1 p-2 text-sm border rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        <div class="flex gap-1" id="tagBtnContainer">
+                            <button onclick="addGlobalTag()" class="bg-green-600 text-white px-3 py-2 rounded text-sm hover:bg-green-700"><i class="ph ph-plus"></i></button>
+                        </div>
                     </div>
                     <div id="globalTagsList" class="flex flex-wrap gap-2">
                         <!-- Filled by JS -->
@@ -503,9 +522,13 @@
         let docs = [];
         let currentDocId = null;
         
-        // Settings State (Global Lists)
-        let globalCategories = ['Général'];
-        let globalTags = ['Brouillon', 'Important'];
+        // Settings State (Strictly Empty by Default)
+        let globalCategories = [];
+        let globalTags = [];
+        
+        // Edit State for Settings
+        let editingItemType = null; // 'category' or 'tag'
+        let editingItemOldValue = null;
 
         // Filter State
         let activeTagFilter = null;
@@ -555,6 +578,7 @@
         const tocPanel = document.getElementById('tocPanel');
         const tocContent = document.getElementById('tocContent');
         const tocToggleBtn = document.getElementById('tocToggleBtn');
+        const exportMenu = document.getElementById('exportMenu');
 
         // Settings Modal Refs
         const settingsModal = document.getElementById('settingsModal');
@@ -562,6 +586,8 @@
         const globalTagsList = document.getElementById('globalTagsList');
         const newCategoryInput = document.getElementById('newCategoryInput');
         const newTagInput = document.getElementById('newTagInput');
+        const catBtnContainer = document.getElementById('catBtnContainer');
+        const tagBtnContainer = document.getElementById('tagBtnContainer');
 
         // Tag Selection Modal Refs
         const tagSelectionModal = document.getElementById('tagSelectionModal');
@@ -581,6 +607,7 @@
             window.closeDeleteModal = closeDeleteModal;
             window.confirmDelete = confirmDelete;
             window.exportDoc = exportDoc;
+            window.toggleExportMenu = toggleExportMenu;
             window.toggleDarkMode = toggleDarkMode;
             window.handleFileUpload = handleFileUpload;
             window.applyFormat = applyFormat;
@@ -593,6 +620,7 @@
             window.syncScroll = syncScroll; 
             window.filterByTag = filterByTag;
             window.toggleTOC = toggleTOC;
+            window.renderDocList = renderDocList; 
             
             // Settings Functions
             window.openSettingsModal = openSettingsModal;
@@ -601,11 +629,16 @@
             window.deleteGlobalCategory = deleteGlobalCategory;
             window.addGlobalTag = addGlobalTag;
             window.deleteGlobalTag = deleteGlobalTag;
+            window.startEditCategory = startEditCategory;
+            window.startEditTag = startEditTag;
+            window.cancelEdit = cancelEdit;
+            window.confirmUpdate = confirmUpdate;
 
             // Tag Selection Functions
             window.openTagSelectionModal = openTagSelectionModal;
             window.closeTagSelectionModal = closeTagSelectionModal;
             window.toggleDocTag = toggleDocTag;
+            window.removeDocTag = removeDocTag; 
 
             initTheme();
             
@@ -639,6 +672,13 @@
                     triggerSaveStatus();
                 }
             });
+            // Close export menu when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('#exportBtn') && !e.target.closest('#exportMenu')) {
+                    exportMenu.classList.add('hidden');
+                }
+            });
+
             document.getElementById('textColorPicker').addEventListener('input', (e) => textColorIndicator.style.backgroundColor = e.target.value);
             document.getElementById('bgColorPicker').addEventListener('input', (e) => bgColorIndicator.style.backgroundColor = e.target.value);
 
@@ -677,8 +717,10 @@
                     document.getElementById('logoutBtn').classList.remove('hidden');
                     document.getElementById('docTitleInput').readOnly = false;
                     document.getElementById('docTitleInput').classList.remove('cursor-default');
-                    // Enable category select if editing
-                    if(isEditMode) docCategorySelect.disabled = false;
+                    
+                    // IMPROVED: Enable metadata editing for Admin always
+                    docCategorySelect.disabled = false;
+                    addTagBtn.classList.remove('hidden');
                     
                     dbStatusIndicator.className = "w-2 h-2 rounded-full bg-green-500";
                     dbStatusText.innerText = user.email;
@@ -690,7 +732,10 @@
                     document.getElementById('logoutBtn').classList.add('hidden');
                     document.getElementById('docTitleInput').readOnly = true;
                     document.getElementById('docTitleInput').classList.add('cursor-default');
+                    
+                    // Disable for visitors
                     docCategorySelect.disabled = true;
+                    addTagBtn.classList.add('hidden');
 
                     dbStatusIndicator.className = "w-2 h-2 rounded-full bg-blue-400";
                     dbStatusText.innerText = "Mode Lecture Publique";
@@ -703,10 +748,7 @@
                     }
                 }
             });
-            
-            // Listen to settings first
             subscribeToSettings();
-            // Then docs
             subscribeToDocs();
         }
 
@@ -716,20 +758,18 @@
             onSnapshot(settingsRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    globalCategories = data.categories || ['Général'];
+                    globalCategories = data.categories || [];
                     globalTags = data.tags || [];
                 } else {
-                    // Initialize if missing (Admin only needs to trigger write eventually)
                     if (isAdmin) saveSettings(); 
                 }
                 
-                // Refresh UIs dependent on global lists
                 renderGlobalSettingsUI();
                 renderCategoryFilter();
-                renderTagFilters(); // Sidebar filter
+                renderTagFilters();
                 if (currentDocId) {
                     const doc = docs.find(d => d.id === currentDocId);
-                    if(doc) renderDocMeta(doc); // Re-render tags in header
+                    if(doc) renderDocMeta(doc);
                 }
             });
         }
@@ -748,28 +788,43 @@
             }
         }
 
-        // --- SETTINGS UI FUNCTIONS ---
-        function openSettingsModal() { settingsModal.classList.remove('hidden'); }
+        // --- SETTINGS UI FUNCTIONS (ADD/EDIT/DELETE) ---
+        function openSettingsModal() { 
+            cancelEdit(); 
+            settingsModal.classList.remove('hidden'); 
+        }
         function closeSettingsModal() { settingsModal.classList.add('hidden'); }
 
         function renderGlobalSettingsUI() {
-            // Categories
             globalCategoriesList.innerHTML = globalCategories.map(cat => `
                 <li class="flex justify-between items-center bg-gray-50 dark:bg-gray-700 p-2 rounded">
                     <span>${cat}</span>
-                    <button onclick="deleteGlobalCategory('${cat}')" class="text-red-500 hover:text-red-700"><i class="ph ph-trash"></i></button>
+                    <div class="flex gap-2">
+                        <button onclick="startEditCategory('${cat}')" class="text-blue-500 hover:text-blue-700" title="Renommer"><i class="ph ph-pencil-simple"></i></button>
+                        <button onclick="deleteGlobalCategory('${cat}')" class="text-red-500 hover:text-red-700" title="Supprimer"><i class="ph ph-trash"></i></button>
+                    </div>
                 </li>
             `).join('');
 
-            // Tags
             globalTagsList.innerHTML = globalTags.map(tag => `
                 <div class="flex items-center gap-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-full text-xs border border-blue-100 dark:border-blue-800">
                     <span>${tag}</span>
-                    <button onclick="deleteGlobalTag('${tag}')" class="hover:text-red-500"><i class="ph ph-x"></i></button>
+                    <button onclick="startEditTag('${tag}')" class="ml-1 text-blue-400 hover:text-blue-600" title="Renommer"><i class="ph ph-pencil-simple"></i></button>
+                    <button onclick="deleteGlobalTag('${tag}')" class="hover:text-red-500" title="Supprimer"><i class="ph ph-x"></i></button>
                 </div>
             `).join('');
         }
 
+        function cancelEdit() {
+            editingItemType = null;
+            editingItemOldValue = null;
+            newCategoryInput.value = '';
+            newTagInput.value = '';
+            catBtnContainer.innerHTML = `<button onclick="addGlobalCategory()" class="bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700"><i class="ph ph-plus"></i></button>`;
+            tagBtnContainer.innerHTML = `<button onclick="addGlobalTag()" class="bg-green-600 text-white px-3 py-2 rounded text-sm hover:bg-green-700"><i class="ph ph-plus"></i></button>`;
+        }
+
+        // --- CATEGORY ACTIONS ---
         function addGlobalCategory() {
             const val = newCategoryInput.value.trim();
             if (val && !globalCategories.includes(val)) {
@@ -787,6 +842,18 @@
             }
         }
 
+        function startEditCategory(oldName) {
+            editingItemType = 'category';
+            editingItemOldValue = oldName;
+            newCategoryInput.value = oldName;
+            newCategoryInput.focus();
+            catBtnContainer.innerHTML = `
+                <button onclick="confirmUpdate('category')" class="bg-green-600 text-white px-3 py-2 rounded text-sm hover:bg-green-700"><i class="ph ph-check"></i></button>
+                <button onclick="cancelEdit()" class="bg-gray-400 text-white px-3 py-2 rounded text-sm hover:bg-gray-500"><i class="ph ph-x"></i></button>
+            `;
+        }
+
+        // --- TAG ACTIONS ---
         function addGlobalTag() {
             const val = newTagInput.value.trim();
             if (val && !globalTags.includes(val)) {
@@ -802,6 +869,64 @@
                 globalTags = globalTags.filter(t => t !== tag);
                 saveSettings();
             }
+        }
+
+        function startEditTag(oldName) {
+            editingItemType = 'tag';
+            editingItemOldValue = oldName;
+            newTagInput.value = oldName;
+            newTagInput.focus();
+            tagBtnContainer.innerHTML = `
+                <button onclick="confirmUpdate('tag')" class="bg-green-600 text-white px-3 py-2 rounded text-sm hover:bg-green-700"><i class="ph ph-check"></i></button>
+                <button onclick="cancelEdit()" class="bg-gray-400 text-white px-3 py-2 rounded text-sm hover:bg-gray-500"><i class="ph ph-x"></i></button>
+            `;
+        }
+
+        // --- UPDATE LOGIC (BATCH UPDATE DOCS) ---
+        async function confirmUpdate(type) {
+            const input = type === 'category' ? newCategoryInput : newTagInput;
+            const newVal = input.value.trim();
+            const oldVal = editingItemOldValue;
+
+            if (!newVal || newVal === oldVal) {
+                cancelEdit();
+                return;
+            }
+
+            if (type === 'category') {
+                const index = globalCategories.indexOf(oldVal);
+                if (index !== -1) globalCategories[index] = newVal;
+                globalCategories.sort();
+            } else {
+                const index = globalTags.indexOf(oldVal);
+                if (index !== -1) globalTags[index] = newVal;
+                globalTags.sort();
+            }
+
+            await saveSettings();
+
+            showToast("Mise à jour des documents...", "info");
+            let updateCount = 0;
+
+            for (const docData of docs) {
+                let changed = false;
+                if (type === 'category' && docData.category === oldVal) {
+                    docData.category = newVal;
+                    changed = true;
+                }
+                if (type === 'tag' && docData.tags && docData.tags.includes(oldVal)) {
+                    docData.tags = docData.tags.map(t => t === oldVal ? newVal : t);
+                    changed = true;
+                }
+
+                if (changed) {
+                    await saveDocToFirebase(docData);
+                    updateCount++;
+                }
+            }
+
+            if (updateCount > 0) showToast(`${updateCount} document(s) mis à jour`);
+            cancelEdit();
         }
 
         // --- DOCS SUBSCRIPTION ---
@@ -825,12 +950,10 @@
                         editorWrapper.classList.add('hidden');
                         window.location.hash = ''; 
                     } else {
-                        // Update UI if changed remotely
                         if(!isEditMode && markdownEditor.value !== currentDoc.content) {
                             renderPreview(currentDoc.content, currentDoc.format);
                             if(!isAdmin) markdownEditor.value = currentDoc.content;
                         }
-                        // Refresh meta (tags/category might have changed)
                         renderDocMeta(currentDoc);
                     }
                 }
@@ -839,7 +962,6 @@
 
         // --- FILTERS UI ---
         function renderCategoryFilter() {
-            // Preserve selection
             const currentVal = categoryFilterEl.value;
             let html = '<option value="">Toutes les catégories</option>';
             globalCategories.forEach(cat => {
@@ -850,7 +972,6 @@
         }
 
         function renderTagFilters() {
-            // Sidebar filter chips (from global list)
             let html = `<button onclick="filterByTag(null)" class="text-[10px] px-2 py-0.5 rounded-full border transition-colors ${!activeTagFilter ? 'bg-blue-600 text-white border-blue-600' : 'bg-transparent text-gray-500 border-gray-600 hover:border-gray-400'}">Tout</button>`;
             
             globalTags.forEach(tag => {
@@ -869,7 +990,6 @@
         // --- DOC LIST RENDERING ---
         function renderDocList(filter = '') {
             docListEl.innerHTML = '';
-            
             activeCategoryFilter = categoryFilterEl.value;
 
             const filtered = docs.filter(d => {
@@ -893,7 +1013,6 @@
                 let icon = 'ph-file-text';
                 if(doc.format === 'markdown') icon = 'ph-markdown-logo';
                 
-                // Chips for list
                 let tagsHtml = '';
                 if(doc.tags && doc.tags.length > 0) {
                     tagsHtml = `<div class="mt-1 flex flex-wrap gap-1">
@@ -947,18 +1066,44 @@
             renderDocList(searchInput.value, false);
         }
 
+        // *** RESTORED TRIGGER SAVE STATUS & UPDATE STATS ***
+        let saveTimeout;
+        function triggerSaveStatus() {
+            saveStatus.style.opacity = '1';
+            clearTimeout(saveTimeout);
+            saveStatus.innerText = "Sauvegarde...";
+            saveTimeout = setTimeout(() => {
+                saveStatus.innerText = "Synchronisé";
+                setTimeout(() => { saveStatus.style.opacity = '0'; }, 1000);
+            }, 800);
+        }
+
+        function updateStats() {
+            const text = markdownEditor.value || '';
+            const words = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
+            wordCountEl.innerText = `${words} mots`;
+            const minutes = Math.ceil(words / 200);
+            readTimeEl.innerText = minutes < 1 ? '< 1 min' : `${minutes} min`;
+        }
+
         function renderDocMeta(doc) {
-            // 1. Populate Category Dropdown from Global List
             let catHtml = '<option value="">Aucune catégorie</option>';
-            globalCategories.forEach(cat => {
-                const selected = doc.category === cat ? 'selected' : '';
+            const currentCat = doc.category || '';
+            const allCats = [...globalCategories];
+            
+            if (currentCat && !allCats.includes(currentCat)) {
+                allCats.push(currentCat);
+                allCats.sort();
+            }
+
+            allCats.forEach(cat => {
+                const selected = currentCat === cat ? 'selected' : '';
                 catHtml += `<option value="${cat}" ${selected}>${cat}</option>`;
             });
+            
             docCategorySelect.innerHTML = catHtml;
-            docCategorySelect.value = doc.category || '';
+            docCategorySelect.value = currentCat;
 
-            // 2. Render Tags Chips
-            // Clear current tags except the Add Button
             const children = Array.from(docTagsContainer.children);
             children.forEach(child => {
                 if (child.id !== 'addTagBtn') child.remove();
@@ -968,7 +1113,7 @@
                 doc.tags.forEach(tag => {
                     const chip = document.createElement('span');
                     chip.className = 'tag-chip text-xs';
-                    chip.innerHTML = `<i class="ph ph-tag mr-1"></i> ${tag}`;
+                    chip.innerHTML = `<i class="ph ph-tag mr-1"></i> ${tag} <button onclick="removeDocTag('${tag}')" class="remove-tag-btn auth-only"><i class="ph ph-x"></i></button>`;
                     docTagsContainer.insertBefore(chip, addTagBtn);
                 });
             }
@@ -992,7 +1137,7 @@
             renderDocList(searchInput.value, false);
         }
 
-        // --- TAG SELECTION MODAL ---
+        // --- TAG MANAGEMENT ---
         function openTagSelectionModal() {
             if (!currentDocId || !isAdmin) return;
             const doc = docs.find(d => d.id === currentDocId);
@@ -1035,6 +1180,18 @@
             renderDocList(searchInput.value, false);
         }
 
+        function removeDocTag(tag) {
+            if (!currentDocId || !isAdmin) return;
+            const doc = docs.find(d => d.id === currentDocId);
+            if (!doc.tags) return;
+
+            doc.tags = doc.tags.filter(t => t !== tag);
+            doc.updatedAt = Date.now();
+            saveDocToFirebase(doc);
+            renderDocMeta(doc);
+            renderDocList(searchInput.value, false);
+        }
+
         // --- COLOR LOGIC ---
         function applyColor(type, value) {
             if (!currentDocId || !isAdmin) return;
@@ -1070,7 +1227,7 @@
             textarea.focus();
         }
 
-        // --- FORMAT LOGIC (Re-added) ---
+        // --- FORMAT LOGIC ---
         function applyFormat(type) {
             if (!currentDocId || !isAdmin) return;
             const doc = docs.find(d => d.id === currentDocId);
@@ -1208,19 +1365,21 @@
                 previewArea.classList.add('hidden');
                 markdownEditor.classList.remove('hidden');
                 markdownEditor.focus();
-                docCategorySelect.disabled = false;
-                addTagBtn.classList.remove('hidden');
+                // docCategorySelect/addTagBtn controlled by isAdmin in initAuth now
                 toggleIcon.classList.replace('ph-pencil-simple', 'ph-eye');
                 viewToggleBtn.classList.add('bg-blue-50', 'text-blue-600', 'dark:bg-blue-900/30', 'dark:text-blue-400');
             } else {
                 markdownEditor.classList.add('hidden');
                 previewArea.classList.remove('hidden');
-                docCategorySelect.disabled = true;
-                addTagBtn.classList.add('hidden');
                 toggleIcon.classList.replace('ph-eye', 'ph-pencil-simple');
                 viewToggleBtn.classList.remove('bg-blue-50', 'text-blue-600', 'dark:bg-blue-900/30', 'dark:text-blue-400');
             }
             updateUIForFormat(docFormatSelect.value);
+        }
+
+        // --- EXPORT TOGGLE (FIXED) ---
+        function toggleExportMenu() {
+            exportMenu.classList.toggle('hidden');
         }
 
         // --- HELPERS (Paste, Scroll, Router, Login...) ---
@@ -1382,8 +1541,14 @@
         }
         function toggleTOC() {
             isTOCOpen = !isTOCOpen;
-            if(isTOCOpen) { tocPanel.classList.add('open'); tocToggleBtn.classList.add('bg-gray-100', 'dark:bg-gray-800', 'text-blue-600', 'dark:text-blue-400'); updateTOC(); }
-            else { tocPanel.classList.remove('open'); tocToggleBtn.classList.remove('bg-gray-100', 'dark:bg-gray-800', 'text-blue-600', 'dark:text-blue-400'); }
+            if(isTOCOpen) { 
+                tocPanel.classList.add('open'); 
+                tocToggleBtn.classList.add('bg-blue-50', 'text-blue-600', 'border-blue-200', 'dark:bg-blue-900/30', 'dark:text-blue-400', 'dark:border-blue-800'); 
+                updateTOC(); 
+            } else { 
+                tocPanel.classList.remove('open'); 
+                tocToggleBtn.classList.remove('bg-blue-50', 'text-blue-600', 'border-blue-200', 'dark:bg-blue-900/30', 'dark:text-blue-400', 'dark:border-blue-800'); 
+            }
         }
         // Simplified TOC update for v5 context (same logic)
         function updateTOC() {
