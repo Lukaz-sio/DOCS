@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WikiDocs Ultimate V2</title>
+    <title>WikiDocs Cloud</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -31,33 +31,25 @@
     <style>
         body { font-family: 'Inter', sans-serif; }
         .markdown-preview { line-height: 1.7; word-wrap: break-word; }
-        .markdown-preview h1 { font-size: 2.25em; font-weight: 800; margin-bottom: 0.5em; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.3em; margin-top: 1em; scroll-margin-top: 80px; }
-        .markdown-preview h2 { font-size: 1.75em; font-weight: 700; margin-top: 1.5em; margin-bottom: 0.5em; scroll-margin-top: 80px; }
-        .markdown-preview h3 { font-size: 1.5em; font-weight: 600; margin-top: 1.25em; margin-bottom: 0.5em; scroll-margin-top: 80px; }
+        .markdown-preview h1 { font-size: 2.25em; font-weight: 800; margin-bottom: 0.5em; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.3em; }
+        .markdown-preview h2 { font-size: 1.75em; font-weight: 700; margin-top: 1.5em; margin-bottom: 0.5em; }
+        .markdown-preview h3 { font-size: 1.5em; font-weight: 600; margin-top: 1.25em; margin-bottom: 0.5em; }
         .markdown-preview p { margin-bottom: 1em; }
         .markdown-preview ul { display: block; list-style-type: disc !important; padding-left: 2.5em !important; margin-bottom: 1em; }
         .markdown-preview ol { display: block; list-style-type: decimal !important; padding-left: 2.5em !important; margin-bottom: 1em; }
         .markdown-preview li { display: list-item; margin-bottom: 0.25em; }
         
-        /* WikiLinks Style */
-        .wikilink { color: #8b5cf6; font-weight: 600; text-decoration: none; border-bottom: 1px dashed #8b5cf6; cursor: pointer; transition: all 0.2s; }
-        .wikilink:hover { background-color: #f3e8ff; border-bottom-style: solid; }
-        .dark .wikilink:hover { background-color: #4c1d95; }
+        /* Italique standard */
+        .markdown-preview em, .markdown-preview i { 
+            font-style: italic; 
+        }
 
-        /* TOC Panel */
-        .toc-container { position: sticky; top: 0; align-self: flex-start; max-height: 100vh; overflow-y: auto; }
-        .toc-link { display: block; text-decoration: none; color: #6b7280; font-size: 0.85em; margin-bottom: 0.4em; transition: color 0.2s; border-left: 2px solid transparent; padding-left: 0.8em; }
-        .toc-link:hover { color: #3b82f6; }
-        .toc-link.active { color: #2563eb; border-left-color: #2563eb; font-weight: 500; }
-        .toc-h1 { margin-left: 0; }
-        .toc-h2 { margin-left: 1em; }
-        .toc-h3 { margin-left: 2em; }
-
-        /* Drag Overlay */
-        .drag-overlay { position: absolute; inset: 0; background: rgba(59, 130, 246, 0.1); border: 2px dashed #3b82f6; display: flex; align-items: center; justify-content: center; z-index: 50; pointer-events: none; opacity: 0; transition: opacity 0.2s; }
-        .drag-active .drag-overlay { opacity: 1; }
-
-        /* Standard Markdown Elements */
+        .markdown-preview li:has(> input[type="checkbox"]) { list-style-type: none !important; padding-left: 0 !important; display: flex; align-items: flex-start; gap: 0.5em; margin-left: -1em; }
+        .markdown-preview input[type="checkbox"] { margin-top: 0.4em; cursor: pointer; flex-shrink: 0; width: 1.1em; height: 1.1em; }
+        .markdown-preview code { background-color: rgba(0,0,0,0.05); padding: 0.2em 0.4em; border-radius: 0.25em; font-family: 'Menlo', monospace; font-size: 0.9em; color: #db2777; }
+        .dark .markdown-preview code { background-color: rgba(255,255,255,0.1); color: #f472b6; }
+        .markdown-preview pre { background-color: #1f2937; color: #f9fafb; padding: 1em; border-radius: 0.5em; overflow-x: auto; margin-bottom: 1em; }
+        .markdown-preview pre code { background-color: transparent; color: inherit; padding: 0; }
         .markdown-preview blockquote { border-left: 4px solid #3b82f6; padding-left: 1em; font-style: italic; background-color: rgba(59, 130, 246, 0.1); padding: 0.5em; border-radius: 0 0.5em 0.5em 0; margin-bottom: 1em;}
         .markdown-preview a { color: #2563eb; text-decoration: underline; }
         .dark .markdown-preview a { color: #60a5fa; }
@@ -70,22 +62,25 @@
         .dark .markdown-preview th { background-color: rgba(255,255,255,0.05); }
         .markdown-preview hr { border: 0; border-top: 2px solid #e5e7eb; margin: 2em 0; }
         .dark .markdown-preview hr { border-color: #374151; }
-        .markdown-preview pre { background-color: #1f2937; color: #f9fafb; padding: 1em; border-radius: 0.5em; overflow-x: auto; margin-bottom: 1em; }
-        
-        /* UI States */
-        .auth-only { display: none !important; }
-        .is-admin .auth-only { display: flex !important; }
-        .is-admin .auth-only-block { display: block !important; }
-        
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        .preview-text { white-space: pre-wrap; font-family: 'Courier New', monospace; }
+        .fade-in { animation: fadeIn 0.2s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .dark ::-webkit-scrollbar-thumb { background: #4b5563; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         .split-active .editor-pane { display: block !important; width: 50%; border-right: 1px solid #e5e7eb; }
         .dark .split-active .editor-pane { border-right: 1px solid #374151; }
         .split-active .preview-pane { display: block !important; width: 50%; }
+        .tool-btn:active { transform: scale(0.95); }
         .color-picker-wrapper { position: relative; display: inline-block; }
         .color-input-hidden { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+        
+        /* UI States based on Auth */
+        .auth-only { display: none !important; }
+        .is-admin .auth-only { display: flex !important; }
+        .is-admin .auth-only-block { display: block !important; }
     </style>
 </head>
 <body class="h-screen flex flex-col md:flex-row overflow-hidden bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-200">
@@ -95,7 +90,7 @@
         <div class="p-4 border-b border-gray-800 flex justify-between items-center bg-gray-950">
             <h1 class="text-xl font-bold flex items-center gap-2 text-blue-400">
                 <i class="ph ph-books text-2xl"></i>
-                WikiDocs <span class="text-xs bg-purple-600 text-white px-1.5 py-0.5 rounded ml-1">V2</span>
+                WikiDocs <span class="text-xs bg-purple-600 text-white px-1.5 py-0.5 rounded ml-1">Cloud</span>
             </h1>
             <div class="flex items-center gap-2">
                 <button onclick="toggleDarkMode()" class="text-gray-400 hover:text-yellow-400 transition-colors p-1" title="Mode Sombre/Clair">
@@ -107,11 +102,12 @@
         <div class="p-3 bg-gray-900">
             <div class="relative">
                 <i class="ph ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
-                <input type="text" id="searchInput" placeholder="Recherche (titre, contenu)..." 
+                <input type="text" id="searchInput" placeholder="Rechercher..." 
                        class="w-full bg-gray-800 text-sm text-white rounded-lg pl-9 pr-3 py-2 border border-gray-700 focus:outline-none focus:border-blue-500 transition-colors placeholder-gray-500">
             </div>
         </div>
 
+        <!-- Connection Status -->
         <div class="px-4 py-2 text-xs flex items-center gap-2 border-b border-gray-800">
             <div id="dbStatusIndicator" class="w-2 h-2 rounded-full bg-red-500"></div>
             <span id="dbStatusText" class="text-gray-400">Déconnecté</span>
@@ -121,21 +117,30 @@
             <div class="text-center text-gray-500 mt-10 text-sm">Chargement...</div>
         </div>
 
+        <!-- Auth Controls -->
         <div class="p-4 border-t border-gray-800 bg-gray-900 flex flex-col gap-2">
+            
+            <!-- Boutons Édition (Cachés par défaut) -->
             <div class="auth-only-block hidden space-y-2">
                 <button onclick="createNewDoc()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-all shadow-lg">
-                    <i class="ph ph-plus-circle text-lg"></i> Nouveau Doc
+                    <i class="ph ph-plus-circle text-lg"></i>
+                    Nouveau Doc
                 </button>
                 <label class="w-full cursor-pointer bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-all text-sm border border-gray-700">
-                    <i class="ph ph-upload-simple text-lg"></i> Importer
+                    <i class="ph ph-upload-simple text-lg"></i>
+                    Importer
                     <input type="file" id="fileInput" class="hidden" accept=".md,.txt,.html" onchange="handleFileUpload(this)">
                 </label>
             </div>
+
+            <!-- Login / Logout -->
             <button id="loginBtn" onclick="openLoginModal()" class="w-full border border-gray-600 hover:bg-gray-800 text-gray-300 py-2 px-4 rounded-lg flex items-center justify-center gap-2 text-sm transition-colors">
-                <i class="ph ph-sign-in text-lg"></i> Connexion
+                <i class="ph ph-sign-in text-lg"></i>
+                Connexion
             </button>
             <button id="logoutBtn" onclick="logoutAdmin()" class="hidden w-full border border-red-900/50 text-red-400 hover:bg-red-900/20 py-2 px-4 rounded-lg flex items-center justify-center gap-2 text-sm transition-colors">
-                <i class="ph ph-sign-out text-lg"></i> Déconnexion
+                <i class="ph ph-sign-out text-lg"></i>
+                Déconnexion
             </button>
         </div>
     </aside>
@@ -157,21 +162,15 @@
             
             <!-- Top Bar -->
             <header class="h-16 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-4 md:px-6 bg-white dark:bg-gray-900 flex-shrink-0 gap-4 transition-colors">
-                <div class="flex-1 flex flex-col justify-center min-w-0">
-                    <!-- Title & Folder Input -->
+                <div class="flex-1 min-w-0">
+                    <!-- Title Input (Editable only if admin) -->
                     <input type="text" id="docTitleInput" placeholder="Titre du document" readonly
                            class="w-full text-lg md:text-xl font-bold text-gray-800 dark:text-gray-100 placeholder-gray-300 dark:placeholder-gray-600 border-none focus:ring-0 focus:outline-none bg-transparent truncate cursor-default auth-cursor-text"
                            oninput="updateCurrentTitle()">
-                    
-                    <div class="flex items-center gap-2 text-xs text-gray-500 auth-only">
-                        <i class="ph ph-folder"></i>
-                        <input type="text" id="docFolderInput" placeholder="Dossier (ex: Projets)" 
-                               class="bg-transparent border-b border-dashed border-gray-300 focus:border-blue-500 focus:outline-none w-32"
-                               onchange="updateCurrentFolder()">
-                    </div>
                 </div>
                 
                 <div class="flex items-center gap-2 md:gap-3 flex-shrink-0 auth-only">
+                    <!-- Format Selector -->
                     <div class="relative group hidden md:block">
                         <select id="docFormatSelect" onchange="updateCurrentFormat()" 
                                 class="appearance-none bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded-md py-1.5 pl-3 pr-8 leading-tight focus:outline-none focus:border-blue-500 cursor-pointer">
@@ -179,25 +178,36 @@
                             <option value="html">HTML</option>
                             <option value="text">Texte Brut</option>
                         </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500"><i class="ph ph-caret-down text-xs"></i></div>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+                            <i class="ph ph-caret-down text-xs"></i>
+                        </div>
                     </div>
+
                     <div class="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-1 hidden md:block"></div>
-                    <button onclick="toggleSplitView()" class="hidden md:flex p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors" title="Vue Partagée"><i id="splitIcon" class="ph ph-columns text-xl"></i></button>
-                    <button onclick="toggleEditMode()" id="viewToggleBtn" class="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg flex items-center gap-2 transition-colors border border-transparent" title="Éditer"><i class="ph ph-pencil-simple text-xl" id="toggleIcon"></i></button>
-                    <button onclick="showDeleteConfirm()" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" title="Supprimer"><i class="ph ph-trash text-xl"></i></button>
+                    
+                    <button onclick="toggleSplitView()" class="hidden md:flex p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors" title="Vue Partagée">
+                        <i id="splitIcon" class="ph ph-columns text-xl"></i>
+                    </button>
+
+                    <button onclick="toggleEditMode()" id="viewToggleBtn" 
+                            class="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg flex items-center gap-2 transition-colors border border-transparent"
+                            title="Éditer">
+                        <i class="ph ph-pencil-simple text-xl" id="toggleIcon"></i>
+                    </button>
+
+                    <button onclick="showDeleteConfirm()" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" title="Supprimer">
+                        <i class="ph ph-trash text-xl"></i>
+                    </button>
                 </div>
-                <button onclick="exportDoc()" class="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-blue-600 rounded-lg transition-colors" title="Télécharger"><i class="ph ph-download-simple text-xl"></i></button>
+                
+                <!-- Export is available for everyone -->
+                <button onclick="exportDoc()" class="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-blue-600 rounded-lg transition-colors" title="Télécharger">
+                    <i class="ph ph-download-simple text-xl"></i>
+                </button>
             </header>
 
             <!-- Adaptive Toolbar (Auth Only) -->
             <div id="formatToolbar" class="auth-only h-10 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 items-center px-2 gap-1 overflow-x-auto hidden flex-shrink-0 transition-colors">
-                <!-- Headers -->
-                <button onclick="applyFormat('h1')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 font-bold text-xs" title="Titre 1">H1</button>
-                <button onclick="applyFormat('h2')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 font-bold text-xs" title="Titre 2">H2</button>
-                <button onclick="applyFormat('h3')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 font-bold text-xs" title="Titre 3">H3</button>
-                
-                <div class="w-px h-4 bg-gray-300 dark:bg-gray-600 mx-1"></div>
-                
                 <button onclick="applyFormat('bold')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Gras"><i class="ph ph-text-b text-lg"></i></button>
                 <button onclick="applyFormat('italic')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Italique"><i class="ph ph-text-i text-lg"></i></button>
                 <button onclick="applyFormat('strike')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Barré"><i class="ph ph-text-strikethrough text-lg"></i></button>
@@ -213,6 +223,7 @@
                     <input type="color" id="bgColorPicker" class="color-input-hidden" oninput="applyColor('bg', this.value)" value="#fde047">
                 </div>
                 <div class="w-px h-4 bg-gray-300 dark:bg-gray-600 mx-1"></div>
+                <button onclick="applyFormat('heading')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Titre"><i class="ph ph-text-h text-lg"></i></button>
                 <button onclick="applyFormat('list-ul')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Liste à puces"><i class="ph ph-list-bullets text-lg"></i></button>
                 <button onclick="applyFormat('list-ol')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Liste numérotée"><i class="ph ph-list-numbers text-lg"></i></button>
                 <button onclick="applyFormat('check')" class="tool-btn p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Tâche"><i class="ph ph-check-square text-lg"></i></button>
@@ -227,30 +238,13 @@
             <!-- Content Area -->
             <div id="contentContainer" class="flex-1 overflow-hidden relative group flex flex-row">
                 <!-- Zone de texte (Mode Édition) -->
-                <div class="relative h-full w-full" id="editorPaneWrapper">
-                    <textarea id="markdownEditor" 
-                              class="editor-pane w-full h-full p-6 md:p-8 resize-none focus:outline-none font-mono text-sm leading-relaxed text-gray-800 bg-gray-50 dark:bg-gray-850 dark:text-gray-200 hidden border-r-0"
-                              placeholder="Commencez à écrire ici... Glissez une image pour l'insérer." spellcheck="false"></textarea>
-                    
-                    <!-- Drag Overlay -->
-                    <div id="dragOverlay" class="drag-overlay">
-                        <div class="text-blue-500 font-bold text-xl bg-white dark:bg-gray-800 p-4 rounded shadow-lg">
-                            <i class="ph ph-image text-3xl block mx-auto mb-2"></i>
-                            Relâchez pour insérer l'image
-                        </div>
-                    </div>
-                </div>
+                <textarea id="markdownEditor" 
+                          class="editor-pane w-full h-full p-6 md:p-8 resize-none focus:outline-none font-mono text-sm leading-relaxed text-gray-800 bg-gray-50 dark:bg-gray-850 dark:text-gray-200 hidden border-r-0"
+                          placeholder="Commencez à écrire ici..." spellcheck="false"></textarea>
                 
                 <!-- Zone de prévisualisation (Mode Lecture) -->
-                <div id="previewWrapper" class="preview-pane w-full h-full flex flex-row hidden">
-                    <div id="previewArea" class="flex-1 markdown-preview h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors">
-                        <!-- Rendu ici -->
-                    </div>
-                    <!-- Table of Contents -->
-                    <div id="tocContainer" class="toc-container w-48 hidden lg:block bg-gray-50 dark:bg-gray-850 border-l border-gray-200 dark:border-gray-700 p-4 flex-shrink-0 text-sm">
-                        <div class="font-bold text-gray-500 dark:text-gray-400 mb-2 uppercase text-xs tracking-wider">Sommaire</div>
-                        <div id="tocList"></div>
-                    </div>
+                <div id="previewArea" class="preview-pane markdown-preview w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors">
+                    <!-- Rendu ici -->
                 </div>
             </div>
             
@@ -288,13 +282,23 @@
     <div id="deleteModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center fade-in">
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-11/12 max-w-sm transform scale-100 transition-transform border border-gray-100 dark:border-gray-700">
             <div class="text-center">
-                <div class="mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-red-50 dark:bg-red-900/20 mb-4"><i class="ph ph-trash text-red-500 text-3xl"></i></div>
+                <div class="mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-red-50 dark:bg-red-900/20 mb-4">
+                    <i class="ph ph-trash text-red-500 text-3xl"></i>
+                </div>
                 <h3 class="text-xl font-bold text-gray-900 dark:text-white">Supprimer ?</h3>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Cette action supprimera définitivement <strong id="deleteDocTitle" class="text-gray-800 dark:text-gray-200">ce document</strong>.</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                    Cette action supprimera définitivement <strong id="deleteDocTitle" class="text-gray-800 dark:text-gray-200">ce document</strong> de la base Firebase.
+                </p>
             </div>
             <div class="mt-6 flex gap-3">
-                <button onclick="closeDeleteModal()" class="flex-1 justify-center rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2.5 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 font-medium transition-colors">Annuler</button>
-                <button onclick="confirmDelete()" class="flex-1 justify-center rounded-lg px-4 py-2.5 bg-red-600 text-white hover:bg-red-700 font-medium shadow-lg shadow-red-500/30 transition-colors">Supprimer</button>
+                <button onclick="closeDeleteModal()" 
+                        class="flex-1 justify-center rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2.5 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 font-medium transition-colors">
+                    Annuler
+                </button>
+                <button onclick="confirmDelete()" 
+                        class="flex-1 justify-center rounded-lg px-4 py-2.5 bg-red-600 text-white hover:bg-red-700 font-medium shadow-lg shadow-red-500/30 transition-colors">
+                    Supprimer
+                </button>
             </div>
         </div>
     </div>
@@ -310,6 +314,7 @@
         import { getAuth, signInWithCustomToken, signInAnonymously, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
         import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
+        // --- FIREBASE CONFIGURATION ---
         const firebaseConfig = {
             apiKey: "AIzaSyC57xDrplkTksyVMgEItGRu-HIo3-MFbRg",
             authDomain: "wiki-b6d3f.firebaseapp.com",
@@ -323,27 +328,29 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        
+        // Nom de la collection à la racine de votre base de données
         const collectionName = 'wiki_documents';
         
         let currentUser = null;
-        let isAdmin = false; 
+        let isAdmin = false; // "Login" state for UI
+
+        // --- DATA STATE ---
         let docs = [];
         let currentDocId = null;
         let isEditMode = false;
         let isSplitView = false;
         let isDarkMode = false;
 
-        // Elements
+        // --- DOM REFS ---
         const docListEl = document.getElementById('docList');
         const searchInput = document.getElementById('searchInput');
         const emptyState = document.getElementById('emptyState');
         const editorWrapper = document.getElementById('editorWrapper');
         const docTitleInput = document.getElementById('docTitleInput');
-        const docFolderInput = document.getElementById('docFolderInput');
         const docFormatSelect = document.getElementById('docFormatSelect');
         const markdownEditor = document.getElementById('markdownEditor');
         const previewArea = document.getElementById('previewArea');
-        const previewWrapper = document.getElementById('previewWrapper');
         const formatToolbar = document.getElementById('formatToolbar');
         const viewToggleBtn = document.getElementById('viewToggleBtn');
         const toggleIcon = document.getElementById('toggleIcon');
@@ -362,57 +369,13 @@
         const bgColorIndicator = document.getElementById('bgColorIndicator');
         const dbStatusIndicator = document.getElementById('dbStatusIndicator');
         const dbStatusText = document.getElementById('dbStatusText');
-        const tocList = document.getElementById('tocList');
-        const tocContainer = document.getElementById('tocContainer');
-        const dragOverlay = document.getElementById('dragOverlay');
 
+        // --- INIT ---
         window.addEventListener('DOMContentLoaded', async () => {
-            exposeGlobals();
-            initTheme();
-            
-            const renderer = new marked.Renderer();
-            const originalParagraph = renderer.paragraph.bind(renderer);
-            
-            marked.setOptions({
-                breaks: true,
-                gfm: true,
-                renderer: renderer,
-                highlight: function(code, lang) {
-                    const language = highlight.getLanguage(lang) ? lang : 'plaintext';
-                    return highlight.highlight(code, { language }).value;
-                },
-                langPrefix: 'hljs language-'
-            });
-
-            await initAuth();
-            
-            searchInput.addEventListener('input', (e) => renderDocList(e.target.value));
-            markdownEditor.addEventListener('input', () => {
-                updateCurrentContent();
-                updateStats();
-                triggerSaveStatus();
-            });
-            
-            const editorPane = document.getElementById('editorPaneWrapper');
-            editorPane.addEventListener('dragover', (e) => { e.preventDefault(); editorPane.classList.add('drag-active'); });
-            editorPane.addEventListener('dragleave', (e) => { e.preventDefault(); editorPane.classList.remove('drag-active'); });
-            editorPane.addEventListener('drop', handleImageDrop);
-
-            document.addEventListener('keydown', (e) => {
-                if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-                    e.preventDefault();
-                    triggerSaveStatus();
-                }
-            });
-            document.getElementById('textColorPicker').addEventListener('input', (e) => textColorIndicator.style.backgroundColor = e.target.value);
-            document.getElementById('bgColorPicker').addEventListener('input', (e) => bgColorIndicator.style.backgroundColor = e.target.value);
-        });
-
-        function exposeGlobals() {
+            // FIX: Expose functions immediately before any async calls
             window.createNewDoc = createNewDoc;
             window.selectDoc = selectDoc;
             window.updateCurrentTitle = updateCurrentTitle;
-            window.updateCurrentFolder = updateCurrentFolder;
             window.updateCurrentFormat = updateCurrentFormat;
             window.toggleEditMode = toggleEditMode;
             window.toggleSplitView = toggleSplitView;
@@ -429,59 +392,151 @@
             window.checkLogin = checkLogin;
             window.logoutAdmin = logoutAdmin;
             window.handleLoginKey = handleLoginKey;
-            window.openWikiLink = openWikiLink;
+
+            initTheme();
+            
+            // Set Marked options
+            marked.setOptions({
+                breaks: true,
+                gfm: true,
+                highlight: function(code, lang) {
+                    const language = highlight.getLanguage(lang) ? lang : 'plaintext';
+                    return highlight.highlight(code, { language }).value;
+                },
+                langPrefix: 'hljs language-'
+            });
+
+            // Initialize Auth & Data
+            await initAuth();
+            
+            // Listeners
+            searchInput.addEventListener('input', (e) => renderDocList(e.target.value));
+            markdownEditor.addEventListener('input', () => {
+                updateCurrentContent();
+                updateStats();
+                triggerSaveStatus();
+            });
+            document.addEventListener('keydown', (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                    e.preventDefault();
+                    triggerSaveStatus();
+                }
+            });
+            document.getElementById('textColorPicker').addEventListener('input', (e) => textColorIndicator.style.backgroundColor = e.target.value);
+            document.getElementById('bgColorPicker').addEventListener('input', (e) => bgColorIndicator.style.backgroundColor = e.target.value);
+        });
+
+        // --- THEME & VIEW LOGIC ---
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem('wiki_theme');
+            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                setDarkMode(true);
+            }
         }
 
+        function toggleDarkMode() { setDarkMode(!isDarkMode); }
+
+        function setDarkMode(enable) {
+            isDarkMode = enable;
+            if (isDarkMode) {
+                document.documentElement.classList.add('dark');
+                themeIcon.classList.replace('ph-moon', 'ph-sun');
+                localStorage.setItem('wiki_theme', 'dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+                themeIcon.classList.replace('ph-sun', 'ph-moon');
+                localStorage.setItem('wiki_theme', 'light');
+            }
+        }
+
+        function toggleSplitView() {
+            if(window.innerWidth < 768) {
+                showToast("Vue partagée uniquement sur ordinateur", "info");
+                return;
+            }
+
+            isSplitView = !isSplitView;
+            if (isSplitView) {
+                contentContainer.classList.add('split-active');
+                splitIcon.classList.replace('ph-columns', 'ph-sidebar');
+                splitIcon.parentElement.classList.add('bg-blue-50', 'text-blue-600', 'dark:bg-blue-900/30', 'dark:text-blue-400');
+                if (isAdmin) {
+                    formatToolbar.classList.remove('hidden');
+                    formatToolbar.classList.add('flex');
+                }
+            } else {
+                contentContainer.classList.remove('split-active');
+                splitIcon.classList.replace('ph-sidebar', 'ph-columns');
+                splitIcon.parentElement.classList.remove('bg-blue-50', 'text-blue-600', 'dark:bg-blue-900/30', 'dark:text-blue-400');
+                toggleEditMode(isEditMode); 
+            }
+        }
+
+        // --- FIREBASE AUTH & FIRESTORE ---
         async function initAuth() {
+            // Surveille l'état de connexion (Admin ou rien du tout)
             onAuthStateChanged(auth, (user) => {
                 if (user) {
+                    // UTILISATEUR CONNECTÉ (Admin)
                     currentUser = user;
                     isAdmin = true;
+                    console.log("Connecté en tant que :", user.email);
+                    
                     document.body.classList.add('is-admin');
                     document.getElementById('loginBtn').classList.add('hidden');
                     document.getElementById('logoutBtn').classList.remove('hidden');
+                    
+                    // Activer l'édition du titre
                     document.getElementById('docTitleInput').readOnly = false;
                     document.getElementById('docTitleInput').classList.remove('cursor-default');
+                    
                     dbStatusIndicator.className = "w-2 h-2 rounded-full bg-green-500";
-                    dbStatusText.innerText = user.email;
+                    dbStatusText.innerText = user.email; // Affiche l'email
+                    
                 } else {
+                    // UTILISATEUR DÉCONNECTÉ (Visiteur / Lecture seule)
                     currentUser = null;
                     isAdmin = false;
+                    console.log("Mode Visiteur (Non connecté)");
+
                     document.body.classList.remove('is-admin');
                     document.getElementById('loginBtn').classList.remove('hidden');
                     document.getElementById('logoutBtn').classList.add('hidden');
+                    
+                    // Désactiver l'édition du titre
                     document.getElementById('docTitleInput').readOnly = true;
                     document.getElementById('docTitleInput').classList.add('cursor-default');
+
                     dbStatusIndicator.className = "w-2 h-2 rounded-full bg-blue-400";
                     dbStatusText.innerText = "Mode Lecture Publique";
                 }
+                
+                // Mettre à jour l'interface si un doc est ouvert
                 if (currentDocId) {
                     const doc = docs.find(d => d.id === currentDocId);
                     updateUIForFormat(doc ? doc.format : 'markdown');
                 }
             });
+            
+            // On lance l'écoute des données immédiatement (Lecture publique)
             subscribeToDocs();
         }
 
         function subscribeToDocs() {
             const docsRef = collection(db, collectionName);
+            
             onSnapshot(docsRef, (snapshot) => {
                 docs = [];
                 snapshot.forEach((doc) => {
                     docs.push({ id: doc.id, ...doc.data() });
                 });
-                docs.sort((a, b) => {
-                    if ((a.folder || '') < (b.folder || '')) return -1;
-                    if ((a.folder || '') > (b.folder || '')) return 1;
-                    return a.title.localeCompare(b.title);
-                });
+                // Tri par date de modification
+                docs.sort((a, b) => b.updatedAt - a.updatedAt);
                 
-                if (docs.length === 0 && isAdmin) {
-                    createDefaultDocs();
-                }
-
                 renderDocList(searchInput.value);
                 
+                // Si le document en cours est supprimé par quelqu'un d'autre
                 if (currentDocId) {
                     const currentDoc = docs.find(d => d.id === currentDocId);
                     if (!currentDoc) {
@@ -489,60 +544,113 @@
                         emptyState.classList.remove('hidden');
                         editorWrapper.classList.add('hidden');
                     } else if (!isEditMode && markdownEditor.value !== currentDoc.content) {
-                        // Refresh logic
+                        // Mise à jour live si on n'édite pas
+                        // (On évite d'écraser ce que l'admin tape s'il est en train d'écrire)
                     }
                 }
             }, (error) => {
-                console.error(error);
-                showToast("Erreur de synchronisation", "delete");
+                console.error("Firestore Error:", error);
+                if(error.code === 'permission-denied') {
+                    showToast("Erreur: Activez la lecture publique dans Firebase !", "delete");
+                    dbStatusText.innerText = "Accès refusé";
+                    dbStatusIndicator.className = "w-2 h-2 rounded-full bg-red-500";
+                } else {
+                    showToast("Erreur de synchronisation", "delete");
+                }
             });
         }
 
         async function saveDocToFirebase(docData) {
-            if (!currentUser) { showToast("Connectez-vous pour sauvegarder", "delete"); return; }
+            if (!currentUser) {
+                showToast("Connectez-vous pour sauvegarder", "delete");
+                return;
+            }
             try {
-                await setDoc(doc(db, collectionName, docData.id), docData);
-            } catch (e) { showToast("Erreur sauvegarde", "delete"); }
+                const docRef = doc(db, collectionName, docData.id);
+                await setDoc(docRef, docData);
+            } catch (e) {
+                console.error("Save error:", e);
+                if(e.code === 'permission-denied') showToast("Permission refusée (Écriture)", "delete");
+                else showToast("Erreur sauvegarde", "delete");
+            }
         }
 
         async function deleteDocFromFirebase(id) {
             if (!currentUser) return;
-            try { await deleteDoc(doc(db, collectionName, id)); } catch (e) { console.error(e); }
+            try {
+                const docRef = doc(db, collectionName, id);
+                await deleteDoc(docRef);
+            } catch (e) {
+                console.error("Delete error:", e);
+                if(e.code === 'permission-denied') showToast("Permission refusée (Suppression)", "delete");
+            }
         }
 
-        async function createDefaultDocs() {
-            const guideMD = {
-                id: crypto.randomUUID(),
-                title: 'Guide Markdown',
-                folder: 'Aide',
-                format: 'markdown',
-                content: '# Guide Markdown\n\nBienvenue ! Voici comment utiliser cet outil.\n\n## 1. Mise en forme de base\n**Gras**, *Italique*, ~~Barré~~, `Code`\n\n## 2. Listes\n- Élément A\n- Élément B\n  - Sous-élément\n\n1. Premier\n2. Deuxième\n\n## 3. WikiLinks\nVous pouvez lier des pages entre elles : [[Guide HTML]]\n\n## 4. Images\nGlissez-déposez une image ici !\n\n## 5. Table des matières\nRegardez sur la droite ->'
-            };
-            const guideHTML = {
-                id: crypto.randomUUID(),
-                title: 'Guide HTML',
-                folder: 'Aide',
-                format: 'html',
-                content: '<h1>Guide HTML</h1><p>Vous pouvez aussi écrire en <b>HTML brut</b>.</p><ul><li>Liste HTML</li><li><input type="checkbox" checked> Case cochée</li></ul><p>Lien vers <a href="#" onclick="openWikiLink(\'Guide Markdown\')">Guide Markdown</a></p>'
-            };
-            await saveDocToFirebase(guideMD);
-            await saveDocToFirebase(guideHTML);
+        // --- AUTH UI LOGIC ---
+        function openLoginModal() { document.getElementById('loginModal').classList.remove('hidden'); document.getElementById('adminEmail').focus(); }
+        function closeLoginModal() { document.getElementById('loginModal').classList.add('hidden'); document.getElementById('adminPassword').value = ''; }
+        function handleLoginKey(e) { if(e.key === 'Enter') checkLogin(); }
+        
+        async function checkLogin() {
+            const email = document.getElementById('adminEmail').value;
+            const pass = document.getElementById('adminPassword').value;
+            
+            if (!email || !pass) {
+                showToast("Veuillez remplir tous les champs", "delete");
+                return;
+            }
+
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+                // onAuthStateChanged s'occupera de mettre à jour l'interface
+                closeLoginModal();
+                showToast("Connexion réussie");
+            } catch (error) {
+                console.error("Login Error:", error);
+                let msg = "Erreur de connexion";
+                if (error.code === 'auth/invalid-credential') msg = "Email ou mot de passe incorrect";
+                if (error.code === 'auth/too-many-requests') msg = "Trop de tentatives, réessayez plus tard";
+                showToast(msg, "delete");
+            }
         }
+
+        async function logoutAdmin() {
+            try {
+                await signOut(auth);
+                
+                // On quitte le mode édition proprement
+                isEditMode = false;
+                markdownEditor.classList.add('hidden');
+                previewArea.classList.remove('hidden');
+                toggleIcon.classList.replace('ph-eye', 'ph-pencil-simple');
+                viewToggleBtn.classList.remove('bg-blue-50', 'text-blue-600', 'dark:bg-blue-900/30', 'dark:text-blue-400');
+                
+                if (isSplitView) toggleSplitView();
+                
+                showToast("Déconnecté");
+            } catch (error) {
+                console.error("Logout Error:", error);
+            }
+        }
+
+        // --- CRUD OPERATIONS ---
 
         function createNewDoc() {
             if (!isAdmin) return;
             const newDoc = {
                 id: crypto.randomUUID(),
                 title: 'Nouveau Document',
-                folder: '',
-                content: '# Titre\n',
+                content: '# Titre\n\nCommencez ici...',
                 format: 'markdown',
                 updatedAt: Date.now()
             };
-            saveDocToFirebase(newDoc);
+            // Optimistic UI update
             docs.unshift(newDoc);
             renderDocList();
             selectDoc(newDoc.id);
+            // Save to cloud
+            saveDocToFirebase(newDoc);
+            
             if (!isEditMode && !isSplitView) toggleEditMode();
             setTimeout(() => docTitleInput.focus(), 100);
         }
@@ -556,7 +664,6 @@
             editorWrapper.classList.remove('hidden');
             
             docTitleInput.value = doc.title;
-            docFolderInput.value = doc.folder || '';
             markdownEditor.value = doc.content;
             docFormatSelect.value = doc.format || 'markdown';
             
@@ -575,24 +682,18 @@
             renderDocList(searchInput.value, false);
         }
 
-        function updateCurrentFolder() {
-            if (!currentDocId || !isAdmin) return;
-            const doc = docs.find(d => d.id === currentDocId);
-            doc.folder = docFolderInput.value.trim();
-            doc.updatedAt = Date.now();
-            saveDocToFirebase(doc);
-            renderDocList(searchInput.value, false);
-        }
-
         function updateCurrentFormat() {
             if (!currentDocId || !isAdmin) return;
             const doc = docs.find(d => d.id === currentDocId);
             const newFormat = docFormatSelect.value;
+            
             if (doc.format !== newFormat) {
                 doc.format = newFormat;
+                doc.updatedAt = Date.now();
                 saveDocToFirebase(doc);
                 updateUIForFormat(newFormat);
                 renderPreview(doc.content, newFormat);
+                showToast(`Format changé en ${newFormat.toUpperCase()}`);
             }
         }
 
@@ -601,341 +702,25 @@
             const doc = docs.find(d => d.id === currentDocId);
             doc.content = markdownEditor.value;
             doc.updatedAt = Date.now();
-            saveDocToFirebase(doc);
+            saveDocToFirebase(doc); // Auto-save to cloud
             renderPreview(doc.content, doc.format);
         }
 
-        function renderDocList(filter = '') {
-            docListEl.innerHTML = '';
-            
-            const groups = {};
-            const ungrouped = [];
-            
-            const filteredDocs = docs.filter(d => 
-                (d.title.toLowerCase().includes(filter.toLowerCase()) || 
-                 (d.content && d.content.toLowerCase().includes(filter.toLowerCase())))
-            );
-
-            if (filteredDocs.length === 0) {
-                docListEl.innerHTML = `<div class="text-gray-500 text-center text-sm mt-8 opacity-50">Aucun document</div>`;
-                return;
-            }
-
-            filteredDocs.forEach(doc => {
-                if (doc.folder) {
-                    if (!groups[doc.folder]) groups[doc.folder] = [];
-                    groups[doc.folder].push(doc);
-                } else {
-                    ungrouped.push(doc);
-                }
-            });
-
-            Object.keys(groups).sort().forEach(folder => {
-                const groupDiv = document.createElement('div');
-                groupDiv.className = 'mb-2';
-                groupDiv.innerHTML = `<div class="px-3 py-1 text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1"><i class="ph-fill ph-folder"></i> ${folder}</div>`;
-                groups[folder].forEach(doc => groupDiv.appendChild(createDocItem(doc)));
-                docListEl.appendChild(groupDiv);
-            });
-
-            if (ungrouped.length > 0) {
-                if(Object.keys(groups).length > 0) {
-                    const sep = document.createElement('div');
-                    sep.className = "px-3 py-1 text-xs font-bold text-gray-500 uppercase tracking-wider mt-4">Autres</div>";
-                }
-                ungrouped.forEach(doc => docListEl.appendChild(createDocItem(doc)));
-            }
-        }
-
-        function createDocItem(doc) {
-            const isActive = doc.id === currentDocId;
-            const div = document.createElement('div');
-            div.className = `p-2 mx-2 rounded-md cursor-pointer transition-all mb-0.5 border border-transparent group ${isActive ? 'bg-gray-800 border-blue-500/30 text-white shadow-sm' : 'hover:bg-gray-800/50 hover:text-white text-gray-300'}`;
-            div.onclick = () => selectDoc(doc.id);
-            
-            let icon = 'ph-file-text';
-            if(doc.format === 'markdown') icon = 'ph-markdown-logo';
-            if(doc.format === 'html') icon = 'ph-code';
-            
-            div.innerHTML = `
-                <div class="flex items-center gap-2">
-                    <i class="ph ${icon} ${isActive ? 'text-blue-400' : 'text-gray-500'}"></i>
-                    <span class="truncate text-sm">${doc.title}</span>
-                </div>`;
-            return div;
-        }
-
-        function renderPreview(content, format) {
-            if (!content) {
-                previewArea.innerHTML = '<div class="text-gray-300 dark:text-gray-600 italic">Vide...</div>';
-                generateTOC();
-                return;
-            }
-
-            let finalHtml = '';
-            
-            if (format === 'markdown' || !format) {
-                const processedContent = content.replace(new RegExp('\\[\\[(.*?)\\]\\]', 'g'), (match, title) => {
-                    return `<span class="wikilink" onclick="openWikiLink('${title}')">${title}</span>`;
-                });
-                finalHtml = DOMPurify.sanitize(marked.parse(processedContent));
-            } else if (format === 'html') {
-                finalHtml = DOMPurify.sanitize(content);
-            } else {
-                previewArea.className = "preview-pane preview-text w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors text-gray-700";
-                previewArea.innerText = content;
-                generateTOC();
-                return;
-            }
-
-            previewArea.className = format === 'html' 
-                ? "preview-pane w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors"
-                : "preview-pane markdown-preview w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors";
-            
-            previewArea.innerHTML = finalHtml;
-            generateTOC();
-        }
-
-        function generateTOC() {
-            tocList.innerHTML = '';
-            const headers = previewArea.querySelectorAll('h1, h2, h3');
-            if (headers.length === 0) {
-                tocContainer.classList.add('hidden');
-                return;
-            }
-            
-            if (window.innerWidth >= 1024) {
-                tocContainer.classList.remove('hidden');
-            }
-
-            headers.forEach((header, index) => {
-                if (!header.id) header.id = `toc-${index}`;
-                const link = document.createElement('a');
-                link.href = `#${header.id}`;
-                link.innerText = header.innerText;
-                link.className = `toc-link toc-${header.tagName.toLowerCase()}`;
-                link.onclick = (e) => {
-                    e.preventDefault();
-                    header.scrollIntoView({ behavior: 'smooth' });
-                };
-                tocList.appendChild(link);
-            });
-        }
-
-        function openWikiLink(title) {
-            const targetDoc = docs.find(d => d.title.trim().toLowerCase() === title.trim().toLowerCase());
-            if (targetDoc) {
-                selectDoc(targetDoc.id);
-            } else {
-                showToast(`Document "${title}" non trouvé`, "delete");
-            }
-        }
-
-        function handleImageDrop(e) {
-            e.preventDefault();
-            document.getElementById('editorPaneWrapper').classList.remove('drag-active');
-            
-            if (!isAdmin) return;
-
-            const file = e.dataTransfer.files[0];
-            if (file && file.type.startsWith('image/')) {
-                if (file.size > 1024 * 1024) {
-                    showToast("Image trop lourde (>1Mo). Compressez-la.", "delete");
-                    return;
-                }
-
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    const base64 = event.target.result;
-                    const markdownImage = `\n![${file.name}](${base64})\n`;
-                    const textarea = markdownEditor;
-                    const start = textarea.selectionStart;
-                    const end = textarea.selectionEnd;
-                    textarea.setRangeText(markdownImage, start, end, 'end');
-                    updateCurrentContent();
-                    showToast("Image insérée");
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function applyFormat(type) {
-            if (!currentDocId || !isAdmin) return;
-            const doc = docs.find(d => d.id === currentDocId);
-            const format = doc.format || 'markdown';
-            const textarea = markdownEditor;
-            const fullText = textarea.value;
-            let start = textarea.selectionStart;
-            let end = textarea.selectionEnd;
-            let sel = fullText.substring(start, end);
-
-            const toggleBlockMD = (prefix) => {
-                let lineStart = fullText.lastIndexOf('\n', start - 1) + 1;
-                let lineEnd = fullText.indexOf('\n', end);
-                if (lineEnd === -1) lineEnd = fullText.length;
-                const newBlock = fullText.substring(lineStart, lineEnd).split('\n').map(line => {
-                    line = line.replace(new RegExp('^#{1,6}\\s'), '');
-                    return prefix + line;
-                }).join('\n');
-                textarea.setRangeText(newBlock, lineStart, lineEnd, 'select');
-            };
-
-            // HTML Helpers - Using new RegExp for robustness against syntax errors
-            const toggleHTML = (tag) => {
-                const openRegex = new RegExp(`^<${tag}(\\s[^>]*)?>`, 'i');
-                const closeRegex = new RegExp(`</${tag}>$`, 'i');
-                if (openRegex.test(sel) && closeRegex.test(sel)) {
-                    const match = sel.match(openRegex);
-                    textarea.setRangeText(sel.substring(match[0].length, sel.length - (tag.length + 3)), start, end, 'select');
-                } else textarea.setRangeText(`<${tag}>${sel || 'texte'}</${tag}>`, start, end, 'select');
-            };
-
-            const toggleCheckboxHTML = () => {
-                let lineStart = fullText.lastIndexOf('\n', start - 1) + 1;
-                let lineEnd = fullText.indexOf('\n', end);
-                if (lineEnd === -1) lineEnd = fullText.length;
-                let line = fullText.substring(lineStart, lineEnd);
-                
-                const uncheckedRegex = new RegExp('<input\\s+type=["\']checkbox["\']\\s*\\/?>', 'i');
-                const checkedRegex = new RegExp('<input\\s+type=["\']checkbox["\']\\s+checked\\s*\\/?>', 'i');
-                
-                if (checkedRegex.test(line)) {
-                    textarea.setRangeText(line.replace(checkedRegex, '').trim(), lineStart, lineEnd, 'select');
-                } else if (uncheckedRegex.test(line)) {
-                    textarea.setRangeText(line.replace(uncheckedRegex, '<input type="checkbox" checked>'), lineStart, lineEnd, 'select');
-                } else {
-                    const liRegex = new RegExp('^(\\s*<li>)(.*)', 'i');
-                    if (liRegex.test(line)) {
-                        textarea.setRangeText(line.replace(liRegex, '$1<input type="checkbox"> $2'), lineStart, lineEnd, 'select');
-                    } else {
-                        textarea.setRangeText('<input type="checkbox"> ' + line, lineStart, lineEnd, 'select');
-                    }
-                }
-            };
-
-            const wrapListHTML = (type) => {
-                const openRegex = new RegExp(`^<${type}(\\s[^>]*)?>`, 'i');
-                const closeRegex = new RegExp(`</${type}>$`, 'i');
-                if (openRegex.test(sel.trim()) && closeRegex.test(sel.trim())) {
-                    let content = sel.trim().replace(openRegex, '').replace(closeRegex, '').trim();
-                    content = content.replace(new RegExp('<li>', 'gi'), '').replace(new RegExp('<\\/li>', 'gi'), '');
-                    content = content.split('\n').map(l => l.trim()).join('\n');
-                    textarea.setRangeText(content, start, end, 'select');
-                } else {
-                    const inner = (sel ? sel.split('\n') : ['texte']).map(l => {
-                        const trimmed = l.trim();
-                        if (trimmed.startsWith('<li>') && trimmed.endsWith('</li>')) return `  ${trimmed}`;
-                        return trimmed ? `  <li>${trimmed}</li>` : '';
-                    }).join('\n');
-                    textarea.setRangeText(`<${type}>\n${inner}\n</${type}>`, start, end, 'select');
-                }
-            };
-
-            if (format === 'markdown') {
-                if (['h1','h2','h3'].includes(type)) {
-                    const map = { h1: '# ', h2: '## ', h3: '### ' };
-                    toggleBlockMD(map[type]);
-                } else if (type === 'bold') {
-                    textarea.setRangeText(`**${sel}**`, start, end, 'select');
-                } else if (type === 'italic') {
-                    textarea.setRangeText(`*${sel}*`, start, end, 'select');
-                } else if (type === 'check') {
-                    textarea.setRangeText(`- [ ] ${sel}`, start, end, 'select');
-                } else {
-                    if(type==='list-ul') textarea.setRangeText(`\n- ${sel}`, start, end, 'select');
-                    if(type==='list-ol') textarea.setRangeText(`\n1. ${sel}`, start, end, 'select');
-                    if(type==='code') textarea.setRangeText(`\`${sel}\``, start, end, 'select');
-                    if(type==='link') textarea.setRangeText(`[${sel}](url)`, start, end, 'select');
-                    if(type==='image') textarea.setRangeText(`![${sel}](url)`, start, end, 'select');
-                }
-            } else if (format === 'html') {
-                const wrap = (tag) => textarea.setRangeText(`<${tag}>${sel}</${tag}>`, start, end, 'select');
-                if (type === 'h1') wrap('h1');
-                if (type === 'h2') wrap('h2');
-                if (type === 'h3') wrap('h3');
-                if (type === 'bold') wrap('strong');
-                if (type === 'italic') wrap('em');
-                if (type === 'check') toggleCheckboxHTML();
-                if (type === 'list-ul') wrapListHTML('ul');
-                if (type === 'list-ol') wrapListHTML('ol');
-                if (type === 'code') wrap('code');
-                if (type === 'quote') toggleHTML('blockquote');
-                if (type === 'link') textarea.setRangeText(`<a href="url">${sel || 'lien'}</a>`, start, end, 'select');
-                if (type === 'image') textarea.setRangeText(`<img src="url" alt="${sel || 'image'}">`, start, end, 'select');
-                if (type === 'hr') textarea.setRangeText(`\n<hr>\n`, start, end, 'select');
-            }
-            updateCurrentContent();
-        }
-
-        function openLoginModal() { document.getElementById('loginModal').classList.remove('hidden'); document.getElementById('adminEmail').focus(); }
-        function closeLoginModal() { document.getElementById('loginModal').classList.add('hidden'); document.getElementById('adminPassword').value = ''; }
-        function handleLoginKey(e) { if(e.key === 'Enter') checkLogin(); }
-        
-        async function checkLogin() {
-            const email = document.getElementById('adminEmail').value;
-            const pass = document.getElementById('adminPassword').value;
-            if (!email || !pass) return;
-            try { await signInWithEmailAndPassword(auth, email, pass); closeLoginModal(); showToast("Connexion réussie"); } 
-            catch (error) { showToast("Erreur login", "delete"); }
-        }
-
-        async function logoutAdmin() {
-            try { await signOut(auth); showToast("Déconnecté"); isAdmin=false; isEditMode=false; toggleEditMode(false); } catch(e){}
-        }
-
-        function toggleEditMode(force) {
-            if(!isAdmin) return;
-            isEditMode = (typeof force !== 'undefined') ? force : !isEditMode;
-            if(isEditMode) {
-                previewWrapper.classList.add('hidden');
-                markdownEditor.classList.remove('hidden');
-                formatToolbar.classList.remove('hidden');
-                formatToolbar.classList.add('flex');
-            } else {
-                markdownEditor.classList.add('hidden');
-                previewWrapper.classList.remove('hidden');
-                previewWrapper.classList.add('flex');
-                if(!isSplitView) {
-                    formatToolbar.classList.add('hidden');
-                    formatToolbar.classList.remove('flex');
-                }
-            }
-        }
-
-        function toggleSplitView() {
-            isSplitView = !isSplitView;
-            if(isSplitView) {
-                markdownEditor.classList.remove('hidden');
-                previewWrapper.classList.remove('hidden');
-                previewWrapper.classList.add('flex');
-                if(isAdmin) {
-                    formatToolbar.classList.remove('hidden');
-                    formatToolbar.classList.add('flex');
-                }
-            } else {
-                toggleEditMode(isEditMode);
-            }
-        }
-
         function confirmDelete() {
-            if(currentDocId && isAdmin) deleteDocFromFirebase(currentDocId);
+            if (!currentDocId || !isAdmin) return;
+            const idToDelete = currentDocId;
+            deleteDocFromFirebase(idToDelete);
+            
+            // UI cleanup handled by onSnapshot, but we can do optimistic cleanup
+            docs = docs.filter(d => d.id !== idToDelete);
+            currentDocId = null;
+            renderDocList();
+            emptyState.classList.remove('hidden');
+            editorWrapper.classList.add('hidden');
             closeDeleteModal();
+            showToast('Document supprimé', 'delete');
         }
-        function showDeleteConfirm() { document.getElementById('deleteModal').classList.remove('hidden'); }
-        function closeDeleteModal() { document.getElementById('deleteModal').classList.add('hidden'); }
-        function updateStats() {
-            const text = markdownEditor.value || '';
-            wordCountEl.innerText = `${text.split(/\s+/).length} mots`;
-        }
-        function triggerSaveStatus() {
-            saveStatus.innerText = "Sauvegarde...";
-            setTimeout(() => saveStatus.innerText = "Synchronisé", 1000);
-        }
-        function showToast(msg, type) {
-            toastMsg.innerText = msg;
-            toast.classList.remove('translate-y-32');
-            setTimeout(() => toast.classList.add('translate-y-32'), 3000);
-        }
+
         function exportDoc() {
             if (!currentDocId) return;
             const doc = docs.find(d => d.id === currentDocId);
@@ -954,6 +739,319 @@
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
             showToast('Téléchargement lancé');
+        }
+
+        // --- UI & RENDERING ---
+
+        function renderDocList(filter = '', resetScroll = true) {
+            docListEl.innerHTML = '';
+            const filtered = docs.filter(d => d.title.toLowerCase().includes(filter.toLowerCase()));
+
+            if (filtered.length === 0) {
+                docListEl.innerHTML = `<div class="text-gray-500 text-center text-sm mt-8 opacity-50">Aucun document</div>`;
+                return;
+            }
+
+            filtered.forEach(doc => {
+                const isActive = doc.id === currentDocId;
+                const div = document.createElement('div');
+                div.className = `p-3 rounded-lg cursor-pointer transition-all mb-1 border border-transparent group ${isActive ? 'bg-gray-800 border-blue-500/50 shadow-md' : 'hover:bg-gray-800 hover:border-gray-700'}`;
+                div.onclick = () => selectDoc(doc.id);
+                
+                let icon = 'ph-file-text';
+                if(doc.format === 'markdown') icon = 'ph-markdown-logo';
+                if(doc.format === 'html') icon = 'ph-code';
+                
+                div.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="${isActive ? 'text-blue-400' : 'text-gray-600 dark:text-gray-500 group-hover:text-gray-400'}">
+                            <i class="ph ${icon} text-xl"></i>
+                        </div>
+                        <div class="overflow-hidden">
+                            <div class="font-medium text-sm truncate ${isActive ? 'text-white' : 'text-gray-300 group-hover:text-white'}">${doc.title}</div>
+                            <div class="text-[10px] ${isActive ? 'text-blue-300' : 'text-gray-600 dark:text-gray-500'} mt-0.5">
+                                ${new Date(doc.updatedAt).toLocaleDateString()} • ${doc.format ? doc.format.toUpperCase() : 'MD'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                docListEl.appendChild(div);
+            });
+        }
+
+        function renderPreview(content, format) {
+            if (!content) {
+                previewArea.innerHTML = '<div class="text-gray-300 dark:text-gray-600 italic">Vide...</div>';
+                return;
+            }
+
+            if (format === 'markdown' || !format) {
+                previewArea.className = "preview-pane markdown-preview w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors";
+                // Marked is configured with breaks: true for line breaks
+                previewArea.innerHTML = DOMPurify.sanitize(marked.parse(content));
+            } else if (format === 'html') {
+                previewArea.className = "preview-pane w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors";
+                // Simple formatting preservation for HTML preview
+                let htmlContent = content; // Can add .replace(/\n/g, '<br>') if needed
+                previewArea.innerHTML = DOMPurify.sanitize(htmlContent);
+            } else {
+                previewArea.className = "preview-pane preview-text w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors text-gray-700";
+                previewArea.innerText = content;
+            }
+        }
+
+        function updateUIForFormat(format) {
+            formatDisplay.innerText = format;
+            
+            // Logic: Toolbar visible ONLY if isAdmin AND (EditMode OR SplitView)
+            const showToolbar = isAdmin && (isEditMode || isSplitView);
+            
+            if (showToolbar) {
+                formatToolbar.classList.remove('hidden');
+                formatToolbar.classList.add('flex');
+            } else {
+                formatToolbar.classList.add('hidden');
+                formatToolbar.classList.remove('flex');
+            }
+        }
+
+        function toggleEditMode(forceState) {
+            if (!isAdmin) return; // Prevent unauthorized editing toggles
+            
+            isEditMode = (typeof forceState !== 'undefined') ? forceState : !isEditMode;
+            
+            if(isSplitView) return; 
+
+            if (isEditMode) {
+                previewArea.classList.add('hidden');
+                markdownEditor.classList.remove('hidden');
+                markdownEditor.focus();
+                
+                toggleIcon.classList.replace('ph-pencil-simple', 'ph-eye');
+                viewToggleBtn.classList.add('bg-blue-50', 'text-blue-600', 'dark:bg-blue-900/30', 'dark:text-blue-400');
+            } else {
+                markdownEditor.classList.add('hidden');
+                previewArea.classList.remove('hidden');
+                
+                toggleIcon.classList.replace('ph-eye', 'ph-pencil-simple');
+                viewToggleBtn.classList.remove('bg-blue-50', 'text-blue-600', 'dark:bg-blue-900/30', 'dark:text-blue-400');
+            }
+            updateUIForFormat(docFormatSelect.value);
+        }
+
+        // --- IMPORT LOGIC ---
+        function handleFileUpload(input) {
+            if (!isAdmin) return;
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                const title = file.name.replace(/\.[^/.]+$/, "");
+                
+                let format = 'text';
+                if(file.name.endsWith('.md')) format = 'markdown';
+                if(file.name.endsWith('.html')) format = 'html';
+
+                const newDoc = {
+                    id: crypto.randomUUID(),
+                    title: title,
+                    content: content,
+                    format: format,
+                    updatedAt: Date.now()
+                };
+                
+                // Save directly to cloud
+                saveDocToFirebase(newDoc);
+                
+                // Optimistic UI
+                docs.unshift(newDoc);
+                renderDocList();
+                selectDoc(newDoc.id);
+                showToast(`Fichier "${file.name}" importé`);
+                input.value = '';
+            };
+            reader.readAsText(file);
+        }
+
+        // --- COLOR LOGIC ---
+        function applyColor(type, value) {
+            if (!currentDocId || !isAdmin) return;
+            const textarea = markdownEditor;
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            let sel = textarea.value.substring(start, end) || 'texte';
+            
+            const spanRegex = /^<span style="([^"]*)">(.*?)<\/span>$/i;
+            let existingStyle = "";
+            let innerText = sel;
+
+            if (spanRegex.test(sel)) {
+                const match = sel.match(spanRegex);
+                existingStyle = match[1];
+                innerText = match[2];
+            }
+
+            const styleObj = {};
+            existingStyle.split(';').forEach(style => {
+                const [prop, val] = style.split(':');
+                if (prop && val) styleObj[prop.trim().toLowerCase()] = val.trim();
+            });
+
+            if (type === 'text') styleObj['color'] = value;
+            if (type === 'bg') styleObj['background-color'] = value;
+
+            const newStyleString = Object.entries(styleObj).map(([k, v]) => `${k}:${v}`).join('; ');
+            const newHTML = `<span style="${newStyleString}">${innerText}</span>`;
+            
+            textarea.setRangeText(newHTML, start, end, 'select');
+            updateCurrentContent();
+            textarea.focus();
+        }
+
+        // --- FORMAT LOGIC ---
+        function applyFormat(type) {
+            if (!currentDocId || !isAdmin) return;
+            const doc = docs.find(d => d.id === currentDocId);
+            const format = doc.format || 'markdown';
+            const textarea = markdownEditor;
+            const fullText = textarea.value;
+            let start = textarea.selectionStart;
+            let end = textarea.selectionEnd;
+            let sel = fullText.substring(start, end);
+
+            // Helpers from previous robust version...
+            const toggleInlineMD = (marker) => {
+                const len = marker.length;
+                const before = fullText.substring(start - len, start);
+                const after = fullText.substring(end, end + len);
+                if (sel.startsWith(marker) && sel.endsWith(marker) && sel.length >= 2*len) {
+                    textarea.setRangeText(sel.substring(len, sel.length - len), start, end, 'select');
+                } else if (before === marker && after === marker) {
+                    textarea.setRangeText(sel, start - len, end + len, 'select');
+                } else {
+                    textarea.setRangeText(`${marker}${sel || 'texte'}${marker}`, start, end, 'select');
+                }
+            };
+            const toggleBlockMD = (prefix) => {
+                let lineStart = fullText.lastIndexOf('\n', start - 1) + 1;
+                let lineEnd = fullText.indexOf('\n', end);
+                if (lineEnd === -1) lineEnd = fullText.length;
+                const newBlock = fullText.substring(lineStart, lineEnd).split('\n').map(line => {
+                    return line.startsWith(prefix) ? line.substring(prefix.length) : prefix + line;
+                }).join('\n');
+                textarea.setRangeText(newBlock, lineStart, lineEnd, 'select');
+            };
+            const toggleCheckboxMD = () => {
+                let lineStart = fullText.lastIndexOf('\n', start - 1) + 1;
+                let lineEnd = fullText.indexOf('\n', end);
+                if (lineEnd === -1) lineEnd = fullText.length;
+                const line = fullText.substring(lineStart, lineEnd);
+                if (line.includes('- [ ] ')) textarea.setRangeText(line.replace('- [ ] ', '- [x] '), lineStart, lineEnd, 'select');
+                else if (line.includes('- [x] ')) textarea.setRangeText(line.replace('- [x] ', ''), lineStart, lineEnd, 'select');
+                else textarea.setRangeText(`- [ ] ${line}`, lineStart, lineEnd, 'select');
+            };
+            const toggleCheckboxHTML = () => {
+                let lineStart = fullText.lastIndexOf('\n', start - 1) + 1;
+                let lineEnd = fullText.indexOf('\n', end);
+                if (lineEnd === -1) lineEnd = fullText.length;
+                let line = fullText.substring(lineStart, lineEnd);
+                const unchecked = '<input type="checkbox">';
+                const checked = '<input type="checkbox" checked>';
+                if (line.includes(checked)) textarea.setRangeText(line.replace(checked, '').trim(), lineStart, lineEnd, 'select');
+                else if (line.includes(unchecked)) textarea.setRangeText(line.replace(unchecked, checked), lineStart, lineEnd, 'select');
+                else {
+                    const liRegex = /^(\s*<li>)(.*)/i;
+                    textarea.setRangeText(liRegex.test(line) ? line.replace(liRegex, '$1<input type="checkbox"> $2') : '<input type="checkbox"> ' + line, lineStart, lineEnd, 'select');
+                }
+            };
+            const toggleHTML = (tag) => {
+                const openRegex = new RegExp(`^<${tag}(\\s[^>]*)?>`, 'i'), closeRegex = new RegExp(`</${tag}>$`, 'i');
+                if (openRegex.test(sel) && closeRegex.test(sel)) {
+                    const match = sel.match(openRegex);
+                    textarea.setRangeText(sel.substring(match[0].length, sel.length - (tag.length + 3)), start, end, 'select');
+                } else textarea.setRangeText(`<${tag}>${sel || 'texte'}</${tag}>`, start, end, 'select');
+            };
+            const wrapListHTML = (type) => { 
+                const openRegex = new RegExp(`^<${type}(\\s[^>]*)?>`, 'i'), closeRegex = new RegExp(`</${type}>$`, 'i');
+                if (openRegex.test(sel.trim()) && closeRegex.test(sel.trim())) {
+                    let content = sel.trim().replace(openRegex, '').replace(closeRegex, '').trim().replace(/<li>/gi, '').replace(/<\/li>/gi, '').split('\n').map(l=>l.trim()).join('\n');
+                    textarea.setRangeText(content, start, end, 'select');
+                } else {
+                    const inner = (sel ? sel.split('\n') : ['texte']).map(l => (l.trim().startsWith('<li>') ? l.trim() : (l.trim() ? `  <li>${l.trim()}</li>` : ''))).join('\n');
+                    textarea.setRangeText(`<${type}>\n${inner}\n</${type}>`, start, end, 'select');
+                }
+            };
+
+            if (format === 'html') {
+                switch (type) {
+                    case 'bold': toggleHTML('strong'); break;
+                    case 'italic': toggleHTML('em'); break;
+                    case 'strike': toggleHTML('s'); break;
+                    case 'code': toggleHTML('code'); break;
+                    case 'heading': toggleHTML('h3'); break;
+                    case 'list-ul': wrapListHTML('ul'); break; 
+                    case 'list-ol': wrapListHTML('ol'); break;
+                    case 'check': toggleCheckboxHTML(); break;
+                    case 'quote': toggleHTML('blockquote'); break;
+                    case 'link': textarea.setRangeText(`<a href="url">${sel || 'lien'}</a>`, start, end, 'select'); break;
+                    case 'image': textarea.setRangeText(`<img src="url" alt="${sel || 'image'}">`, start, end, 'select'); break;
+                    case 'hr': textarea.setRangeText(`\n<hr>\n`, start, end, 'select'); break;
+                }
+            } else {
+                switch (type) {
+                    case 'bold': toggleInlineMD('**'); break;
+                    case 'italic': toggleInlineMD('*'); break;
+                    case 'strike': toggleInlineMD('~~'); break;
+                    case 'code': toggleInlineMD('`'); break;
+                    case 'heading': toggleBlockMD('### '); break;
+                    case 'list-ul': toggleBlockMD('- '); break;
+                    case 'list-ol': toggleBlockMD('1. '); break;
+                    case 'check': toggleCheckboxMD(); break;
+                    case 'quote': toggleBlockMD('> '); break;
+                    case 'link': textarea.setRangeText(`[${sel || 'titre'}](url)`, start, end, 'select'); break;
+                    case 'image': textarea.setRangeText(`![${sel || 'alt'}](url_image)`, start, end, 'select'); break;
+                    case 'hr': textarea.setRangeText(`\n---\n`, start, end, 'select'); break;
+                }
+            }
+            updateCurrentContent();
+            updateStats();
+            textarea.focus();
+        }
+
+        function updateStats() {
+            const text = markdownEditor.value || '';
+            const words = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
+            wordCountEl.innerText = `${words} mots`;
+            const minutes = Math.ceil(words / 200);
+            readTimeEl.innerText = minutes < 1 ? '< 1 min' : `${minutes} min`;
+        }
+
+        let saveTimeout;
+        function triggerSaveStatus() {
+            saveStatus.style.opacity = '1';
+            clearTimeout(saveTimeout);
+            saveStatus.innerText = "Sauvegarde...";
+            saveTimeout = setTimeout(() => {
+                saveStatus.innerText = "Synchronisé";
+                setTimeout(() => { saveStatus.style.opacity = '0'; }, 1000);
+            }, 800);
+        }
+
+        function showDeleteConfirm() {
+            if(!currentDocId || !isAdmin) return;
+            const doc = docs.find(d => d.id === currentDocId);
+            deleteDocTitle.innerText = doc.title;
+            deleteModal.classList.remove('hidden');
+        }
+        function closeDeleteModal() { deleteModal.classList.add('hidden'); }
+
+        function showToast(message, type = 'success') {
+            toastMsg.innerText = message;
+            toastIcon.className = type === 'delete' ? 'ph-fill ph-trash text-red-400 text-xl' : 'ph-fill ph-check-circle text-green-400 text-xl';
+            toast.classList.remove('translate-y-32');
+            setTimeout(() => toast.classList.add('translate-y-32'), 3000);
         }
     </script>
 </body>
