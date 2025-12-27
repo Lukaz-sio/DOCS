@@ -157,10 +157,10 @@
             <select id="categoryFilter" onchange="renderDocList(searchInput.value)" 
                     class="w-full bg-gray-800 text-xs text-gray-300 rounded-lg px-3 py-2 border border-gray-700 focus:outline-none focus:border-blue-500 cursor-pointer">
                 <option value="">Toutes les catégories</option>
-                </select>
+            </select>
 
             <div id="tagFilterList" class="flex flex-wrap gap-1.5 px-1 max-h-24 overflow-y-auto">
-                </div>
+            </div>
         </div>
 
         <div class="px-4 py-2 text-xs flex items-center gap-2 border-b border-gray-800">
@@ -185,6 +185,11 @@
                     <input type="file" id="fileInput" class="hidden" accept=".md,.txt,.html" onchange="handleFileUpload(this)">
                 </label>
             </div>
+
+            <button onclick="openInfoModal()" class="w-full border border-gray-600 hover:bg-gray-800 text-gray-300 py-2 px-4 rounded-lg flex items-center justify-center gap-2 text-sm transition-colors">
+                <i class="ph ph-info text-lg"></i>
+                Informations
+            </button>
 
             <button id="loginBtn" onclick="openLoginModal()" class="w-full border border-gray-600 hover:bg-gray-800 text-gray-300 py-2 px-4 rounded-lg flex items-center justify-center gap-2 text-sm transition-colors">
                 <i class="ph ph-sign-in text-lg"></i>
@@ -362,6 +367,26 @@
         </div>
     </main>
 
+    <div id="infoModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center fade-in">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-11/12 max-w-2xl transform scale-100 transition-transform border border-gray-100 dark:border-gray-700 flex flex-col max-h-[80vh]">
+            <div class="flex justify-between items-center mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <i class="ph ph-info"></i> Informations
+                </h3>
+                <button onclick="closeInfoModal()" class="text-gray-500 hover:text-gray-800 dark:hover:text-white"><i class="ph ph-x text-lg"></i></button>
+            </div>
+            
+            <div id="infoContentDisplay" class="flex-1 overflow-y-auto text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap font-mono bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700">Chargement...</div>
+            
+            <textarea id="infoContentEditor" class="hidden flex-1 w-full p-4 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none font-mono text-sm" placeholder="Écrivez les informations ici..."></textarea>
+
+            <div class="mt-4 flex justify-end gap-2 auth-only-block hidden">
+                <button id="editInfoBtn" onclick="toggleInfoEditMode()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">Modifier</button>
+                <button id="saveInfoBtn" onclick="saveInfoContent()" class="hidden px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+
     <div id="loginModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center fade-in">
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-11/12 max-w-sm transform scale-100 transition-transform border border-gray-100 dark:border-gray-700">
             <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Connexion Éditeur</h3>
@@ -489,6 +514,7 @@
         // Settings State
         let globalCategories = [];
         let globalTags = [];
+        let globalInfoContent = ""; // New info content state
         
         // Edit State for Settings
         let editingItemType = null;
@@ -517,7 +543,7 @@
         const docCategorySelect = document.getElementById('docCategorySelect');
         const docTagsContainer = document.getElementById('docTagsContainer');
         const addTagBtn = document.getElementById('addTagBtn');
-        const docVisibilityBtn = document.getElementById('docVisibilityBtn'); // NEW
+        const docVisibilityBtn = document.getElementById('docVisibilityBtn'); 
         
         const docFormatSelect = document.getElementById('docFormatSelect');
         const markdownEditor = document.getElementById('markdownEditor');
@@ -557,6 +583,13 @@
         // Tag Selection Modal Refs
         const tagSelectionModal = document.getElementById('tagSelectionModal');
         const docTagSelectionList = document.getElementById('docTagSelectionList');
+
+        // Info Modal Refs
+        const infoModal = document.getElementById('infoModal');
+        const infoContentDisplay = document.getElementById('infoContentDisplay');
+        const infoContentEditor = document.getElementById('infoContentEditor');
+        const editInfoBtn = document.getElementById('editInfoBtn');
+        const saveInfoBtn = document.getElementById('saveInfoBtn');
 
         // --- INIT ---
         window.addEventListener('DOMContentLoaded', async () => {
@@ -607,6 +640,12 @@
             
             // Visibility
             window.toggleVisibility = toggleVisibility;
+
+            // Info Modal
+            window.openInfoModal = openInfoModal;
+            window.closeInfoModal = closeInfoModal;
+            window.toggleInfoEditMode = toggleInfoEditMode;
+            window.saveInfoContent = saveInfoContent;
 
             initTheme();
             
@@ -714,7 +753,7 @@
             });
         }
 
-        // --- SETTINGS (CATEGORIES & TAGS) ---
+        // --- SETTINGS (CATEGORIES & TAGS & INFO CONTENT) ---
         function subscribeToSettings() {
             const settingsRef = doc(db, settingsCollection, settingsDocId);
             onSnapshot(settingsRef, (docSnap) => {
@@ -722,6 +761,7 @@
                     const data = docSnap.data();
                     globalCategories = data.categories || [];
                     globalTags = data.tags || [];
+                    globalInfoContent = data.infoContent || "Aucune information pour le moment.";
                 } else {
                     if (isAdmin) saveSettings(); 
                 }
@@ -742,12 +782,68 @@
             try {
                 await setDoc(settingsRef, {
                     categories: globalCategories,
-                    tags: globalTags
+                    tags: globalTags,
+                    infoContent: globalInfoContent
                 }, { merge: true });
             } catch (e) {
                 console.error("Error saving settings:", e);
                 showToast("Erreur sauvegarde paramètres", "delete");
             }
+        }
+
+        // --- INFO MODAL LOGIC ---
+        function openInfoModal() {
+            infoModal.classList.remove('hidden');
+            // Reset state
+            infoContentDisplay.innerText = globalInfoContent;
+            infoContentEditor.value = globalInfoContent;
+            
+            // Show display, hide editor by default
+            infoContentDisplay.classList.remove('hidden');
+            infoContentEditor.classList.add('hidden');
+            saveInfoBtn.classList.add('hidden');
+            
+            if (isAdmin) {
+                editInfoBtn.classList.remove('hidden');
+                editInfoBtn.innerText = "Modifier";
+            }
+        }
+
+        function closeInfoModal() {
+            infoModal.classList.add('hidden');
+        }
+
+        function toggleInfoEditMode() {
+            if (!isAdmin) return;
+            
+            if (infoContentEditor.classList.contains('hidden')) {
+                // Switch to edit
+                infoContentEditor.classList.remove('hidden');
+                infoContentDisplay.classList.add('hidden');
+                saveInfoBtn.classList.remove('hidden');
+                editInfoBtn.innerText = "Annuler";
+                infoContentEditor.focus();
+            } else {
+                // Switch back to view (Cancel)
+                infoContentEditor.classList.add('hidden');
+                infoContentDisplay.classList.remove('hidden');
+                saveInfoBtn.classList.add('hidden');
+                editInfoBtn.innerText = "Modifier";
+                // Reset value to saved content
+                infoContentEditor.value = globalInfoContent; 
+            }
+        }
+
+        async function saveInfoContent() {
+            if (!isAdmin) return;
+            const newContent = infoContentEditor.value;
+            globalInfoContent = newContent;
+            await saveSettings(); // This saves tags, cats AND infoContent
+            
+            // Switch back to view mode
+            infoContentDisplay.innerText = globalInfoContent;
+            toggleInfoEditMode(); // Will toggle back to view
+            showToast("Informations mises à jour");
         }
 
         // --- SETTINGS UI FUNCTIONS ---
@@ -988,7 +1084,8 @@
                     </div>`;
                 }
                 
-                const catLabel = doc.category ? `<span class="text-[10px] bg-gray-700 text-gray-400 px-1 rounded ml-auto">${doc.category}</span>` : '';
+                // --- FIX: Added flex-shrink-0 to prevent squashing and removed ml-auto to rely on justify-between ---
+                const catLabel = doc.category ? `<span class="text-[10px] bg-gray-700 text-gray-400 px-1 rounded flex-shrink-0">${doc.category}</span>` : '';
                 
                 // Private Indicator for Admin
                 const privateIcon = (doc.visibility === 'private') ? `<i class="ph-fill ph-lock-key text-yellow-500 text-xs ml-1" title="Privé"></i>` : '';
@@ -999,8 +1096,9 @@
                             <i class="ph ${icon} text-xl"></i>
                         </div>
                         <div class="overflow-hidden flex-1">
-                            <div class="flex justify-between items-start">
-                                <div class="font-medium text-sm truncate ${isActive ? 'text-white' : 'text-gray-300 group-hover:text-white'} flex items-center">
+                            <!-- FIX: Added gap-2 to parent, flex-1 and min-w-0 to title to ensure proper truncation -->
+                            <div class="flex justify-between items-start gap-2">
+                                <div class="font-medium text-sm truncate ${isActive ? 'text-white' : 'text-gray-300 group-hover:text-white'} flex items-center flex-1 min-w-0">
                                     ${doc.title} ${privateIcon}
                                 </div>
                                 ${catLabel}
