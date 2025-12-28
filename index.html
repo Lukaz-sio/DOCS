@@ -200,7 +200,7 @@
 
                     <div class="flex items-center gap-2 flex-shrink-0">
                          <button onclick="toggleTOC()" id="tocToggleBtn" 
-                                class="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors shadow-sm" title="Table des matières">
+                                 class="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors shadow-sm" title="Table des matières">
                             <i class="ph ph-list-dashes text-lg"></i>
                             <span class="hidden md:inline text-sm font-medium">Sommaire</span>
                         </button>
@@ -379,6 +379,28 @@
             <div class="flex gap-3">
                 <button onclick="closeLoginModal()" class="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 text-gray-800 dark:text-white">Annuler</button>
                 <button onclick="handleAuthAction()" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Valider</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popup de prévention pour la création de compte -->
+    <div id="signupWarningModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden flex items-center justify-center fade-in">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-11/12 max-w-sm transform scale-100 transition-transform border border-gray-100 dark:border-gray-700">
+            <div class="text-center">
+                <div class="mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-blue-50 dark:bg-blue-900/20 mb-4">
+                    <i class="ph ph-envelope-simple text-blue-500 text-3xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white">Vérification Email</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                    Le compte doit être l'adresse mail du lycée : <br>
+                    <span class="font-bold text-blue-600 dark:text-blue-400">x.ledantec@gmail.com</span>
+                </p>
+            </div>
+            <div class="mt-6 flex gap-3">
+                <button onclick="closeSignupWarningModal()" 
+                        class="flex-1 justify-center rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2.5 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 font-medium transition-colors">
+                    Fermer
+                </button>
             </div>
         </div>
     </div>
@@ -576,6 +598,8 @@
         const editInfoBtn = document.getElementById('editInfoBtn');
         const saveInfoBtn = document.getElementById('saveInfoBtn');
 
+        const signupWarningModal = document.getElementById('signupWarningModal');
+
         window.addEventListener('DOMContentLoaded', async () => {
             window.createNewDoc = createNewDoc;
             window.selectDoc = selectDoc;
@@ -595,7 +619,7 @@
             window.applyColor = applyColor;
             window.openLoginModal = openLoginModal;
             window.closeLoginModal = closeLoginModal;
-            window.checkLogin = checkLogin;
+            window.checkLogin = checkLogin; // Liaison ajoutée
             window.logoutAdmin = logoutAdmin;
             window.handleLoginKey = handleLoginKey;
             window.syncScroll = syncScroll; 
@@ -628,6 +652,8 @@
             
             window.switchAuthTab = switchAuthTab;
             window.handleAuthAction = handleAuthAction;
+            window.closeSignupWarningModal = closeSignupWarningModal;
+            window.confirmSignup = confirmSignup;
 
             initTheme();
             
@@ -659,7 +685,6 @@
                     triggerSaveStatus();
                 }
                 
-                // Custom Undo/Redo intercept
                 if ((e.ctrlKey || e.metaKey) && isEditMode) {
                     if (e.key === 'z') {
                         e.preventDefault();
@@ -686,23 +711,19 @@
 
         // --- HISTORY MANAGER ---
         function saveHistory(val) {
-            // Push current value to stack
             if (historyStack.length > 0 && historyStack[historyStack.length - 1] === val) return;
             historyStack.push(val);
-            if (historyStack.length > 50) historyStack.shift(); // Limit history depth
-            redoStack.length = 0; // Clear redo on new input
+            if (historyStack.length > 50) historyStack.shift(); 
+            redoStack.length = 0; 
         }
 
         function customUndo() {
-            if (historyStack.length <= 1) return; // Need at least initial state + 1
-            
+            if (historyStack.length <= 1) return; 
             isHistoryAction = true;
             const current = historyStack.pop();
             redoStack.push(current);
-            
             const prev = historyStack[historyStack.length - 1];
             markdownEditor.value = prev;
-            
             updateCurrentContent();
             updateStats();
             isHistoryAction = false;
@@ -710,12 +731,10 @@
 
         function customRedo() {
             if (redoStack.length === 0) return;
-            
             isHistoryAction = true;
             const next = redoStack.pop();
             historyStack.push(next);
             markdownEditor.value = next;
-            
             updateCurrentContent();
             updateStats();
             isHistoryAction = false;
@@ -746,13 +765,10 @@
                 if (user) {
                     currentUser = user;
                     isSuperAdmin = SUPER_ADMINS.includes(user.email);
-                    
                     document.body.classList.add('is-authenticated');
                     if (isSuperAdmin) document.body.classList.add('is-admin');
-                    
                     document.getElementById('loginBtn').classList.add('hidden');
                     document.getElementById('logoutBtn').classList.remove('hidden');
-                    
                     dbStatusIndicator.className = "w-2 h-2 rounded-full bg-green-500";
                     dbStatusText.innerText = user.email;
                 } else {
@@ -760,14 +776,11 @@
                     isSuperAdmin = false;
                     document.body.classList.remove('is-authenticated');
                     document.body.classList.remove('is-admin');
-                    
                     document.getElementById('loginBtn').classList.remove('hidden');
                     document.getElementById('logoutBtn').classList.add('hidden');
-                    
                     dbStatusIndicator.className = "w-2 h-2 rounded-full bg-blue-400";
                     dbStatusText.innerText = "Mode Lecture Publique";
                 }
-                
                 renderDocList(searchInput.value);
                 if (currentDocId) {
                     const doc = docs.find(d => d.id === currentDocId);
@@ -776,7 +789,6 @@
                         updateControlAccess(doc);
                     }
                 }
-                
                 subscribeToSettings();
                 subscribeToDocs();
             });
@@ -797,7 +809,6 @@
                     globalTags = data.tags || [];
                     globalInfoContent = data.infoContent || "Aucune information pour le moment.";
                 }
-                
                 renderGlobalSettingsUI();
                 renderCategoryFilter();
                 renderTagFilters();
@@ -1029,7 +1040,6 @@
                         if(!isEditMode && markdownEditor.value !== currentDoc.content) {
                             renderPreview(currentDoc.content, currentDoc.format);
                             markdownEditor.value = currentDoc.content; 
-                            // Push initial content to history when loading doc
                             historyStack.length = 0;
                             redoStack.length = 0;
                             historyStack.push(currentDoc.content);
@@ -1078,21 +1088,17 @@
 
             const filtered = docs.filter(d => {
                 const matchesSearch = d.title.toLowerCase().includes(filter.toLowerCase());
-                
                 let matchesTag = true;
                 if (activeTagFilter === 'MY_DOCS') {
                     matchesTag = currentUser && d.ownerId === currentUser.uid;
                 } else if (activeTagFilter) {
                     matchesTag = d.tags && d.tags.includes(activeTagFilter);
                 }
-                
                 const matchesCat = activeCategoryFilter ? (d.category === activeCategoryFilter) : true;
-                
                 let isVisible = false;
                 if (isSuperAdmin) isVisible = true;
                 else if (currentUser && d.ownerId === currentUser.uid) isVisible = true;
                 else if (d.visibility !== 'private') isVisible = true;
-
                 return matchesSearch && matchesTag && matchesCat && isVisible;
             });
 
@@ -1104,35 +1110,24 @@
             filtered.forEach(doc => {
                 const isActive = doc.id === currentDocId;
                 const isOwner = currentUser && doc.ownerId === currentUser.uid;
-                
                 const div = document.createElement('div');
                 div.className = `p-3 rounded-lg cursor-pointer transition-all mb-1 border border-transparent group ${isActive ? 'bg-gray-800 border-blue-500/50 shadow-md' : 'hover:bg-gray-800 hover:border-gray-700'}`;
                 div.onclick = () => selectDoc(doc.id);
-                
-                let icon = 'ph-file-text';
-                if(doc.format === 'markdown') icon = 'ph-markdown-logo';
-                
+                let icon = doc.format === 'markdown' ? 'ph-markdown-logo' : 'ph-file-text';
                 let tagsHtml = '';
                 if(doc.tags && doc.tags.length > 0) {
                     tagsHtml = `<div class="mt-1 flex flex-wrap gap-1">
                         ${doc.tags.slice(0, 3).map(t => `<span class="text-[9px] px-1.5 py-0.5 rounded bg-gray-700 text-gray-300 border border-gray-600">${t}</span>`).join('')}
-                        ${doc.tags.length > 3 ? `<span class="text-[9px] text-gray-500">+${doc.tags.length - 3}</span>` : ''}
                     </div>`;
                 }
-                
                 const catLabel = doc.category ? `<span class="text-[10px] bg-gray-700 text-gray-400 px-1 rounded flex-shrink-0">${doc.category}</span>` : '';
-                
-                const privateIcon = (doc.visibility === 'private') ? `<i class="ph-fill ph-lock-key text-yellow-500 text-xs ml-1" title="Privé"></i>` : '';
-                const ownerIcon = isOwner ? `<i class="ph-fill ph-user text-green-500 text-xs ml-1" title="Mon document"></i>` : '';
-
-                let authorName = '';
-                if (doc.ownerEmail) {
-                    authorName = ` • ${doc.ownerEmail.split('@')[0]}`;
-                }
+                const privateIcon = (doc.visibility === 'private') ? `<i class="ph-fill ph-lock-key text-yellow-500 text-xs ml-1"></i>` : '';
+                const ownerIcon = isOwner ? `<i class="ph-fill ph-user text-green-500 text-xs ml-1"></i>` : '';
+                let authorName = doc.ownerEmail ? ` • ${doc.ownerEmail.split('@')[0]}` : '';
 
                 div.innerHTML = `
                     <div class="flex items-start gap-3">
-                        <div class="mt-0.5 ${isActive ? 'text-blue-400' : 'text-gray-600 dark:text-gray-500 group-hover:text-gray-400'}">
+                        <div class="mt-0.5 ${isActive ? 'text-blue-400' : 'text-gray-600 group-hover:text-gray-400'}">
                             <i class="ph ${icon} text-xl"></i>
                         </div>
                         <div class="overflow-hidden flex-1">
@@ -1142,9 +1137,7 @@
                                 </div>
                                 ${catLabel}
                             </div>
-                            <div class="text-[10px] ${isActive ? 'text-blue-300' : 'text-gray-600 dark:text-gray-500'} mt-0.5 truncate">
-                                ${new Date(doc.updatedAt).toLocaleDateString()}${authorName}
-                            </div>
+                            <div class="text-[10px] ${isActive ? 'text-blue-300' : 'text-gray-600'} mt-0.5 truncate">${new Date(doc.updatedAt).toLocaleDateString()}${authorName}</div>
                             ${tagsHtml}
                         </div>
                     </div>
@@ -1155,38 +1148,22 @@
 
         function selectDoc(id, updateHash = true) {
             const doc = docs.find(d => d.id === id);
-            
             if (doc && doc.visibility === 'private' && !canEditDoc(doc)) {
                 showToast("Accès restreint", "delete");
-                currentDocId = null;
-                emptyState.classList.remove('hidden');
-                editorWrapper.classList.add('hidden');
                 return;
             }
-
             if (!doc && docs.length > 0) return; 
-
             currentDocId = id;
             if (updateHash) window.location.hash = id;
-
             emptyState.classList.add('hidden');
             editorWrapper.classList.remove('hidden');
-            
             docTitleInput.value = doc.title;
             markdownEditor.value = doc.content;
             docFormatSelect.value = doc.format || 'markdown';
-            
-            if (doc.ownerEmail) {
-                docAuthorDisplay.innerHTML = `<i class="ph ph-user-circle"></i> Créé par ${doc.ownerEmail}`;
-            } else {
-                docAuthorDisplay.innerHTML = '';
-            }
-            
-            // Reset History Stack for new doc
+            docAuthorDisplay.innerHTML = doc.ownerEmail ? `<i class="ph ph-user-circle"></i> Créé par ${doc.ownerEmail}` : '';
             historyStack.length = 0;
             historyStack.push(doc.content);
             redoStack.length = 0;
-
             renderDocMeta(doc);
             updateControlAccess(doc);
             updateUIForFormat(doc.format);
@@ -1197,20 +1174,16 @@
 
         function updateControlAccess(doc) {
             const hasRights = canEditDoc(doc);
-            
             docTitleInput.readOnly = !hasRights;
             if(hasRights) docTitleInput.classList.remove('cursor-default');
             else docTitleInput.classList.add('cursor-default');
-
             docCategorySelect.disabled = !hasRights;
-            
             if (hasRights) {
                 viewToggleBtn.classList.remove('hidden');
                 actionDeleteBtn.classList.remove('hidden');
                 addTagBtn.classList.remove('hidden');
                 docVisibilityBtn.style.pointerEvents = 'auto';
                 docVisibilityBtn.style.opacity = '1';
-                
                 if (isEditMode) formatToolbar.classList.remove('hidden');
             } else {
                 if (isEditMode) toggleEditMode(false); 
@@ -1218,7 +1191,6 @@
                 actionDeleteBtn.classList.add('hidden');
                 addTagBtn.classList.add('hidden');
                 formatToolbar.classList.add('hidden');
-                
                 docVisibilityBtn.style.pointerEvents = 'none';
                 docVisibilityBtn.style.opacity = '0.5';
             }
@@ -1247,37 +1219,24 @@
             let catHtml = '<option value="" class="bg-white dark:bg-gray-800">Aucune catégorie</option>';
             const currentCat = doc.category || '';
             const allCats = [...globalCategories];
-            
-            if (currentCat && !allCats.includes(currentCat)) {
-                allCats.push(currentCat);
-                allCats.sort();
-            }
-
+            if (currentCat && !allCats.includes(currentCat)) { allCats.push(currentCat); allCats.sort(); }
             allCats.forEach(cat => {
                 const selected = currentCat === cat ? 'selected' : '';
                 catHtml += `<option value="${cat}" ${selected} class="bg-white dark:bg-gray-800">${cat}</option>`;
             });
-            
             docCategorySelect.innerHTML = catHtml;
             docCategorySelect.value = currentCat;
-
             const children = Array.from(docTagsContainer.children);
-            children.forEach(child => {
-                if (child.id !== 'addTagBtn') child.remove();
-            });
-
+            children.forEach(child => { if (child.id !== 'addTagBtn') child.remove(); });
             const hasRights = canEditDoc(doc);
-
             if (doc.tags) {
                 doc.tags.forEach(tag => {
-                    const chip = document.createElement('span');
-                    chip.className = 'tag-chip text-xs';
+                    const chip = document.createElement('span'); chip.className = 'tag-chip text-xs';
                     const deleteBtn = hasRights ? `<button onclick="removeDocTag('${tag}')" class="remove-tag-btn"><i class="ph ph-x"></i></button>` : '';
                     chip.innerHTML = `<i class="ph ph-tag mr-1"></i> ${tag} ${deleteBtn}`;
                     docTagsContainer.insertBefore(chip, addTagBtn);
                 });
             }
-            
             updateUIForVisibility(doc.visibility || 'public');
         }
 
@@ -1293,161 +1252,122 @@
 
         function toggleVisibility() {
             if (!currentDocId) return;
-            const doc = docs.find(d => d.id === currentDocId);
-            if (!canEditDoc(doc)) { showToast("Action non autorisée", "delete"); return; }
-
-            const newVis = doc.visibility === 'private' ? 'public' : 'private';
-            
-            doc.visibility = newVis;
-            doc.updatedAt = Date.now();
-            
-            saveDocToFirebase(doc);
+            const docData = docs.find(d => d.id === currentDocId);
+            if (!canEditDoc(docData)) { showToast("Action non autorisée", "delete"); return; }
+            const newVis = docData.visibility === 'private' ? 'public' : 'private';
+            docData.visibility = newVis;
+            docData.updatedAt = Date.now();
+            saveDocToFirebase(docData);
             updateUIForVisibility(newVis);
             renderDocList(searchInput.value, false);
-            
             showToast(newVis === 'private' ? "Document rendu privé" : "Document rendu public");
         }
 
         function updateCurrentTitle() {
             if (!currentDocId) return;
-            const doc = docs.find(d => d.id === currentDocId);
-            if (!canEditDoc(doc)) return;
-
-            doc.title = docTitleInput.value || 'Sans titre';
-            doc.updatedAt = Date.now();
-            saveDocToFirebase(doc);
+            const docData = docs.find(d => d.id === currentDocId);
+            if (!canEditDoc(docData)) return;
+            docData.title = docTitleInput.value || 'Sans titre';
+            docData.updatedAt = Date.now();
+            saveDocToFirebase(docData);
             renderDocList(searchInput.value, false);
         }
 
         function updateCurrentCategory() {
             if (!currentDocId) return;
-            const doc = docs.find(d => d.id === currentDocId);
-            if (!canEditDoc(doc)) return;
-
-            doc.category = docCategorySelect.value;
-            doc.updatedAt = Date.now();
-            saveDocToFirebase(doc);
+            const docData = docs.find(d => d.id === currentDocId);
+            if (!canEditDoc(docData)) return;
+            docData.category = docCategorySelect.value;
+            docData.updatedAt = Date.now();
+            saveDocToFirebase(docData);
             renderDocList(searchInput.value, false);
         }
 
         function openTagSelectionModal() {
             if (!currentDocId) return;
-            const doc = docs.find(d => d.id === currentDocId);
-            if (!canEditDoc(doc)) return;
-
-            const docTags = doc.tags || [];
-
+            const docData = docs.find(d => d.id === currentDocId);
+            if (!canEditDoc(docData)) return;
+            const docTags = docData.tags || [];
             docTagSelectionList.innerHTML = globalTags.map(tag => {
                 const isChecked = docTags.includes(tag) ? 'checked' : '';
                 return `
                     <label class="flex items-center gap-2 p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
-                        <input type="checkbox" onchange="toggleDocTag('${tag}')" ${isChecked} class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
+                        <input type="checkbox" onchange="toggleDocTag('${tag}')" ${isChecked} class="w-4 h-4 text-blue-600 rounded">
                         <span class="text-sm text-gray-700 dark:text-gray-200">${tag}</span>
                     </label>
                 `;
             }).join('');
-            
-            if(globalTags.length === 0) {
-                docTagSelectionList.innerHTML = '<p class="text-sm text-gray-500 italic">Aucun tag défini dans les paramètres.</p>';
-            }
-
+            if(globalTags.length === 0) docTagSelectionList.innerHTML = '<p class="text-sm text-gray-500 italic">Aucun tag défini.</p>';
             tagSelectionModal.classList.remove('hidden');
         }
 
-        function closeTagSelectionModal() {
-            tagSelectionModal.classList.add('hidden');
-        }
+        function closeTagSelectionModal() { tagSelectionModal.classList.add('hidden'); }
 
         function toggleDocTag(tag) {
             if (!currentDocId) return;
-            const doc = docs.find(d => d.id === currentDocId);
-            if (!canEditDoc(doc)) return;
-
-            if (!doc.tags) doc.tags = [];
-
-            if (doc.tags.includes(tag)) {
-                doc.tags = doc.tags.filter(t => t !== tag);
-            } else {
-                doc.tags.push(tag);
-            }
-            doc.updatedAt = Date.now();
-            saveDocToFirebase(doc);
-            renderDocMeta(doc);
+            const docData = docs.find(d => d.id === currentDocId);
+            if (!canEditDoc(docData)) return;
+            if (!docData.tags) docData.tags = [];
+            docData.tags.includes(tag) ? docData.tags = docData.tags.filter(t => t !== tag) : docData.tags.push(tag);
+            docData.updatedAt = Date.now();
+            saveDocToFirebase(docData);
+            renderDocMeta(docData);
             renderDocList(searchInput.value, false);
         }
 
         function removeDocTag(tag) {
             if (!currentDocId) return;
-            const doc = docs.find(d => d.id === currentDocId);
-            if (!canEditDoc(doc)) return;
-
-            if (!doc.tags) return;
-
-            doc.tags = doc.tags.filter(t => t !== tag);
-            doc.updatedAt = Date.now();
-            saveDocToFirebase(doc);
-            renderDocMeta(doc);
+            const docData = docs.find(d => d.id === currentDocId);
+            if (!canEditDoc(docData)) return;
+            if (!docData.tags) return;
+            docData.tags = docData.tags.filter(t => t !== tag);
+            docData.updatedAt = Date.now();
+            saveDocToFirebase(docData);
+            renderDocMeta(docData);
             renderDocList(searchInput.value, false);
         }
 
         function applyColor(type, value) {
-    if (!currentDocId) return;
-    const doc = docs.find(d => d.id === currentDocId);
-    if (!canEditDoc(doc)) return;
-
-    const textarea = markdownEditor;
-    let start = textarea.selectionStart;
-    let end = textarea.selectionEnd;
-    if (start === end) return;
-
-    const text = textarea.value.substring(start, end);
-
-    const spanRegex = /^<span\s+style="([^"]*)">([\s\S]*?)<\/span>$/i;
-    let styles = {};
-    let innerText = text;
-
-    if (spanRegex.test(text)) {
-        const match = text.match(spanRegex);
-        innerText = match[2];
-
-        match[1].split(';').forEach(rule => {
-            const [k, v] = rule.split(':');
-            if (k && v) styles[k.trim()] = v.trim();
-        });
-    }
-
-    if (type === 'text') styles.color = value;
-    if (type === 'bg') styles['background-color'] = value;
-
-    const styleString = Object.entries(styles)
-        .map(([k, v]) => `${k}: ${v}`)
-        .join('; ');
-
-    const result = `<span style="${styleString}">${innerText}</span>`;
-
-    textarea.setRangeText(result, start, end, 'select');
-    saveHistory(textarea.value);
-    updateCurrentContent();
-    updateStats();
-    textarea.focus();
-}
+            if (!currentDocId) return;
+            const docData = docs.find(d => d.id === currentDocId);
+            if (!canEditDoc(docData)) return;
+            const textarea = markdownEditor;
+            let start = textarea.selectionStart;
+            let end = textarea.selectionEnd;
+            if (start === end) return;
+            const text = textarea.value.substring(start, end);
+            const spanRegex = /^<span\s+style="([^"]*)">([\s\S]*?)<\/span>$/i;
+            let styles = {};
+            let innerText = text;
+            if (spanRegex.test(text)) {
+                const match = text.match(spanRegex);
+                innerText = match[2];
+                match[1].split(';').forEach(rule => {
+                    const [k, v] = rule.split(':');
+                    if (k && v) styles[k.trim()] = v.trim();
+                });
+            }
+            if (type === 'text') styles.color = value;
+            if (type === 'bg') styles['background-color'] = value;
+            const styleString = Object.entries(styles).map(([k, v]) => `${k}: ${v}`).join('; ');
+            textarea.setRangeText(`<span style="${styleString}">${innerText}</span>`, start, end, 'select');
+            saveHistory(textarea.value);
+            updateCurrentContent();
+            updateStats();
+            textarea.focus();
+        }
 
         function applyFormat(type) {
             if (!currentDocId) return;
-            const doc = docs.find(d => d.id === currentDocId);
-            if (!canEditDoc(doc)) return;
-
-            const format = doc.format || 'markdown';
+            const docData = docs.find(d => d.id === currentDocId);
+            if (!canEditDoc(docData)) return;
+            const format = docData.format || 'markdown';
             const textarea = markdownEditor;
-            
-            // Save state before modification
             saveHistory(textarea.value);
-
             const fullText = textarea.value;
             let start = textarea.selectionStart;
             let end = textarea.selectionEnd;
             let sel = fullText.substring(start, end);
-
             const toggleInlineMD = (marker) => {
                 const len = marker.length;
                 const before = fullText.substring(start - len, start);
@@ -1464,9 +1384,7 @@
                 let lineStart = fullText.lastIndexOf('\n', start - 1) + 1;
                 let lineEnd = fullText.indexOf('\n', end);
                 if (lineEnd === -1) lineEnd = fullText.length;
-                const newBlock = fullText.substring(lineStart, lineEnd).split('\n').map(line => {
-                    return line.startsWith(prefix) ? line.substring(prefix.length) : prefix + line;
-                }).join('\n');
+                const newBlock = fullText.substring(lineStart, lineEnd).split('\n').map(line => line.startsWith(prefix) ? line.substring(prefix.length) : prefix + line).join('\n');
                 textarea.setRangeText(newBlock, lineStart, lineEnd, 'select');
             };
             const toggleCheckboxMD = () => {
@@ -1478,20 +1396,6 @@
                 else if (line.includes('- [x] ')) textarea.setRangeText(line.replace('- [x] ', ''), lineStart, lineEnd, 'select');
                 else textarea.setRangeText(`- [ ] ${line}`, lineStart, lineEnd, 'select');
             };
-            const toggleCheckboxHTML = () => {
-                let lineStart = fullText.lastIndexOf('\n', start - 1) + 1;
-                let lineEnd = fullText.indexOf('\n', end);
-                if (lineEnd === -1) lineEnd = fullText.length;
-                let line = fullText.substring(lineStart, lineEnd);
-                const unchecked = '<input type="checkbox">';
-                const checked = '<input type="checkbox" checked>';
-                if (line.includes(checked)) textarea.setRangeText(line.replace(checked, '').trim(), lineStart, lineEnd, 'select');
-                else if (line.includes(unchecked)) textarea.setRangeText(line.replace(unchecked, checked), lineStart, lineEnd, 'select');
-                else {
-                    const liRegex = /^(\s*<li>)(.*)/i;
-                    textarea.setRangeText(liRegex.test(line) ? line.replace(liRegex, '$1<input type="checkbox"> $2') : '<input type="checkbox"> ' + line, lineStart, lineEnd, 'select');
-                }
-            };
             const toggleHTML = (tag) => { 
                 const openRegex = new RegExp(`^<${tag}(\\s[^>]*)?>`, 'i'), closeRegex = new RegExp(`</${tag}>$`, 'i');
                 if (openRegex.test(sel) && closeRegex.test(sel)) {
@@ -1499,126 +1403,80 @@
                     textarea.setRangeText(sel.substring(match[0].length, sel.length - (tag.length + 3)), start, end, 'select');
                 } else textarea.setRangeText(`<${tag}>${sel || 'texte'}</${tag}>`, start, end, 'select');
             };
-            const wrapListHTML = (type) => { 
-                const openRegex = new RegExp(`^<${type}(\\s[^>]*)?>`, 'i'), closeRegex = new RegExp(`</${type}>$`, 'i');
-                if (openRegex.test(sel.trim()) && closeRegex.test(sel.trim())) {
-                    let content = sel.trim().replace(openRegex, '').replace(closeRegex, '').trim().replace(/<li>/gi, '').replace(/<\/li>/gi, '').split('\n').map(l=>l.trim()).join('\n');
-                    textarea.setRangeText(content, start, end, 'select');
-                } else {
-                    const inner = (sel ? sel.split('\n') : ['texte']).map(l => (l.trim().startsWith('<li>') ? l.trim() : (l.trim() ? `  <li>${l.trim()}</li>` : ''))).join('\n');
-                    textarea.setRangeText(`<${type}>\n${inner}\n</${type}>`, start, end, 'select');
-                }
-            };
-
             if (format === 'html') {
                 switch (type) {
-                    case 'bold': toggleHTML('strong'); break;
-                    case 'italic': toggleHTML('em'); break;
-                    case 'strike': toggleHTML('s'); break;
-                    case 'code': toggleHTML('code'); break;
-                    case 'heading': toggleHTML('h3'); break;
-                    case 'list-ul': wrapListHTML('ul'); break; 
-                    case 'list-ol': wrapListHTML('ol'); break;
-                    case 'check': toggleCheckboxHTML(); break;
-                    case 'quote': toggleHTML('blockquote'); break;
+                    case 'bold': toggleHTML('strong'); break; case 'italic': toggleHTML('em'); break; case 'strike': toggleHTML('s'); break;
+                    case 'code': toggleHTML('code'); break; case 'heading': toggleHTML('h3'); break; case 'quote': toggleHTML('blockquote'); break;
                     case 'link': textarea.setRangeText(`<a href="url">${sel || 'lien'}</a>`, start, end, 'select'); break;
                     case 'image': textarea.setRangeText(`<img src="url" alt="${sel || 'image'}">`, start, end, 'select'); break;
                     case 'hr': textarea.setRangeText(`\n<hr>\n`, start, end, 'select'); break;
                 }
             } else {
                 switch (type) {
-                    case 'bold': toggleInlineMD('**'); break;
-                    case 'italic': toggleInlineMD('*'); break;
-                    case 'strike': toggleInlineMD('~~'); break;
-                    case 'code': toggleInlineMD('`'); break;
-                    case 'heading': toggleBlockMD('### '); break;
-                    case 'list-ul': toggleBlockMD('- '); break;
-                    case 'list-ol': toggleBlockMD('1. '); break;
-                    case 'check': toggleCheckboxMD(); break;
-                    case 'quote': toggleBlockMD('> '); break;
+                    case 'bold': toggleInlineMD('**'); break; case 'italic': toggleInlineMD('*'); break; case 'strike': toggleInlineMD('~~'); break;
+                    case 'code': toggleInlineMD('`'); break; case 'heading': toggleBlockMD('### '); break; case 'list-ul': toggleBlockMD('- '); break;
+                    case 'list-ol': toggleBlockMD('1. '); break; case 'check': toggleCheckboxMD(); break; case 'quote': toggleBlockMD('> '); break;
                     case 'link': textarea.setRangeText(`[${sel || 'titre'}](url)`, start, end, 'select'); break;
                     case 'image': textarea.setRangeText(`![${sel || 'alt'}](url_image)`, start, end, 'select'); break;
                     case 'hr': textarea.setRangeText(`\n---\n`, start, end, 'select'); break;
                 }
             }
-            updateCurrentContent();
-            updateStats();
-            textarea.focus();
+            updateCurrentContent(); updateStats(); textarea.focus();
         }
 
         function updateCurrentFormat() {
             if (!currentDocId) return;
-            const doc = docs.find(d => d.id === currentDocId);
-            if (!canEditDoc(doc)) return;
-
-            doc.format = docFormatSelect.value;
-            doc.updatedAt = Date.now();
-            saveDocToFirebase(doc);
-            updateUIForFormat(doc.format);
-            renderPreview(doc.content, doc.format);
+            const docData = docs.find(d => d.id === currentDocId);
+            if (!canEditDoc(docData)) return;
+            docData.format = docFormatSelect.value;
+            docData.updatedAt = Date.now();
+            saveDocToFirebase(docData);
+            updateUIForFormat(docData.format);
+            renderPreview(docData.content, docData.format);
         }
 
         function updateCurrentContent() {
             if (!currentDocId) return;
-            const doc = docs.find(d => d.id === currentDocId);
-            if (!canEditDoc(doc)) return;
-
-            doc.content = markdownEditor.value;
-            doc.updatedAt = Date.now();
-            saveDocToFirebase(doc);
-            renderPreview(doc.content, doc.format);
+            const docData = docs.find(d => d.id === currentDocId);
+            if (!canEditDoc(docData)) return;
+            docData.content = markdownEditor.value;
+            docData.updatedAt = Date.now();
+            saveDocToFirebase(docData);
+            renderPreview(docData.content, docData.format);
         }
 
         function toggleEditMode(forceState) {
             if (!currentUser) return;
             if (currentDocId) {
-                const doc = docs.find(d => d.id === currentDocId);
-                if (!canEditDoc(doc)) return;
+                const docData = docs.find(d => d.id === currentDocId);
+                if (!canEditDoc(docData)) return;
             }
-
             isEditMode = (typeof forceState !== 'undefined') ? forceState : !isEditMode;
             if(isSplitView && isEditMode) return; 
-
             if (isEditMode) {
-                previewArea.classList.add('hidden');
-                markdownEditor.classList.remove('hidden');
-                markdownEditor.focus();
-                
-                toggleIcon.classList.replace('ph-pencil-simple', 'ph-eye');
-                viewToggleBtn.classList.add('bg-blue-50', 'text-blue-600', 'dark:bg-blue-900/30', 'dark:text-blue-400');
-                formatToolbar.classList.remove('hidden');
-                formatToolbar.classList.add('flex');
+                previewArea.classList.add('hidden'); markdownEditor.classList.remove('hidden'); markdownEditor.focus();
+                toggleIcon.classList.replace('ph-pencil-simple', 'ph-eye'); viewToggleBtn.classList.add('bg-blue-50', 'text-blue-600');
+                formatToolbar.classList.remove('hidden'); formatToolbar.classList.add('flex');
             } else {
-                markdownEditor.classList.add('hidden');
-                previewArea.classList.remove('hidden');
-                toggleIcon.classList.replace('ph-eye', 'ph-pencil-simple');
-                viewToggleBtn.classList.remove('bg-blue-50', 'text-blue-600', 'dark:bg-blue-900/30', 'dark:text-blue-400');
-                formatToolbar.classList.add('hidden');
-                formatToolbar.classList.remove('flex');
+                markdownEditor.classList.add('hidden'); previewArea.classList.remove('hidden');
+                toggleIcon.classList.replace('ph-eye', 'ph-pencil-simple'); viewToggleBtn.classList.remove('bg-blue-50', 'text-blue-600');
+                formatToolbar.classList.add('hidden'); formatToolbar.classList.remove('flex');
             }
             updateUIForFormat(docFormatSelect.value);
         }
 
-        function toggleExportMenu() {
-            exportMenu.classList.toggle('hidden');
-        }
-
+        function toggleExportMenu() { exportMenu.classList.toggle('hidden'); }
         function handleHashChange() {
             const hash = window.location.hash.substring(1); 
             if (hash && hash !== currentDocId) selectDoc(hash, false); 
             else if (!hash && currentDocId) {
-                currentDocId = null;
-                emptyState.classList.remove('hidden');
-                editorWrapper.classList.add('hidden');
+                currentDocId = null; emptyState.classList.remove('hidden'); editorWrapper.classList.add('hidden');
             }
         }
         
         async function saveDocToFirebase(docData) {
-            if (!currentUser) { showToast("Connectez-vous !", "delete"); return; }
-            if (!canEditDoc(docData)) { showToast("Permission refusée", "delete"); return; }
-
-            try { await setDoc(doc(db, collectionName, docData.id), docData); } 
-            catch (e) { console.error(e); showToast("Erreur sauvegarde", "delete"); }
+            if (!currentUser || !canEditDoc(docData)) return;
+            try { await setDoc(doc(db, collectionName, docData.id), docData); } catch (e) { console.error(e); }
         }
         
         async function deleteDocFromFirebase(id) {
@@ -1628,84 +1486,45 @@
 
         function createNewDoc() {
             if (!currentUser) return;
-            
-            const newDoc = {
-                id: crypto.randomUUID(),
-                title: 'Nouveau Document',
-                content: '# Titre\n\nCommencez ici...',
-                format: 'markdown',
-                tags: [],
-                category: '',
-                visibility: 'public', // Default public
-                ownerId: currentUser.uid,
-                ownerEmail: currentUser.email,
-                updatedAt: Date.now()
-            };
-            saveDocToFirebase(newDoc);
-            docs.unshift(newDoc);
-            renderDocList();
-            selectDoc(newDoc.id);
-            if (!isEditMode && !isSplitView) toggleEditMode(true);
-            setTimeout(() => docTitleInput.focus(), 100);
+            const newDoc = { id: crypto.randomUUID(), title: 'Nouveau Document', content: '# Titre\n\nCommencez ici...', format: 'markdown', tags: [], category: '', visibility: 'public', ownerId: currentUser.uid, ownerEmail: currentUser.email, updatedAt: Date.now() };
+            saveDocToFirebase(newDoc); docs.unshift(newDoc); renderDocList(); selectDoc(newDoc.id); if (!isEditMode && !isSplitView) toggleEditMode(true); setTimeout(() => docTitleInput.focus(), 100);
         }
 
         function confirmDelete() {
             if (!currentDocId) return;
-            const doc = docs.find(d => d.id === currentDocId);
-            if (!canEditDoc(doc)) return;
-
-            deleteDocFromFirebase(currentDocId);
-            docs = docs.filter(d => d.id !== currentDocId);
-            currentDocId = null;
-            window.location.hash = ''; 
-            renderDocList();
-            emptyState.classList.remove('hidden');
-            editorWrapper.classList.add('hidden');
-            closeDeleteModal();
-            showToast('Document supprimé', 'delete');
+            const docData = docs.find(d => d.id === currentDocId);
+            if (!canEditDoc(docData)) return;
+            deleteDocFromFirebase(currentDocId); docs = docs.filter(d => d.id !== currentDocId);
+            currentDocId = null; window.location.hash = ''; 
+            renderDocList(); emptyState.classList.remove('hidden'); editorWrapper.classList.add('hidden'); closeDeleteModal(); showToast('Document supprimé', 'delete');
         }
 
         async function handleImagePaste(e) {
             if (!currentDocId) return;
-            const doc = docs.find(d => d.id === currentDocId);
-            if (!canEditDoc(doc)) return;
-
+            const docData = docs.find(d => d.id === currentDocId);
+            if (!canEditDoc(docData)) return;
             const items = (e.clipboardData || e.originalEvent.clipboardData).items;
-            for (let i = 0; i < items.length; i++) {
-                if (items[i].type.indexOf("image") !== -1) {
-                    e.preventDefault();
-                    await processAndInsertImage(items[i].getAsFile());
-                }
-            }
+            for (let i = 0; i < items.length; i++) { if (items[i].type.indexOf("image") !== -1) { e.preventDefault(); await processAndInsertImage(items[i].getAsFile()); } }
         }
+
         async function handleImageDrop(e) {
             if (!currentDocId) return;
-            const doc = docs.find(d => d.id === currentDocId);
-            if (!canEditDoc(doc)) return;
-
-            e.preventDefault(); e.stopPropagation();
-            const files = e.dataTransfer.files;
-            if (files && files[0] && files[0].type.startsWith('image/')) await processAndInsertImage(files[0]);
+            const docData = docs.find(d => d.id === currentDocId);
+            if (!canEditDoc(docData)) return;
+            e.preventDefault(); const files = e.dataTransfer.files; if (files && files[0] && files[0].type.startsWith('image/')) await processAndInsertImage(files[0]);
         }
+
         function processAndInsertImage(file) {
-            showToast("Traitement image...", "info");
-            const reader = new FileReader();
+            showToast("Traitement image...", "info"); const reader = new FileReader();
             reader.onload = function(event) {
                 const img = new Image();
                 img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    let width = img.width, height = img.height;
-                    const MAX_WIDTH = 800;
+                    const canvas = document.createElement('canvas'); let width = img.width, height = img.height; const MAX_WIDTH = 800;
                     if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
-                    canvas.width = width; canvas.height = height;
-                    canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-                    const textarea = markdownEditor;
-                    
-                    saveHistory(textarea.value);
-                    textarea.setRangeText(`\n![Image](${dataUrl})\n`, textarea.selectionStart, textarea.selectionEnd, 'select');
-                    updateCurrentContent();
-                    showToast("Image insérée !");
+                    canvas.width = width; canvas.height = height; canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7); const textarea = markdownEditor;
+                    saveHistory(textarea.value); textarea.setRangeText(`\n![Image](${dataUrl})\n`, textarea.selectionStart, textarea.selectionEnd, 'select');
+                    updateCurrentContent(); showToast("Image insérée !");
                 };
                 img.src = event.target.result;
             };
@@ -1721,70 +1540,79 @@
             document.getElementById('tab-login').classList.toggle('active', mode === 'login');
             document.getElementById('tab-signup').classList.toggle('active', mode === 'signup');
             document.getElementById('authTitle').innerText = mode === 'login' ? 'Connexion' : 'Créer un compte';
+            if (mode === 'signup') {
+                signupWarningModal.classList.remove('hidden');
+            }
         }
 
-        async function checkLogin() { handleAuthAction(); } 
+        // Correction de la ReferenceError : Définition globale de checkLogin
+        function checkLogin() { handleAuthAction(); }
 
         async function handleAuthAction() {
             const email = document.getElementById('adminEmail').value;
             const pass = document.getElementById('adminPassword').value;
             if (!email || !pass) { showToast("Champs manquants", "delete"); return; }
             
-            try {
-                if (authMode === 'login') {
-                    await signInWithEmailAndPassword(auth, email, pass);
-                    showToast("Connexion réussie");
-                } else {
-                    await createUserWithEmailAndPassword(auth, email, pass);
-                    showToast("Compte créé !");
+            if (authMode === 'signup') {
+                // Validation de l'adresse mail (doit contenir .ledantec avant le @)
+                const localPart = email.split('@')[0] || "";
+                if (!localPart.includes('.ledantec')) {
+                    showToast("Email non valide (manque .ledantec)", "delete");
+                    return;
                 }
+                confirmSignup(); 
+                return;
+            }
+            try {
+                if (authMode === 'login') { await signInWithEmailAndPassword(auth, email, pass); showToast("Connexion réussie"); }
                 closeLoginModal();
-            } catch (error) { 
-                console.error(error);
-                let msg = "Erreur de connexion";
-                if(error.code === 'auth/email-already-in-use') msg = "Email déjà utilisé";
-                if(error.code === 'auth/weak-password') msg = "Mot de passe trop faible";
-                if(error.code === 'auth/invalid-credential') msg = "Identifiants incorrects";
-                showToast(msg, "delete"); 
+            } catch (error) { showToast("Identifiants incorrects", "delete"); }
+        }
+
+        function closeSignupWarningModal() { signupWarningModal.classList.add('hidden'); }
+
+        async function confirmSignup() {
+            const email = document.getElementById('adminEmail').value;
+            const pass = document.getElementById('adminPassword').value;
+            try {
+                await createUserWithEmailAndPassword(auth, email, pass);
+                showToast("Compte créé !");
+                closeLoginModal();
+                closeSignupWarningModal();
+            } catch (error) {
+                let msg = error.code === 'auth/email-already-in-use' ? "Email déjà utilisé" : "Erreur de création";
+                showToast(msg, "delete");
             }
         }
 
         async function logoutAdmin() {
             try {
-                await signOut(auth);
-                isEditMode = false;
-                markdownEditor.classList.add('hidden');
-                previewArea.classList.remove('hidden');
-                toggleIcon.classList.replace('ph-eye', 'ph-pencil-simple');
-                viewToggleBtn.classList.remove('bg-blue-50', 'text-blue-600', 'dark:bg-blue-900/30', 'dark:text-blue-400');
-                if (isSplitView) toggleSplitView();
-                showToast("Déconnecté");
+                await signOut(auth); isEditMode = false; markdownEditor.classList.add('hidden'); previewArea.classList.remove('hidden');
+                toggleIcon.classList.replace('ph-eye', 'ph-pencil-simple'); viewToggleBtn.classList.remove('bg-blue-50', 'text-blue-600');
+                if (isSplitView) toggleSplitView(); showToast("Déconnecté");
             } catch (error) { console.error(error); }
         }
 
         function exportDoc(type) {
             if (!currentDocId) return;
-            const doc = docs.find(d => d.id === currentDocId);
+            const docData = docs.find(d => d.id === currentDocId);
             if (type === 'pdf') {
-                const opt = { margin: 1, filename: `${doc.title.replace(/[^a-z0-9]/gi, '_')}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } };
+                const opt = { margin: 1, filename: `${docData.title}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } };
                 html2pdf().set(opt).from(previewArea).save();
-                showToast('PDF en cours...');
             } else {
-                const blob = new Blob([doc.content], { type: 'text/plain' });
+                const blob = new Blob([docData.content], { type: 'text/plain' });
                 const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `${doc.title}.md`;
-                document.body.appendChild(a); a.click(); document.body.removeChild(a);
-                showToast('Export lancé');
+                const a = document.createElement('a'); a.href = url; a.download = `${docData.title}.md`; a.click();
             }
         }
+
         function toggleSplitView() {
             if(window.innerWidth < 768) { showToast("PC uniquement", "info"); return; }
             isSplitView = !isSplitView;
             if (isSplitView) { contentContainer.classList.add('split-active'); splitIcon.classList.replace('ph-columns', 'ph-sidebar'); if (isEditMode) formatToolbar.classList.remove('hidden'); if(isEditMode) formatToolbar.classList.add('flex'); }
             else { contentContainer.classList.remove('split-active'); splitIcon.classList.replace('ph-sidebar', 'ph-columns'); toggleEditMode(isEditMode); }
         }
+
         function syncScroll(source) {
             if (!isSplitView || isScrolling) return;
             isScrolling = true;
@@ -1793,70 +1621,55 @@
             else editor.scrollTop = (preview.scrollTop / (preview.scrollHeight - preview.clientHeight)) * (editor.scrollHeight - editor.clientHeight);
             setTimeout(() => isScrolling = false, 50);
         }
+
         function toggleTOC() {
             isTOCOpen = !isTOCOpen;
-            if(isTOCOpen) { 
-                tocPanel.classList.add('open'); 
-                tocToggleBtn.classList.add('bg-blue-50', 'text-blue-600', 'border-blue-200', 'dark:bg-blue-900/30', 'dark:text-blue-400', 'dark:border-blue-800'); 
-                updateTOC(); 
-            } else { 
-                tocPanel.classList.remove('open'); 
-                tocToggleBtn.classList.remove('bg-blue-50', 'text-blue-600', 'border-blue-200', 'dark:bg-blue-900/30', 'dark:text-blue-400', 'dark:border-blue-800'); 
-            }
+            if(isTOCOpen) { tocPanel.classList.add('open'); tocToggleBtn.classList.add('bg-blue-50', 'text-blue-600'); updateTOC(); }
+            else { tocPanel.classList.remove('open'); tocToggleBtn.classList.remove('bg-blue-50', 'text-blue-600'); }
         }
+
         function updateTOC() {
             if (!isTOCOpen) return;
             const headings = previewArea.querySelectorAll('h1, h2, h3');
             tocContent.innerHTML = '';
-            headings.forEach((heading, i) => {
+            headings.forEach((heading) => {
                 const link = document.createElement('a');
-                link.href = '#'; link.textContent = heading.textContent;
+                link.textContent = heading.textContent;
                 link.className = `toc-link toc-${heading.tagName.toLowerCase()}`;
                 link.onclick = (e) => { e.preventDefault(); heading.scrollIntoView({ behavior: 'smooth' }); };
                 tocContent.appendChild(link);
             });
         }
+
         function processWikiLinks(content) {
             return content.replace(/\[\[(.*?)\]\]/g, (match, text) => {
                 const title = text.trim();
-                const doc = docs.find(d => d.title.toLowerCase() === title.toLowerCase());
-                return doc ? `<a href="#${doc.id}" class="wiki-link" onclick="selectDoc('${doc.id}')">${title}</a>` : `<span class="wiki-link wiki-link-broken" title="Document non trouvé">${title}</span>`;
+                const docData = docs.find(d => d.title.toLowerCase() === title.toLowerCase());
+                return docData ? `<a href="#${docData.id}" class="wiki-link" onclick="selectDoc('${docData.id}')">${title}</a>` : `<span class="wiki-link wiki-link-broken">${title}</span>`;
             });
         }
-        function renderPreview(content, format) {
-            if (!content) { previewArea.innerHTML = '<div class="text-gray-300 dark:text-gray-600 italic">Vide...</div>'; updateTOC(); return; }
-            if (format === 'markdown' || !format) {
-                previewArea.className = "preview-pane markdown-preview w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors";
-                const cleanHtml = DOMPurify.sanitize(marked.parse(processWikiLinks(content)), { ADD_ATTR: ['target', 'onclick', 'class'] });
-                
-                previewArea.innerHTML = cleanHtml;
-                
-                previewArea.querySelectorAll('pre code').forEach((block) => {
-                    hljs.highlightElement(block);
-                });
 
+        function renderPreview(content, format) {
+            if (!content) { previewArea.innerHTML = '<div class="italic opacity-30">Vide...</div>'; updateTOC(); return; }
+            if (format === 'markdown' || !format) {
+                previewArea.className = "preview-pane markdown-preview w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 transition-colors";
+                const cleanHtml = DOMPurify.sanitize(marked.parse(processWikiLinks(content)), { ADD_ATTR: ['onclick', 'class'] });
+                previewArea.innerHTML = cleanHtml;
+                previewArea.querySelectorAll('pre code').forEach((block) => { hljs.highlightElement(block); });
             } else if (format === 'html') {
-                previewArea.className = "preview-pane w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors";
                 previewArea.innerHTML = DOMPurify.sanitize(content);
             } else {
-                previewArea.className = "preview-pane preview-text w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors text-gray-700";
                 previewArea.innerText = content;
             }
             updateTOC();
         }
+
         function updateUIForFormat(format) {
             formatDisplay.innerText = format;
-            if (isEditMode || isSplitView) { 
-                if(isEditMode) {
-                    formatToolbar.classList.remove('hidden'); 
-                    formatToolbar.classList.add('flex'); 
-                }
-            }
-            else { 
-                formatToolbar.classList.add('hidden'); 
-                formatToolbar.classList.remove('flex'); 
-            }
+            if (isEditMode) { formatToolbar.classList.remove('hidden'); formatToolbar.classList.add('flex'); }
+            else { formatToolbar.classList.add('hidden'); formatToolbar.classList.remove('flex'); }
         }
+
         function handleFileUpload(input) {
             if (!currentUser) return;
             const file = input.files[0]; if (!file) return;
@@ -1864,8 +1677,10 @@
             reader.onload = function(e) {
                 const newDoc = { id: crypto.randomUUID(), title: file.name.replace(/\.[^/.]+$/, ""), content: e.target.result, format: file.name.endsWith('.md')?'markdown':'text', tags: [], category: '', ownerId: currentUser.uid, ownerEmail: currentUser.email, updatedAt: Date.now() };
                 saveDocToFirebase(newDoc); docs.unshift(newDoc); renderDocList(); selectDoc(newDoc.id); input.value = '';
-            }; reader.readAsText(file);
+            };
+            reader.readAsText(file);
         }
+
         function showDeleteConfirm() { if(!currentDocId) return; deleteDocTitle.innerText = docs.find(d => d.id === currentDocId).title; deleteModal.classList.remove('hidden'); }
         function closeDeleteModal() { deleteModal.classList.add('hidden'); }
         function showToast(m, t='success') { toastMsg.innerText=m; toastIcon.className=t==='delete'?'ph-fill ph-trash text-red-400 text-xl':'ph-fill ph-check-circle text-green-400 text-xl'; toast.classList.remove('translate-y-32'); setTimeout(()=>toast.classList.add('translate-y-32'),3000); }
