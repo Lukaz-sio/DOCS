@@ -101,13 +101,44 @@
         .is-authenticated .auth-only-block { display: block !important; }
         .tab-btn.active { border-bottom: 2px solid #2563eb; color: #2563eb; }
         .dark .tab-btn.active { border-bottom: 2px solid #60a5fa; color: #60a5fa; }
+
+        /* Styles pour Sidebar Responsive */
+        @media (max-width: 767px) {
+            #sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                width: 80%;
+                max-width: 300px;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease-in-out;
+                z-index: 50;
+            }
+            #sidebar.open {
+                transform: translateX(0);
+            }
+            #sidebarOverlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 40;
+            }
+            #sidebarOverlay.show {
+                display: block;
+            }
+        }
     </style>
 </head>
 <body class="h-screen flex flex-col md:flex-row overflow-hidden bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-200">
 
-    <aside class="w-full md:w-72 bg-gray-900 text-gray-100 flex flex-col border-r border-gray-800 flex-shrink-0 z-20 shadow-xl">
+    <!-- Overlay pour mobile -->
+    <div id="sidebarOverlay" onclick="toggleSidebar(false)"></div>
+
+    <aside id="sidebar" class="w-full md:w-72 bg-gray-900 text-gray-100 flex flex-col border-r border-gray-800 flex-shrink-0 z-20 shadow-xl">
         <div class="p-4 border-b border-gray-800 flex justify-between items-center bg-gray-950">
-            <h1 class="text-xl font-bold flex items-center gap-2 text-blue-400 cursor-pointer" onclick="window.location.hash=''">
+            <h1 class="text-xl font-bold flex items-center gap-2 text-blue-400 cursor-pointer" onclick="window.location.hash=''; toggleSidebar(false);">
                 <i class="ph ph-books text-2xl"></i>
                 WikiDocs <span class="text-xs bg-purple-600 text-white px-1.5 py-0.5 rounded ml-1">v6.1</span>
             </h1>
@@ -117,6 +148,9 @@
                 </button>
                 <button onclick="toggleDarkMode()" class="text-gray-400 hover:text-yellow-400 transition-colors p-1" title="Mode Sombre/Clair">
                     <i id="themeIcon" class="ph ph-moon text-xl"></i>
+                </button>
+                <button onclick="toggleSidebar(false)" class="md:hidden text-gray-400 p-1">
+                    <i class="ph ph-x text-xl"></i>
                 </button>
             </div>
         </div>
@@ -179,30 +213,36 @@
     <main class="flex-1 flex flex-col bg-white dark:bg-gray-900 relative h-full transition-colors duration-200">
         
         <div id="emptyState" class="absolute inset-0 flex flex-col items-center justify-center text-gray-400 z-10 bg-white dark:bg-gray-900 transition-colors">
+            <button onclick="toggleSidebar(true)" class="md:hidden absolute top-4 left-4 p-2 text-gray-500">
+                <i class="ph ph-list text-2xl"></i>
+            </button>
             <div class="w-24 h-24 bg-gray-50 dark:bg-gray-800 rounded-full flex items-center justify-center mb-6">
                 <i class="ph ph-cloud text-5xl text-gray-300 dark:text-gray-600"></i>
             </div>
             <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300">WikiDocs Cloud</h2>
-            <p class="mt-2 text-sm text-gray-500">Sélectionnez un document pour le lire.</p>
+            <p class="mt-2 text-sm text-gray-500 px-6 text-center">Ouvrez le menu pour sélectionner un document.</p>
         </div>
 
         <div id="editorWrapper" class="hidden flex flex-col h-full w-full z-10 bg-white dark:bg-gray-900 relative overflow-hidden">
             
-            <header class="h-auto border-b border-gray-200 dark:border-gray-800 flex flex-col bg-white dark:bg-gray-900 flex-shrink-0 transition-colors z-20 relative p-4 gap-3">
+            <header class="h-auto border-b border-gray-200 dark:border-gray-800 flex flex-col bg-white dark:bg-gray-900 flex-shrink-0 transition-colors z-20 relative p-3 md:p-4 gap-3">
                 
-                <div class="flex items-start justify-between gap-4">
+                <div class="flex items-start justify-between gap-2 md:gap-4">
+                    <button onclick="toggleSidebar(true)" class="md:hidden p-1.5 text-gray-500 mt-1">
+                        <i class="ph ph-list text-2xl"></i>
+                    </button>
                     <div class="flex-1 min-w-0">
                          <input type="text" id="docTitleInput" placeholder="Titre du document" readonly
-                               class="w-full text-lg md:text-2xl font-bold text-gray-800 dark:text-gray-100 placeholder-gray-300 dark:placeholder-gray-600 border-none focus:ring-0 focus:outline-none bg-transparent truncate cursor-default auth-cursor-text mb-1"
+                               class="w-full text-base md:text-2xl font-bold text-gray-800 dark:text-gray-100 placeholder-gray-300 dark:placeholder-gray-600 border-none focus:ring-0 focus:outline-none bg-transparent truncate cursor-default auth-cursor-text mb-0.5"
                                oninput="updateCurrentTitle()">
-                         <div id="docAuthorDisplay" class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1"></div>
+                         <div id="docAuthorDisplay" class="text-[10px] md:text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1"></div>
                     </div>
 
-                    <div class="flex items-center gap-2 flex-shrink-0">
+                    <div class="flex items-center gap-1 md:gap-2 flex-shrink-0">
                          <button onclick="toggleTOC()" id="tocToggleBtn" 
-                                 class="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors shadow-sm" title="Table des matières">
+                                 class="flex items-center gap-2 px-2 py-1.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors shadow-sm" title="Table des matières">
                             <i class="ph ph-list-dashes text-lg"></i>
-                            <span class="hidden md:inline text-sm font-medium">Sommaire</span>
+                            <span class="hidden lg:inline text-sm font-medium">Sommaire</span>
                         </button>
                         
                         <div class="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-1 hidden md:block auth-only"></div>
@@ -237,22 +277,22 @@
                     </div>
                 </div>
 
-                <div class="flex flex-wrap items-center gap-3 text-sm">
+                <div class="flex flex-wrap items-center gap-2 md:gap-3 text-xs md:text-sm">
                     
                     <button id="docVisibilityBtn" onclick="toggleVisibility()" class="visibility-badge visibility-public" title="Changer la visibilité">
                         <i class="ph ph-globe"></i> Public
                     </button>
 
-                    <div class="flex items-center gap-2 bg-white dark:bg-gray-800 px-2 py-1 rounded-md border border-gray-200 dark:border-gray-700">
-                        <i class="ph ph-folder text-gray-400"></i>
+                    <div class="flex items-center gap-1 md:gap-2 bg-white dark:bg-gray-800 px-2 py-1 rounded-md border border-gray-200 dark:border-gray-700 max-w-[150px] md:max-w-none">
+                        <i class="ph ph-folder text-gray-400 flex-shrink-0"></i>
                         <select id="docCategorySelect" onchange="updateCurrentCategory()" disabled
-                                class="bg-white dark:bg-gray-800 border-none text-gray-700 dark:text-gray-200 text-xs font-medium focus:ring-0 cursor-pointer disabled:cursor-default disabled:opacity-70">
+                                class="bg-white dark:bg-gray-800 border-none text-gray-700 dark:text-gray-200 text-[10px] md:text-xs font-medium focus:ring-0 cursor-pointer disabled:cursor-default disabled:opacity-70 truncate">
                             <option value="">Aucune catégorie</option>
                             </select>
                     </div>
 
                     <div class="flex flex-wrap items-center gap-1" id="docTagsContainer">
-                        <button onclick="openTagSelectionModal()" id="addTagBtn" class="auth-only hidden text-xs bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded-full border border-gray-200 dark:border-gray-600 transition-colors">
+                        <button onclick="openTagSelectionModal()" id="addTagBtn" class="auth-only hidden text-[10px] bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded-full border border-gray-200 dark:border-gray-600 transition-colors">
                             <i class="ph ph-plus"></i> Tag
                         </button>
                     </div>
@@ -262,7 +302,7 @@
                             <span class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase mr-2 tracking-wider">Format</span>
                             <div class="relative">
                                 <select id="docFormatSelect" onchange="updateCurrentFormat()" 
-                                        class="appearance-none bg-transparent font-medium text-gray-700 dark:text-gray-200 text-xs focus:outline-none cursor-pointer pr-6">
+                                        class="appearance-none bg-transparent font-medium text-gray-700 dark:text-gray-200 text-[10px] md:text-xs focus:outline-none cursor-pointer pr-6">
                                     <option value="markdown" class="bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200">Markdown</option>
                                     <option value="html" class="bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200">HTML</option>
                                     <option value="text" class="bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200">Texte</option>
@@ -306,12 +346,12 @@
 
             <div id="contentContainer" class="flex-1 overflow-hidden relative group flex flex-row">
                 <textarea id="markdownEditor" 
-                          class="editor-pane w-full h-full p-6 md:p-8 resize-none focus:outline-none font-mono text-sm leading-relaxed text-gray-800 bg-gray-50 dark:bg-gray-850 dark:text-gray-200 hidden border-r-0"
+                          class="editor-pane w-full h-full p-5 md:p-8 resize-none focus:outline-none font-mono text-sm leading-relaxed text-gray-800 bg-gray-50 dark:bg-gray-850 dark:text-gray-200 hidden border-r-0"
                           placeholder="Commencez à écrire ici... (Glissez des images ou collez-les avec Ctrl+V)" spellcheck="false"
                           onscroll="syncScroll('editor')"></textarea>
                 
                 <div id="previewArea" 
-                     class="preview-pane markdown-preview w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors"
+                     class="preview-pane markdown-preview w-full h-full p-5 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 dark:text-gray-300 transition-colors"
                      onscroll="syncScroll('preview')">
                     </div>
                 
@@ -327,12 +367,12 @@
                 </div>
             </div>
             
-            <div class="h-8 border-t border-gray-200 dark:border-gray-800 flex items-center px-4 text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-900 justify-between flex-shrink-0 transition-colors z-20 relative">
+            <div class="h-8 border-t border-gray-200 dark:border-gray-800 flex items-center px-4 text-[10px] md:text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-900 justify-between flex-shrink-0 transition-colors z-20 relative">
                 <div class="flex items-center gap-3">
                     <span id="saveStatus" class="flex items-center gap-1 text-green-600 dark:text-green-400 font-medium opacity-0 transition-opacity duration-500">
                         <i class="ph-fill ph-check-circle"></i> Synchro
                     </span>
-                    <span id="formatDisplay" class="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-gray-600 dark:text-gray-300 uppercase font-semibold text-[10px] tracking-wider">Markdown</span>
+                    <span id="formatDisplay" class="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-gray-600 dark:text-gray-300 uppercase font-semibold text-[8px] md:text-[10px] tracking-wider">Markdown</span>
                 </div>
                 <div class="flex gap-3">
                      <span id="readTime">0 min lecture</span>
@@ -619,7 +659,7 @@
             window.applyColor = applyColor;
             window.openLoginModal = openLoginModal;
             window.closeLoginModal = closeLoginModal;
-            window.checkLogin = checkLogin; // Liaison ajoutée
+            window.checkLogin = checkLogin; 
             window.logoutAdmin = logoutAdmin;
             window.handleLoginKey = handleLoginKey;
             window.syncScroll = syncScroll; 
@@ -654,6 +694,7 @@
             window.handleAuthAction = handleAuthAction;
             window.closeSignupWarningModal = closeSignupWarningModal;
             window.confirmSignup = confirmSignup;
+            window.toggleSidebar = toggleSidebar;
 
             initTheme();
             
@@ -1170,6 +1211,8 @@
             renderPreview(doc.content, doc.format);
             updateStats();
             renderDocList(searchInput.value, false);
+            // Fermer la sidebar sur mobile après sélection
+            if(window.innerWidth < 768) toggleSidebar(false);
         }
 
         function updateControlAccess(doc) {
@@ -1545,7 +1588,6 @@
             }
         }
 
-        // Correction de la ReferenceError : Définition globale de checkLogin
         function checkLogin() { handleAuthAction(); }
 
         async function handleAuthAction() {
@@ -1554,7 +1596,6 @@
             if (!email || !pass) { showToast("Champs manquants", "delete"); return; }
             
             if (authMode === 'signup') {
-                // Validation de l'adresse mail (doit contenir .ledantec avant le @)
                 const localPart = email.split('@')[0] || "";
                 if (!localPart.includes('.ledantec')) {
                     showToast("Email non valide (manque .ledantec)", "delete");
@@ -1652,7 +1693,7 @@
         function renderPreview(content, format) {
             if (!content) { previewArea.innerHTML = '<div class="italic opacity-30">Vide...</div>'; updateTOC(); return; }
             if (format === 'markdown' || !format) {
-                previewArea.className = "preview-pane markdown-preview w-full h-full p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 transition-colors";
+                previewArea.className = "preview-pane markdown-preview w-full h-full p-5 md:p-8 overflow-y-auto bg-white dark:bg-gray-900 transition-colors";
                 const cleanHtml = DOMPurify.sanitize(marked.parse(processWikiLinks(content)), { ADD_ATTR: ['onclick', 'class'] });
                 previewArea.innerHTML = cleanHtml;
                 previewArea.querySelectorAll('pre code').forEach((block) => { hljs.highlightElement(block); });
@@ -1685,6 +1726,18 @@
         function closeDeleteModal() { deleteModal.classList.add('hidden'); }
         function showToast(m, t='success') { toastMsg.innerText=m; toastIcon.className=t==='delete'?'ph-fill ph-trash text-red-400 text-xl':'ph-fill ph-check-circle text-green-400 text-xl'; toast.classList.remove('translate-y-32'); setTimeout(()=>toast.classList.add('translate-y-32'),3000); }
 
+        // Fonction pour basculer la sidebar sur mobile
+        function toggleSidebar(open) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            if (open) {
+                sidebar.classList.add('open');
+                overlay.classList.add('show');
+            } else {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('show');
+            }
+        }
     </script>
 </body>
 </html>
